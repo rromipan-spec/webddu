@@ -100,6 +100,14 @@ git commit -m "Jelaskan perubahan"
 git push
 ```
 
+Atau gunakan satu perintah dari terminal PowerShell VS Code:
+
+```powershell
+.\deploy.cmd "Jelaskan perubahan yang dibuat"
+```
+
+Gunakan pesan berbeda sesuai perubahan, misalnya `Perbaiki login admin` atau `Ubah tampilan halaman utama`.
+
 Pantau hasilnya di tab **Actions → Deploy to Hostinger**. Workflow juga dapat dijalankan manual melalui tombol **Run workflow**.
 
 ## 7. Jika workflow gagal
@@ -109,4 +117,3 @@ Pantau hasilnya di tab **Actions → Deploy to Hostinger**. Workflow juga dapat 
 - `test: ... public_html`: `HOSTINGER_DOMAIN_ROOT` salah.
 - `rsync: command not found`: konfirmasi dukungan `rsync` ke Hostinger atau gunakan integrasi Git hPanel.
 - API verification gagal: periksa `backend/storage/logs/app.log` dan konfigurasi `.env` produksi.
-

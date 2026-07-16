@@ -21,6 +21,14 @@ Panduan pemasangan lengkap ada di [docs/DEPLOY-HOSTINGER.md](docs/DEPLOY-HOSTING
 Panduan menambah dan mengubah akun admin ada di [docs/ADMIN-MYSQL.md](docs/ADMIN-MYSQL.md).
 Panduan deployment otomatis tersedia di [docs/GITHUB-HOSTINGER.md](docs/GITHUB-HOSTINGER.md).
 
+Setelah GitHub Secrets selesai dikonfigurasi, deploy perubahan dari terminal VS Code dengan:
+
+```powershell
+.\deploy.cmd "Jelaskan perubahan yang dibuat"
+```
+
+Script akan memeriksa file rahasia dan sintaks JavaScript, membuat commit, push ke branch `main`, lalu GitHub Actions meneruskan perubahan ke Hostinger.
+
 ## Keamanan yang sudah diterapkan
 
 - PDO dengan prepared statement; tidak ada query input mentah.
