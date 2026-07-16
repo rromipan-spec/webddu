@@ -1,0 +1,26 @@
+Options -Indexes
+DirectoryIndex index.php index.html
+
+<FilesMatch "(^\.|\.env|\.ini|\.log|\.sql|\.md)$">
+    Require all denied
+</FilesMatch>
+
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+</IfModule>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{HTTPS} !=on
+    RewriteCond %{HTTP_HOST} !^(localhost|127\.0\.0\.1)$ [NC]
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # Website publik disimpan terpisah, tetapi tetap tampil dari root domain.
+    RewriteRule ^$ halaman-utama/index.html [L]
+    RewriteCond %{REQUEST_URI} !^/(admin|api|uploads|halaman-utama)(/|$) [NC]
+    RewriteCond %{DOCUMENT_ROOT}/halaman-utama/$1 -f
+    RewriteRule ^(.+)$ halaman-utama/$1 [L]
+</IfModule>

@@ -1,0 +1,5 @@
+/backend/config/.env
+/backend/storage/logs/*.log
+/frontend/uploads/*
+!/frontend/uploads/.htaccess
+

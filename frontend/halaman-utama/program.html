@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Program - Dompet Dana Umat</title>
+    <meta name="description" content="Detail program pemberdayaan dan sosial Dompet Dana Umat.">
+    <link rel="icon" href="https://lh3.googleusercontent.com/d/1G2xVlrBuc4IU6ynaGf8Xg_c9Y7jSg3Wm">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Custom styles for Dalil and Content readability */
+        .dalil-box {
+            background-color: #f0f5ff;
+            border-left: 5px solid #1e4b9c;
+            padding: 30px;
+            margin: 30px 0;
+            border-radius: 0 15px 15px 0;
+            font-style: italic;
+        }
+        .arabic-text {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            display: block;
+            text-align: right;
+            line-height: 2.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="preloader">
+        <img src="https://lh3.googleusercontent.com/d/1G2xVlrBuc4IU6ynaGf8Xg_c9Y7jSg3Wm" alt="Loading Logo" class="preloader-logo">
+    </div>
+
+    <!-- Bagian ini akan diisi secara otomatis oleh program-loader.js -->
+    <div id="program-container">
+        <div style="padding: 200px 0; text-align: center;">
+            <h3>Memuat Data Program...</h3>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="navbar.js"></script>
+    <script type="module" src="program-loader.js"></script>
+    <script>
+        // Scroll Animation Script (Fade In)
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.fade-in').forEach((el) => observer.observe(el));
+    </script>
+</body>
+</html>

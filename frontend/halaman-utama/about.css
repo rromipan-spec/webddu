@@ -1,0 +1,142 @@
+/* ABOUT PAGE SPECIFIC STYLES */
+
+/* Page Header (Static Hero) */
+.page-header {
+    position: relative;
+    padding: 200px 0 150px;
+    background-image: url('https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1920&q=80');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    color: white;
+    text-align: center;
+}
+
+/* History Section */
+.history {
+    padding: 80px 0;
+    background-color: white;
+}
+
+.history-content {
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+    font-size: 1.1rem;
+    color: #4a5568;
+}
+
+.history-content p {
+    margin-bottom: 25px;
+    line-height: 1.8;
+}
+
+/* Vision & Mission Section */
+.vision-mission {
+    padding: 80px 0;
+    background-color: #f0f5ff;
+}
+
+.vm-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+}
+
+.vm-card {
+    background: white;
+    padding: 50px 40px;
+    border-radius: 20px;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease;
+    border-top: 5px solid #1e4b9c;
+}
+
+.vm-card:hover {
+    transform: translateY(-10px);
+}
+
+.vm-icon {
+    font-size: 3rem;
+    margin-bottom: 20px;
+}
+
+.vm-card h3 {
+    color: #0a2647;
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+.vm-list {
+    list-style: none;
+    text-align: left;
+}
+
+.vm-list li {
+    margin-bottom: 15px;
+    position: relative;
+    padding-left: 30px;
+    color: #2c3e5c;
+}
+
+.vm-list li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: #1e4b9c;
+    font-weight: bold;
+}
+
+/* Legalitas Section */
+.legalitas {
+    padding: 80px 0;
+    background-color: white;
+    text-align: center;
+}
+
+.legal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    margin-top: 40px;
+}
+
+.legal-item {
+    padding: 30px;
+    border: 1px solid #eee;
+    border-radius: 15px;
+    transition: all 0.3s;
+}
+
+.legal-item:hover {
+    border-color: #1e4b9c;
+    box-shadow: 0 10px 20px rgba(30, 75, 156, 0.1);
+}
+
+.legal-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+}
+
+.legal-item h4 {
+    color: #0a2647;
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+}
+
+.legal-item p {
+    color: #666;
+    font-family: monospace;
+    font-size: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .vm-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .page-header {
+        padding: 160px 0 100px;
+    }
+}

@@ -1,0 +1,95 @@
+name: Deploy to Hostinger
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hostinger-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy production
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Validate JavaScript
+        shell: bash
+        run: |
+          set -euo pipefail
+          find frontend -type f -name '*.js' -print0 | xargs -0 -n1 node --check
+
+      - name: Configure SSH
+        shell: bash
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.HOSTINGER_SSH_HOST }}
+          SSH_PORT: ${{ secrets.HOSTINGER_SSH_PORT }}
+        run: |
+          set -euo pipefail
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/hostinger_deploy
+          chmod 600 ~/.ssh/hostinger_deploy
+          ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts
+
+      - name: Prepare and verify remote directories
+        shell: bash
+        env:
+          SSH_HOST: ${{ secrets.HOSTINGER_SSH_HOST }}
+          SSH_PORT: ${{ secrets.HOSTINGER_SSH_PORT }}
+          SSH_USER: ${{ secrets.HOSTINGER_SSH_USER }}
+          DOMAIN_ROOT: ${{ secrets.HOSTINGER_DOMAIN_ROOT }}
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/hostinger_deploy -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            "test -d '$DOMAIN_ROOT/public_html' && mkdir -p '$DOMAIN_ROOT/backend/storage/logs'"
+
+      - name: Deploy public frontend
+        shell: bash
+        env:
+          SSH_HOST: ${{ secrets.HOSTINGER_SSH_HOST }}
+          SSH_PORT: ${{ secrets.HOSTINGER_SSH_PORT }}
+          SSH_USER: ${{ secrets.HOSTINGER_SSH_USER }}
+          DOMAIN_ROOT: ${{ secrets.HOSTINGER_DOMAIN_ROOT }}
+        run: |
+          set -euo pipefail
+          rsync -az --checksum \
+            --exclude='/uploads/***' \
+            --exclude='/setup-admin.php' \
+            -e "ssh -i ~/.ssh/hostinger_deploy -p $SSH_PORT" \
+            frontend/ "$SSH_USER@$SSH_HOST:$DOMAIN_ROOT/public_html/"
+
+      - name: Deploy private backend
+        shell: bash
+        env:
+          SSH_HOST: ${{ secrets.HOSTINGER_SSH_HOST }}
+          SSH_PORT: ${{ secrets.HOSTINGER_SSH_PORT }}
+          SSH_USER: ${{ secrets.HOSTINGER_SSH_USER }}
+          DOMAIN_ROOT: ${{ secrets.HOSTINGER_DOMAIN_ROOT }}
+        run: |
+          set -euo pipefail
+          rsync -az --checksum \
+            --exclude='/config/.env' \
+            --exclude='/storage/logs/***' \
+            -e "ssh -i ~/.ssh/hostinger_deploy -p $SSH_PORT" \
+            backend/ "$SSH_USER@$SSH_HOST:$DOMAIN_ROOT/backend/"
+
+      - name: Verify production API
+        shell: bash
+        env:
+          SITE_URL: ${{ secrets.SITE_URL }}
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error \
+            --retry 3 --retry-delay 3 \
+            "${SITE_URL%/}/api/index.php?resource=session"
