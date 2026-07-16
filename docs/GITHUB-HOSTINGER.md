@@ -66,11 +66,19 @@ Di repository GitHub buka **Settings → Secrets and variables → Actions → N
 | `HOSTINGER_SSH_HOST` | IP/hostname dari hPanel |
 | `HOSTINGER_SSH_PORT` | Port SSH, misalnya `65002` |
 | `HOSTINGER_SSH_USER` | Username SSH Hostinger |
-| `HOSTINGER_SSH_PRIVATE_KEY` | Seluruh isi private key `ddu_hostinger_deploy` |
+| `HOSTINGER_SSH_PRIVATE_KEY_B64` | Private key `ddu_hostinger_deploy` dalam Base64 satu baris |
 | `HOSTINGER_DOMAIN_ROOT` | Path absolut root domain, tanpa garis miring terakhir |
 | `SITE_URL` | `https://dompetdanaumat.com` |
 
 Jangan menambahkan `DB_PASS`, isi `.env`, atau password admin ke workflow. File `.env` tetap dibuat dan dikelola hanya di Hostinger.
+
+Buat nilai Base64 private key di PowerShell dan salin langsung ke clipboard:
+
+```powershell
+[Convert]::ToBase64String([IO.File]::ReadAllBytes("$env:USERPROFILE\.ssh\ddu_hostinger_deploy")) | Set-Clipboard
+```
+
+Tempel hasil clipboard sebagai secret `HOSTINGER_SSH_PRIVATE_KEY_B64`. Jangan mengirim nilai tersebut melalui chat.
 
 ## 5. Buat environment production
 

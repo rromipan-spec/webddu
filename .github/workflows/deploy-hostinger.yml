@@ -32,16 +32,16 @@ jobs:
       - name: Configure SSH
         shell: bash
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}
+          SSH_PRIVATE_KEY_B64: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY_B64 }}
           SSH_HOST: ${{ secrets.HOSTINGER_SSH_HOST }}
           SSH_PORT: ${{ secrets.HOSTINGER_SSH_PORT }}
         run: |
           set -euo pipefail
           install -d -m 700 ~/.ssh
-          # Private key yang disalin dari Windows dapat membawa CRLF.
-          # OpenSSH pada runner Linux membutuhkan akhir baris LF.
-          printf '%s\n' "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/hostinger_deploy
+          # Base64 menjaga private key tetap utuh saat disimpan sebagai GitHub Secret.
+          printf '%s' "$SSH_PRIVATE_KEY_B64" | base64 --decode > ~/.ssh/hostinger_deploy
           chmod 600 ~/.ssh/hostinger_deploy
+          ssh-keygen -y -f ~/.ssh/hostinger_deploy > /dev/null
           ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts
 
       - name: Prepare and verify remote directories
