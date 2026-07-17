@@ -59,7 +59,7 @@
 .focus-box__label { display: block; color: var(--about-blue); font-size: .78rem; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; margin-bottom: 16px; }
 .focus-box ul { list-style: none; }
 .focus-box li { position: relative; padding-left: 28px; margin: 11px 0; color: #38506f; }
-.focus-box li::before { content: "✓"; position: absolute; left: 0; color: var(--about-blue); font-weight: 900; }
+.focus-box li::before { content: "\2713"; position: absolute; left: 0; color: var(--about-blue); font-weight: 900; }
 
 .vision-section { padding: 110px 0; background: #f4f8fd; }
 .vision-grid { display: grid; grid-template-columns: .92fr 1.08fr; gap: 24px; }
