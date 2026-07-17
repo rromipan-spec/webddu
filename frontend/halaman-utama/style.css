@@ -1928,3 +1928,113 @@ p {
     opacity: 0.5;
     cursor: not-allowed;
 }
+
+/* ===== UNIFIED RESPONSIVE TYPOGRAPHY ===== */
+:root {
+    --font-xs: clamp(0.78rem, 0.75rem + 0.1vw, 0.84rem);
+    --font-sm: clamp(0.9rem, 0.87rem + 0.12vw, 0.96rem);
+    --font-body: clamp(1rem, 0.97rem + 0.14vw, 1.075rem);
+    --font-lead: clamp(1.05rem, 1rem + 0.28vw, 1.2rem);
+    --font-h4: clamp(1.08rem, 1rem + 0.35vw, 1.25rem);
+    --font-h3: clamp(1.25rem, 1.1rem + 0.7vw, 1.55rem);
+    --font-h2: clamp(1.8rem, 1.48rem + 1.45vw, 2.55rem);
+    --font-display: clamp(2.35rem, 2rem + 2vw, 3.5rem);
+    --line-body: 1.72;
+    --line-heading: 1.16;
+}
+
+html { font-size: 100%; }
+
+body {
+    font-size: var(--font-body);
+    line-height: var(--line-body);
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    overflow-wrap: break-word;
+    text-wrap: balance;
+}
+
+h1 { font-size: var(--font-display); line-height: 1.1; letter-spacing: -0.025em; }
+h2 { font-size: var(--font-h2); line-height: var(--line-heading); letter-spacing: -0.018em; }
+h3 { font-size: var(--font-h3); line-height: 1.25; }
+h4 { font-size: var(--font-h4); line-height: 1.3; }
+h5 { font-size: var(--font-xs); line-height: 1.4; }
+p, li { line-height: var(--line-body); }
+
+.nav-links a,
+.btn,
+.btn-calc,
+.btn-reset,
+.btn-whatsapp-minimal,
+button,
+input,
+textarea,
+select {
+    font-size: 1rem;
+}
+
+.hero-content p,
+.gallery-intro,
+.section-header > p,
+.cta-minimal p {
+    font-size: var(--font-lead);
+    line-height: 1.7;
+}
+
+.calculator-info h3,
+.video-promo-content h2,
+.related-section h3 {
+    font-size: var(--font-h3);
+}
+
+.program-card-title,
+.nishab-card h4,
+.footer-col h4,
+.related-content h4 {
+    font-size: var(--font-h4);
+}
+
+.gallery-text p,
+.nishab-card p,
+.input-group label,
+.result-row,
+.calculator-note,
+.blog-date,
+.post-meta,
+.related-date {
+    font-size: var(--font-sm);
+}
+
+.calculator-note { margin-top: 10px; line-height: 1.65; }
+
+.about-list li,
+.post-full-content,
+.mock-content {
+    font-size: var(--font-body) !important;
+    line-height: 1.8 !important;
+}
+
+.post-full-content p,
+.mock-content p { max-width: 72ch; }
+
+.footer { font-size: var(--font-sm); }
+.footer-logo { font-size: var(--font-h4); }
+.footer-bottom { font-size: var(--font-sm); }
+
+@media (max-width: 768px) {
+    h1 { font-size: clamp(2.15rem, 9.5vw, 2.8rem); line-height: 1.12; }
+    h2 { font-size: clamp(1.7rem, 7vw, 2.15rem); line-height: 1.2; }
+    h3 { font-size: clamp(1.2rem, 5vw, 1.4rem); }
+    h4 { font-size: 1.1rem; }
+    p, li { font-size: 1rem; line-height: 1.7; }
+    .hero-content p,
+    .gallery-intro,
+    .section-header > p,
+    .cta-minimal p { font-size: 1rem; line-height: 1.7; }
+    .nav-links a { font-size: 1.08rem; }
+    .footer, .footer p, .footer li, .footer a { font-size: 0.94rem; }
+    .blog-date, .post-meta, .related-date { font-size: 0.85rem; }
+}
