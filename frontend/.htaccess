@@ -18,6 +18,12 @@ DirectoryIndex index.php index.html
     RewriteCond %{HTTP_HOST} !^(localhost|127\.0\.0\.1)$ [NC]
     RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
+    # Selalu gunakan URL utama tanpa /index.html atau path folder frontend.
+    RewriteCond %{THE_REQUEST} \s/+index\.(?:html?|php)(?:[?\s]) [NC]
+    RewriteRule ^index\.(?:html?|php)$ / [R=301,L,NE]
+    RewriteCond %{THE_REQUEST} \s/+halaman-utama/index\.html(?:[?\s]) [NC]
+    RewriteRule ^halaman-utama/index\.html$ / [R=301,L,NE]
+
     # Website publik disimpan terpisah, tetapi tetap tampil dari root domain.
     RewriteRule ^$ halaman-utama/index.html [L]
     RewriteCond %{REQUEST_URI} !^/(admin|api|uploads|halaman-utama)(/|$) [NC]

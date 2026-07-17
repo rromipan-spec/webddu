@@ -3,6 +3,12 @@ const recordStat = type => fetch('../api/index.php?resource=stats', {
 }).catch(() => {});
 
 document.addEventListener('DOMContentLoaded', () => {
+    const isPublicHome = /^\/(?:halaman-utama\/)?index\.html$/i.test(window.location.pathname);
+    if (window.location.protocol.startsWith('http') && (isPublicHome || window.location.hash === '#')) {
+        const cleanPath = isPublicHome ? '/' : window.location.pathname;
+        window.history.replaceState(null, '', `${cleanPath}${window.location.search}`);
+    }
+
     if (!sessionStorage.getItem('ddu_visit')) {
         recordStat('visit');
         sessionStorage.setItem('ddu_visit', '1');
@@ -27,6 +33,17 @@ document.addEventListener('DOMContentLoaded', () => {
     toggle?.addEventListener('click', () => { links?.classList.toggle('active'); toggle.classList.toggle('active'); header?.classList.toggle('menu-open'); });
     document.querySelector('.close-menu-btn')?.addEventListener('click', close);
     links?.querySelectorAll('a').forEach(link => link.addEventListener('click', close));
+
+    document.querySelectorAll('a[href^="#"]').forEach(link => {
+        link.addEventListener('click', event => {
+            event.preventDefault();
+            const targetId = link.getAttribute('href')?.slice(1);
+            if (targetId) document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth' });
+            if (window.location.protocol.startsWith('http')) {
+                window.history.replaceState(null, '', `${window.location.pathname === '/index.html' ? '/' : window.location.pathname}${window.location.search}`);
+            }
+        });
+    });
 
     const contactForm = document.querySelector('.contact-form');
     contactForm?.addEventListener('submit', event => {
