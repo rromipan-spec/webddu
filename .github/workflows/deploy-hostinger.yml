@@ -42,7 +42,23 @@ jobs:
           printf '%s' "$SSH_PRIVATE_KEY_B64" | base64 --decode > ~/.ssh/hostinger_deploy
           chmod 600 ~/.ssh/hostinger_deploy
           ssh-keygen -y -f ~/.ssh/hostinger_deploy > /dev/null
-          ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts
+          scan_file="$(mktemp)"
+          for attempt in 1 2 3 4 5; do
+            if ssh-keyscan -T 10 -p "$SSH_PORT" -H "$SSH_HOST" > "$scan_file" 2>/dev/null && [ -s "$scan_file" ]; then
+              cat "$scan_file" >> ~/.ssh/known_hosts
+              rm -f "$scan_file"
+              break
+            fi
+
+            if [ "$attempt" -eq 5 ]; then
+              rm -f "$scan_file"
+              echo "Gagal mengambil host key SSH setelah 5 percobaan."
+              exit 1
+            fi
+
+            echo "SSH belum merespons, mencoba kembali ($attempt/5)..."
+            sleep $((attempt * 2))
+          done
 
       - name: Prepare and verify remote directories
         shell: bash
