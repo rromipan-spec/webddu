@@ -28,12 +28,18 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('.close-menu-btn')?.addEventListener('click', close);
     links?.querySelectorAll('a').forEach(link => link.addEventListener('click', close));
 
-    document.querySelector('.contact-form')?.addEventListener('submit', event => {
+    const contactForm = document.querySelector('.contact-form');
+    contactForm?.addEventListener('submit', event => {
         event.preventDefault();
+        const whatsappNumber = contactForm.dataset.whatsapp || '';
+        if (!/^\d{10,15}$/.test(whatsappNumber)) {
+            console.error('Nomor WhatsApp pada form Hubungi Kami tidak valid.');
+            return;
+        }
         const name = document.getElementById('contact-name')?.value || '';
         const email = document.getElementById('contact-email')?.value || '';
         const message = document.getElementById('contact-message')?.value || '';
         const text = `Halo Admin Dompet Dana Umat,\n\nNama: ${name}\nEmail: ${email}\n\nPesan:\n${message}`;
-        window.open(`https://wa.me/6285797571549?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
+        window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
     });
 });
