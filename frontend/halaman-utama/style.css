@@ -2285,3 +2285,66 @@ select {
 
     .nav-links .mobile-social-link svg { width: 18px; height: 18px; }
 }
+
+/* Keep the social group visible inside the mobile navigation viewport */
+@media (max-width: 768px) {
+    .home-page .nav-links {
+        top: 8px;
+        left: 8px;
+        width: calc(100% - 16px);
+        height: calc(100dvh - 16px);
+        max-height: calc(100dvh - 16px);
+        padding: 92px 28px max(22px, env(safe-area-inset-bottom));
+        gap: 9px;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    .home-page .nav-links::before {
+        top: 33px;
+        left: 28px;
+    }
+
+    .home-page .close-menu-btn {
+        top: 20px;
+        right: 20px;
+        width: 42px;
+        height: 42px;
+    }
+
+    .home-page .nav-links > a {
+        min-height: 42px;
+        padding: 7px 0 10px;
+        font-size: 1.05rem;
+    }
+
+    .home-page .nav-links .mobile-socials {
+        flex-shrink: 0;
+        margin-top: 12px;
+        padding-top: 16px;
+    }
+
+    .home-page.mobile-menu-open {
+        overflow: hidden;
+    }
+
+    .home-page.mobile-menu-open .whatsapp-popup,
+    .home-page.mobile-menu-open .back-to-top {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+    }
+}
+
+@media (max-width: 420px), (max-height: 620px) {
+    .home-page .nav-links {
+        padding-top: 78px;
+        gap: 5px;
+    }
+
+    .home-page .nav-links::before { top: 28px; }
+    .home-page .close-menu-btn { top: 14px; right: 16px; }
+    .home-page .nav-links > a { min-height: 37px; padding: 5px 0 8px; }
+    .home-page .nav-links .mobile-socials { margin-top: 7px; padding-top: 12px; }
+    .home-page .mobile-socials__label { display: none; }
+}

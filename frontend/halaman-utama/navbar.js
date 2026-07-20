@@ -29,8 +29,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const toggle = document.querySelector('.menu-toggle');
     const links = document.querySelector('.nav-links');
-    const close = () => { links?.classList.remove('active'); toggle?.classList.remove('active'); header?.classList.remove('menu-open'); };
-    toggle?.addEventListener('click', () => { links?.classList.toggle('active'); toggle.classList.toggle('active'); header?.classList.toggle('menu-open'); });
+    const close = () => {
+        links?.classList.remove('active');
+        toggle?.classList.remove('active');
+        header?.classList.remove('menu-open');
+        document.body.classList.remove('mobile-menu-open');
+        toggle?.setAttribute('aria-expanded', 'false');
+    };
+    toggle?.addEventListener('click', () => {
+        const opening = !links?.classList.contains('active');
+        links?.classList.toggle('active', opening);
+        toggle.classList.toggle('active', opening);
+        header?.classList.toggle('menu-open', opening);
+        document.body.classList.toggle('mobile-menu-open', opening);
+        toggle.setAttribute('aria-expanded', String(opening));
+    });
     document.querySelector('.close-menu-btn')?.addEventListener('click', close);
     links?.querySelectorAll('a').forEach(link => link.addEventListener('click', close));
 
