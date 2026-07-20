@@ -69,6 +69,13 @@ if ($resource === 'stats') {
     }
 }
 
+if ($resource === 'gold_price') {
+    if ($method !== 'GET') {
+        Http::json(['ok' => false, 'message' => 'Metode tidak diizinkan.'], 405);
+    }
+    serveGoldPrice();
+}
+
 if ($resource === 'admins') {
     Auth::requireSuperAdmin();
     if ($method === 'GET') {
@@ -297,4 +304,141 @@ function deactivateAdmin(): never
     $stmt = Database::connection()->prepare('UPDATE admins SET is_active = 0 WHERE id = :id');
     $stmt->execute(['id' => $id]);
     Http::json(['ok' => true, 'message' => 'Admin dinonaktifkan.']);
+}
+
+function serveGoldPrice(): never
+{
+    $cacheDir = dirname(__DIR__, 2) . '/backend/storage/cache';
+    $cacheFile = $cacheDir . '/gold-price.json';
+    $cached = readGoldPriceCache($cacheFile);
+
+    if ($cached !== null && (time() - (int) ($cached['fetched_at_unix'] ?? 0)) < 3600) {
+        $cached['cached'] = true;
+        Http::json(['ok' => true, 'data' => $cached]);
+    }
+
+    $gold = fetchRemoteJson('https://api.gold-api.com/price/XAU');
+    $exchange = fetchRemoteJson('https://api.frankfurter.dev/v2/rate/USD/IDR');
+    $goldUsdPerOunce = (float) ($gold['price'] ?? 0);
+    $usdIdr = (float) ($exchange['rate'] ?? 0);
+
+    if ($goldUsdPerOunce >= 500 && $goldUsdPerOunce <= 10000 && $usdIdr >= 5000 && $usdIdr <= 50000) {
+        $pricePerGram = (int) round(($goldUsdPerOunce * $usdIdr) / 31.1034768, -3);
+        $payload = [
+            'price_per_gram' => $pricePerGram,
+            'nishab_yearly' => $pricePerGram * 85,
+            'nishab_monthly' => (int) round(($pricePerGram * 85) / 12),
+            'gold_usd_per_ounce' => round($goldUsdPerOunce, 2),
+            'usd_idr' => round($usdIdr, 4),
+            'method' => 'spot_24k',
+            'source' => 'Harga spot emas 24K dan kurs USD/IDR',
+            'updated_at' => (string) ($gold['updatedAt'] ?? $exchange['date'] ?? date(DATE_ATOM)),
+            'fetched_at' => date(DATE_ATOM),
+            'fetched_at_unix' => time(),
+            'cached' => false,
+            'is_stale' => false,
+            'is_fallback' => false,
+        ];
+        writeGoldPriceCache($cacheDir, $cacheFile, $payload);
+        Http::json(['ok' => true, 'data' => $payload]);
+    }
+
+    if ($cached !== null && (time() - (int) ($cached['fetched_at_unix'] ?? 0)) < 604800) {
+        $cached['cached'] = true;
+        $cached['is_stale'] = true;
+        Http::json(['ok' => true, 'data' => $cached]);
+    }
+
+    // Fallback resmi ketika sumber harga harian belum dapat diakses.
+    $baznasNishabYearly = 91681728;
+    Http::json([
+        'ok' => true,
+        'data' => [
+            'price_per_gram' => (int) round($baznasNishabYearly / 85),
+            'nishab_yearly' => $baznasNishabYearly,
+            'nishab_monthly' => 7640144,
+            'method' => 'baznas_2026',
+            'source' => 'Acuan nisab zakat pendapatan BAZNAS RI 2026',
+            'updated_at' => '2026-02-20T00:00:00+07:00',
+            'fetched_at' => date(DATE_ATOM),
+            'fetched_at_unix' => time(),
+            'cached' => false,
+            'is_stale' => false,
+            'is_fallback' => true,
+        ],
+    ]);
+}
+
+function readGoldPriceCache(string $path): ?array
+{
+    if (!is_file($path) || filesize($path) > 16384) {
+        return null;
+    }
+    $raw = file_get_contents($path);
+    if ($raw === false) {
+        return null;
+    }
+    $data = json_decode($raw, true);
+    return is_array($data) ? $data : null;
+}
+
+function writeGoldPriceCache(string $directory, string $path, array $data): void
+{
+    if (!is_dir($directory) && !mkdir($directory, 0750, true) && !is_dir($directory)) {
+        return;
+    }
+    $json = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    if ($json === false) {
+        return;
+    }
+    $temporary = $path . '.' . bin2hex(random_bytes(4)) . '.tmp';
+    if (file_put_contents($temporary, $json, LOCK_EX) !== false) {
+        @rename($temporary, $path);
+    }
+    if (is_file($temporary)) {
+        @unlink($temporary);
+    }
+}
+
+function fetchRemoteJson(string $url): ?array
+{
+    $body = false;
+    if (function_exists('curl_init')) {
+        $curl = curl_init($url);
+        if ($curl === false) {
+            return null;
+        }
+        curl_setopt_array($curl, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_FOLLOWLOCATION => false,
+            CURLOPT_CONNECTTIMEOUT => 4,
+            CURLOPT_TIMEOUT => 7,
+            CURLOPT_USERAGENT => 'DompetDanaUmat/1.0',
+            CURLOPT_HTTPHEADER => ['Accept: application/json'],
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_SSL_VERIFYHOST => 2,
+        ]);
+        $body = curl_exec($curl);
+        $status = (int) curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
+        curl_close($curl);
+        if ($status !== 200) {
+            return null;
+        }
+    } elseif (filter_var(ini_get('allow_url_fopen'), FILTER_VALIDATE_BOOLEAN)) {
+        $context = stream_context_create([
+            'http' => [
+                'method' => 'GET',
+                'timeout' => 7,
+                'ignore_errors' => false,
+                'header' => "Accept: application/json\r\nUser-Agent: DompetDanaUmat/1.0\r\n",
+            ],
+        ]);
+        $body = @file_get_contents($url, false, $context);
+    }
+
+    if (!is_string($body) || $body === '' || strlen($body) > 65536) {
+        return null;
+    }
+    $data = json_decode($body, true);
+    return is_array($data) ? $data : null;
 }

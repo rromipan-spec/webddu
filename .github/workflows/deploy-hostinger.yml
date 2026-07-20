@@ -29,6 +29,12 @@ jobs:
           set -euo pipefail
           find frontend -type f -name '*.js' -print0 | xargs -0 -n1 node --check
 
+      - name: Validate PHP
+        shell: bash
+        run: |
+          set -euo pipefail
+          find frontend backend -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+
       - name: Configure SSH
         shell: bash
         env:
@@ -70,7 +76,7 @@ jobs:
         run: |
           set -euo pipefail
           ssh -i ~/.ssh/hostinger_deploy -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
-            "test -d '$DOMAIN_ROOT/public_html' && mkdir -p '$DOMAIN_ROOT/backend/storage/logs'"
+            "test -d '$DOMAIN_ROOT/public_html' && mkdir -p '$DOMAIN_ROOT/backend/storage/logs' '$DOMAIN_ROOT/backend/storage/cache'"
 
       - name: Deploy public frontend
         shell: bash
@@ -99,6 +105,7 @@ jobs:
           rsync -az --checksum \
             --exclude='/config/.env' \
             --exclude='/storage/logs/***' \
+            --exclude='/storage/cache/***' \
             -e "ssh -i ~/.ssh/hostinger_deploy -p $SSH_PORT" \
             backend/ "$SSH_USER@$SSH_HOST:$DOMAIN_ROOT/backend/"
 
@@ -111,3 +118,6 @@ jobs:
           curl --fail --silent --show-error \
             --retry 3 --retry-delay 3 \
             "${SITE_URL%/}/api/index.php?resource=session"
+          curl --fail --silent --show-error \
+            --retry 3 --retry-delay 3 \
+            "${SITE_URL%/}/api/index.php?resource=gold_price"

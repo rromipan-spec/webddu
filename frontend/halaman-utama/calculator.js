@@ -5,14 +5,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- PENGAMBILAN HARGA EMAS OTOMATIS ---
 
-    // Nilai default jika API gagal (Rp 1.300.000/gram - Estimasi)
-    let goldPricePerGram = 1300000; 
-    const nishabGoldGram = 85;
-    let nishabMonthly = (goldPricePerGram * nishabGoldGram) / 12;
+    // Acuan sementara BAZNAS 2026 digunakan sampai endpoint harga harian merespons.
+    let goldPricePerGram = Math.round(91681728 / 85);
+    let nishabMonthly = 7640144;
 
     // Elemen UI untuk info nishab
     const goldPriceEl = document.getElementById('goldPrice');
     const nishabValueEl = document.getElementById('nishabValue');
+    const goldPriceMetaEl = document.getElementById('goldPriceMeta');
 
     // Helper Function Format Rupiah
     function formatRupiah(num) {
@@ -20,33 +20,62 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Fungsi untuk memperbarui teks info nishab di HTML
-    function updateNishabInfo(price, nishab) {
+    function updateNishabInfo(price, nishab, meta = '') {
         if (goldPriceEl && nishabValueEl) {
             goldPriceEl.textContent = `${formatRupiah(price)}/gram`;
             nishabValueEl.textContent = formatRupiah(Math.round(nishab));
         }
+        if (goldPriceMetaEl) goldPriceMetaEl.textContent = meta;
     }
 
-    // Ambil data harga emas dari API
-    fetch('https://api.harga-emas.org/antam/')
-        .then(response => response.json())
-        .then(data => {
-            // API ini mengembalikan array, kita ambil harga terbaru
-            const antamPrice = parseInt(data[0].price);
-            if (antamPrice) {
-                goldPricePerGram = antamPrice;
-                nishabMonthly = (goldPricePerGram * nishabGoldGram) / 12;
-                updateNishabInfo(goldPricePerGram, nishabMonthly);
+    function formatUpdateTime(value) {
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return '';
+        return new Intl.DateTimeFormat('id-ID', {
+            dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Jakarta'
+        }).format(date);
+    }
+
+    updateNishabInfo(
+        goldPricePerGram,
+        nishabMonthly,
+        'Acuan sementara BAZNAS 2026. Sedang memuat harga emas terbaru...'
+    );
+
+    // Backend mengambil harga spot 24K dan kurs, lalu menyimpannya dalam cache privat.
+    fetch('../api/index.php?resource=gold_price', {
+        credentials: 'same-origin',
+        headers: { Accept: 'application/json' }
+    })
+        .then(response => {
+            if (!response.ok) throw new Error('Endpoint harga emas tidak tersedia.');
+            return response.json();
+        })
+        .then(result => {
+            const data = result?.data || {};
+            const price = Number(data.price_per_gram);
+            const monthly = Number(data.nishab_monthly);
+            if (!Number.isFinite(price) || price <= 0 || !Number.isFinite(monthly) || monthly <= 0) {
+                throw new Error('Data harga emas tidak valid.');
             }
+            goldPricePerGram = Math.round(price);
+            nishabMonthly = Math.round(monthly);
+
+            const updated = formatUpdateTime(data.updated_at);
+            let status = data.source || 'Sumber harga emas';
+            if (data.is_fallback) status += ' (fallback)';
+            if (data.is_stale) status += ' (cache terakhir)';
+            if (updated) status += ` · Diperbarui ${updated} WIB`;
+            updateNishabInfo(goldPricePerGram, nishabMonthly, status);
         })
         .catch(error => {
-            console.error('Gagal mengambil data harga emas, menggunakan harga default.', error);
-            // Tetap tampilkan harga default jika API gagal
-            updateNishabInfo(goldPricePerGram, nishabMonthly); 
+            console.error('Gagal mengambil harga emas terbaru.', error);
+            updateNishabInfo(
+                goldPricePerGram,
+                nishabMonthly,
+                'Menggunakan acuan nisab BAZNAS 2026 karena harga harian belum tersedia.'
+            );
         });
-    
-    // Inisialisasi tampilan awal (sebelum fetch selesai)
-    updateNishabInfo(goldPricePerGram, nishabMonthly);
 
     // --- FORMAT INPUT RUPIAH SAAT MENGETIK ---
     const formInputs = ['income', 'bonus', 'debt'];
@@ -106,11 +135,11 @@ document.addEventListener('DOMContentLoaded', function() {
             // Cek Nishab menggunakan nilai nishabMonthly yang dinamis
             if (netIncome >= nishabMonthly) {
                 zakatMonthly = netIncome * 0.025;
-                nishabStatusText = "Mencapai Nishab (Wajib Zakat)";
+                nishabStatusText = "Mencapai Estimasi Nishab";
                 nishabStatusColor = "#27ae60"; // Hijau
             } else {
                 zakatMonthly = 0;
-                nishabStatusText = "Belum Mencapai Nishab (Tidak Wajib)";
+                nishabStatusText = "Belum Mencapai Estimasi Nishab";
                 nishabStatusColor = "#d35400"; // Oranye
             }
 

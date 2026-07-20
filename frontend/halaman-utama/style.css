@@ -2018,6 +2018,15 @@ select {
 
 .calculator-note { margin-top: 10px; line-height: 1.65; }
 
+.gold-price-meta {
+    margin: 14px 0 0;
+    padding-top: 12px;
+    color: #61718a;
+    border-top: 1px solid #e6edf5;
+    font-size: var(--font-sm);
+    line-height: 1.55;
+}
+
 .about-list li,
 .post-full-content,
 .mock-content {
