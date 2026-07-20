@@ -2137,3 +2137,41 @@ select {
     .home-page .video-promo-content { padding: 20px; }
     .home-page .contact-wrapper { padding: 26px 19px; }
 }
+
+/* Floating actions: compact and vertically aligned on mobile */
+@media (max-width: 768px) {
+    .whatsapp-popup,
+    .back-to-top {
+        right: 18px;
+        width: 46px;
+        height: 46px;
+    }
+
+    .whatsapp-popup {
+        bottom: 18px;
+        animation: none;
+    }
+
+    .whatsapp-popup img {
+        width: 27px;
+        height: 27px;
+    }
+
+    .back-to-top {
+        bottom: 76px;
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 420px) {
+    .whatsapp-popup,
+    .back-to-top {
+        right: 14px;
+        width: 44px;
+        height: 44px;
+    }
+
+    .whatsapp-popup { bottom: 14px; }
+    .whatsapp-popup img { width: 25px; height: 25px; }
+    .back-to-top { bottom: 70px; }
+}
