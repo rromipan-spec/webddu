@@ -2175,3 +2175,113 @@ select {
     .whatsapp-popup img { width: 25px; height: 25px; }
     .back-to-top { bottom: 70px; }
 }
+
+/* Mobile navigation social links */
+@media (max-width: 768px) {
+    .home-page .nav-links { padding-bottom: 28px; }
+
+    .nav-links .mobile-socials {
+        position: static;
+        display: grid;
+        grid-template-columns: repeat(3, 44px);
+        align-items: center;
+        gap: 11px;
+        width: 100%;
+        margin-top: auto;
+        padding-top: 18px;
+        border-top: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .mobile-socials__label {
+        grid-column: 1 / -1;
+        color: rgba(255, 255, 255, 0.58);
+        font-size: 0.72rem;
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+    }
+
+    .nav-links .mobile-social-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        padding: 0;
+        color: #ffffff;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 12px;
+        box-shadow: none;
+        opacity: 1;
+        transform: none;
+        animation: none;
+    }
+
+    .nav-links .mobile-social-link svg {
+        width: 19px;
+        height: 19px;
+    }
+
+    .nav-links.active .mobile-social-link {
+        opacity: 1;
+        transform: none;
+        animation: none;
+    }
+
+    .nav-links .mobile-social-link:hover,
+    .nav-links .mobile-social-link:focus-visible {
+        padding: 0;
+        color: #ffffff;
+        border-left-width: 1px;
+        transform: translateY(-2px);
+        outline: none;
+    }
+
+    .nav-links .mobile-social-link--facebook:hover,
+    .nav-links .mobile-social-link--facebook:focus-visible {
+        background: #1877f2;
+        border-color: #438ff2;
+    }
+
+    .nav-links .mobile-social-link--instagram:hover,
+    .nav-links .mobile-social-link--instagram:focus-visible {
+        background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
+        border-color: rgba(255, 255, 255, 0.32);
+    }
+
+    .nav-links .mobile-social-link--tiktok:hover,
+    .nav-links .mobile-social-link--tiktok:focus-visible {
+        background: #111827;
+        border-color: #25f4ee;
+        box-shadow: 2px 2px 0 rgba(254, 44, 85, 0.75);
+    }
+}
+
+@media (max-width: 420px), (max-height: 680px) {
+    .home-page .nav-links {
+        padding-top: 95px;
+        padding-bottom: 18px;
+        gap: 10px;
+    }
+
+    .home-page .nav-links > a {
+        padding-bottom: 8px;
+        font-size: 1rem;
+    }
+
+    .nav-links .mobile-socials {
+        grid-template-columns: repeat(3, 40px);
+        gap: 9px;
+        padding-top: 14px;
+    }
+
+    .nav-links .mobile-social-link {
+        width: 40px;
+        height: 40px;
+        border-radius: 11px;
+    }
+
+    .nav-links .mobile-social-link svg { width: 18px; height: 18px; }
+}
