@@ -2348,3 +2348,63 @@ select {
     .home-page .nav-links .mobile-socials { margin-top: 7px; padding-top: 12px; }
     .home-page .mobile-socials__label { display: none; }
 }
+
+/* Footer social icons */
+.footer .social-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 11px;
+}
+
+.footer .social-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 12px;
+    box-shadow: none;
+}
+
+.footer .social-icon svg {
+    width: 19px;
+    height: 19px;
+    fill: currentColor;
+}
+
+.footer .social-icon:hover,
+.footer .social-icon:focus-visible {
+    padding-left: 0 !important;
+    color: #ffffff;
+    transform: translateY(-3px);
+    outline: none;
+}
+
+.footer .social-icon--instagram:hover,
+.footer .social-icon--instagram:focus-visible {
+    background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.footer .social-icon--facebook:hover,
+.footer .social-icon--facebook:focus-visible {
+    background: #1877f2;
+    border-color: #438ff2;
+}
+
+.footer .social-icon--tiktok:hover,
+.footer .social-icon--tiktok:focus-visible {
+    background: #111827;
+    border-color: #25f4ee;
+    box-shadow: 2px 2px 0 rgba(254, 44, 85, 0.72);
+}
+
+.footer .social-icon--youtube:hover,
+.footer .social-icon--youtube:focus-visible {
+    background: #ff0000;
+    border-color: #ff3b3b;
+}
