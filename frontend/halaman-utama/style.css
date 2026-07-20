@@ -2192,7 +2192,7 @@ select {
     .nav-links .mobile-socials {
         position: static;
         display: grid;
-        grid-template-columns: repeat(3, 44px);
+        grid-template-columns: repeat(4, 44px);
         align-items: center;
         gap: 11px;
         width: 100%;
@@ -2266,6 +2266,12 @@ select {
         border-color: #25f4ee;
         box-shadow: 2px 2px 0 rgba(254, 44, 85, 0.75);
     }
+
+    .nav-links .mobile-social-link--youtube:hover,
+    .nav-links .mobile-social-link--youtube:focus-visible {
+        background: #ff0000;
+        border-color: #ff4d4d;
+    }
 }
 
 @media (max-width: 420px), (max-height: 680px) {
@@ -2281,7 +2287,7 @@ select {
     }
 
     .nav-links .mobile-socials {
-        grid-template-columns: repeat(3, 40px);
+        grid-template-columns: repeat(4, 40px);
         gap: 9px;
         padding-top: 14px;
     }
