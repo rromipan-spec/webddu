@@ -4,7 +4,9 @@ const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, char => ({
 
 document.addEventListener('DOMContentLoaded', async () => {
     const container = document.getElementById('program-container');
-    const slug = new URLSearchParams(location.search).get('slug');
+    const querySlug = new URLSearchParams(location.search).get('slug');
+    const routeSlug = location.pathname.match(/^\/([a-z0-9]+(?:-[a-z0-9]+)*)\/?$/i)?.[1] || '';
+    const slug = querySlug || routeSlug;
     if (!container || !slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) return showError(container);
     try {
         const response = await fetch(`../api/index.php?resource=programs&slug=${encodeURIComponent(slug)}`, { credentials: 'same-origin' });

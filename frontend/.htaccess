@@ -24,9 +24,18 @@ DirectoryIndex index.php index.html
     RewriteCond %{THE_REQUEST} \s/+halaman-utama/index\.html(?:[?\s]) [NC]
     RewriteRule ^halaman-utama/index\.html$ / [R=301,L,NE]
 
+    # Ubah URL detail program lama menjadi URL bersih, misalnya:
+    # /program.html?slug=wakaf-asrama-santri -> /wakaf-asrama-santri
+    RewriteCond %{THE_REQUEST} \s/+((?:halaman-utama/)?program\.html)\?slug=([a-z0-9]+(?:-[a-z0-9]+)*) [NC]
+    RewriteRule ^(?:halaman-utama/)?program\.html$ /%2 [R=301,L,NE,QSD]
+
     # Website publik disimpan terpisah, tetapi tetap tampil dari root domain.
     RewriteRule ^$ halaman-utama/index.html [L]
     RewriteCond %{REQUEST_URI} !^/(admin|api|uploads|halaman-utama)(/|$) [NC]
     RewriteCond %{DOCUMENT_ROOT}/halaman-utama/$1 -f
     RewriteRule ^(.+)$ halaman-utama/$1 [L]
+
+    # Slug satu tingkat di root domain digunakan sebagai halaman detail program.
+    RewriteCond %{REQUEST_URI} !^/(admin|api|uploads|halaman-utama)(/|$) [NC]
+    RewriteRule ^([a-z0-9]+(?:-[a-z0-9]+)*)/?$ halaman-utama/program.html?slug=$1 [L,QSA]
 </IfModule>
