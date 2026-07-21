@@ -33,7 +33,7 @@ try {
     try {
         $databaseFile = $temporaryDirectory . '/database.sql';
         $databaseSummary = dumpDatabase(Database::connection(), $databaseFile);
-        $uploadsDirectory = dirname(__DIR__, 2) . '/frontend/uploads';
+        $uploadsDirectory = resolveUploadsDirectory();
         $uploadSummary = summarizeUploads($uploadsDirectory);
 
         $manifest = [
@@ -223,6 +223,22 @@ function summarizeUploads(string $directory): array
         }
     }
     return ['file_count' => $fileCount, 'total_bytes' => $totalBytes];
+}
+
+function resolveUploadsDirectory(): string
+{
+    $domainRoot = dirname(__DIR__, 2);
+    $productionPath = $domainRoot . '/public_html/uploads';
+    if (is_dir($productionPath)) {
+        return $productionPath;
+    }
+
+    $localPath = $domainRoot . '/frontend/uploads';
+    if (is_dir($localPath)) {
+        return $localPath;
+    }
+
+    throw new RuntimeException('Folder uploads tidak ditemukan di public_html/uploads maupun frontend/uploads.');
 }
 
 function verifyArchive(string $archivePath): void

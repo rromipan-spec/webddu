@@ -69,6 +69,8 @@ ddu-backup-20260722-021500.zip
 ddu-backup-20260722-021500.zip.sha256
 ```
 
+Pastikan bagian `uploads` pada hasil backup menunjukkan jumlah file yang masuk. Nilai `0 file` hanya benar apabila folder `public_html/uploads` memang belum memiliki gambar hasil upload admin.
+
 ## 4. Aktifkan backup otomatis setiap hari
 
 Di hPanel:
