@@ -31,7 +31,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 function renderPost(container, post, related) {
     document.title = `${post.title} - Dompet Dana Umat`;
     const wa = post.whatsapp_number || '6285121277046';
-    const message = post.whatsapp_message || `Assalamualaikum, saya ingin bertanya terkait artikel: ${post.title}`;
+    const message = post.whatsapp_message || `Assalamualaikum, saya ingin berdonasi setelah membaca artikel: ${post.title}.`;
+    const whatsappUrl = `https://wa.me/${encodeURIComponent(wa)}?text=${encodeURIComponent(message)}`;
     const sliderImages = recordSliderImages(post);
     const relatedHtml = related.length ? `<div class="related-section"><h3>Artikel Terkait</h3><div class="related-grid">${related.map(item => `
         <div class="related-card"><a href="post.html?slug=${encodeURIComponent(item.slug)}" class="related-img-wrapper"><img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.title)}" loading="lazy"></a>
@@ -41,7 +42,8 @@ function renderPost(container, post, related) {
         <div class="container" style="padding:60px 20px"><article class="post-full" style="max-width:800px;margin:0 auto;background:white;padding:40px;border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,.05);position:relative;z-index:10">
         ${detailSliderHtml(sliderImages, post.title)}
         <div class="post-full-content" style="font-size:1.1rem;line-height:1.8;color:#2c3e5c">${post.content}</div></article>
-        <section class="cta-minimal fade-in" style="margin-top:40px;border-radius:15px"><div class="container"><h5>LAYANAN KONSULTASI</h5><h2>Tertarik dengan topik ini?</h2><p>Dapatkan informasi lebih lanjut melalui layanan chat kami.</p><a href="https://wa.me/${encodeURIComponent(wa)}?text=${encodeURIComponent(message)}" class="btn-whatsapp-minimal" target="_blank" rel="noopener noreferrer">Hubungi Kami via WhatsApp →</a></div></section>${relatedHtml}</div>`;
+        <section class="cta-minimal fade-in" style="margin-top:40px;border-radius:15px"><div class="container"><h5>LANGKAH KEBAIKAN</h5><h2>Mari Lanjutkan Kebaikan dengan Berdonasi</h2><p>Salurkan donasi terbaik Anda melalui layanan WhatsApp Dompet Dana Umat.</p><a href="${whatsappUrl}" class="btn-whatsapp-minimal" target="_blank" rel="noopener noreferrer">Berdonasi via WhatsApp →</a></div></section>${relatedHtml}</div>
+        <a href="${whatsappUrl}" class="whatsapp-popup" target="_blank" rel="noopener noreferrer" aria-label="Berdonasi melalui WhatsApp"><img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp"></a>`;
     initDetailSliders(container);
 }
 
