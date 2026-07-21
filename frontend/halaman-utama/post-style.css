@@ -33,14 +33,71 @@
     bottom: -190px;
     width: 420px;
     height: 420px;
+    z-index: 1;
     content: '';
     border: 1px solid rgba(255, 255, 255, .12);
     border-radius: 50%;
 }
 
+.post-hero-background,
+.post-hero-overlay {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.post-hero-background {
+    z-index: 0;
+    object-fit: cover;
+    object-position: center;
+    opacity: 0;
+    transform: scale(1.025);
+    transition: opacity .8s ease, transform 5s ease;
+}
+
+.post-hero-background.active {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.post-hero-overlay {
+    z-index: 1;
+    background: linear-gradient(110deg, rgba(4, 25, 57, .93), rgba(8, 48, 94, .76) 55%, rgba(12, 68, 126, .72));
+}
+
+.post-hero-slider-dots {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    z-index: 3;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 7px;
+    max-width: 80%;
+    transform: translateX(-50%);
+}
+
+.post-hero-slider-dots button {
+    width: 9px;
+    height: 9px;
+    padding: 0;
+    background: rgba(255, 255, 255, .48);
+    border: 1px solid rgba(255, 255, 255, .72);
+    border-radius: 99px;
+    cursor: pointer;
+    transition: width .25s ease, background .25s ease;
+}
+
+.post-hero-slider-dots button.active {
+    width: 25px;
+    background: #fff;
+}
+
 .post-hero-inner {
     position: relative;
-    z-index: 1;
+    z-index: 2;
     max-width: 980px;
     margin: 0 auto;
     text-align: center;
@@ -291,4 +348,8 @@
     .post-hero-meta > * { width: auto; }
     .post-share-buttons { flex-wrap: wrap; }
     .post-donation-cta .btn-whatsapp-minimal { width: 100%; padding-right: 18px; padding-left: 18px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .post-hero-background { transition: none; }
 }

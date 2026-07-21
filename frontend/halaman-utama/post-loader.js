@@ -49,6 +49,23 @@ function articleSummary(post) {
     return sentences.map(sentence => sentence.trim()).filter(Boolean).slice(0, 3);
 }
 
+function articleHeroImages(post) {
+    let images = [];
+    if (Array.isArray(post.hero_images)) {
+        images = post.hero_images;
+    } else {
+        try {
+            const parsed = JSON.parse(post.hero_images || '[]');
+            if (Array.isArray(parsed)) images = parsed;
+        } catch (error) {
+            images = [];
+        }
+    }
+    images = images.map(value => String(value || '').trim()).filter(Boolean);
+    if (post.hero_image && !images.includes(post.hero_image)) images.unshift(post.hero_image);
+    return [...new Set(images)].slice(0, 10);
+}
+
 function relatedArticlesHtml(related) {
     if (!related.length) return '';
     return `<section class="related-section" aria-labelledby="related-title">
@@ -84,14 +101,17 @@ function renderPost(container, post, related) {
     const message = post.whatsapp_message || `Assalamualaikum, saya ingin berdonasi setelah membaca artikel: ${post.title}.`;
     const whatsappUrl = `https://wa.me/${encodeURIComponent(wa)}?text=${encodeURIComponent(message)}`;
     const sliderImages = recordSliderImages(post);
+    const heroImages = articleHeroImages(post);
     const minutes = readingTime(post.content);
     const canonicalUrl = `${location.origin}/artikel/${encodeURIComponent(post.slug)}`;
     const summary = articleSummary(post);
     const summaryHtml = summary.length ? `<section class="post-summary" aria-labelledby="summary-title"><span>RINGKASAN ARTIKEL</span><h2 id="summary-title">Yang perlu Anda ketahui</h2><ul>${summary.map(point => `<li>${escapeHtml(point)}</li>`).join('')}</ul></section>` : '';
 
-    updateSeo(post, sliderImages[0] || post.image || DEFAULT_IMAGE, canonicalUrl, minutes);
+    updateSeo(post, heroImages[0] || sliderImages[0] || post.image || DEFAULT_IMAGE, canonicalUrl, minutes);
     container.innerHTML = `
         <section class="post-hero">
+            ${heroImages.map((image, index) => `<img class="post-hero-background${index === 0 ? ' active' : ''}" src="${escapeHtml(image)}" alt="" aria-hidden="true"${index > 0 ? ' loading="lazy"' : ''}>`).join('')}
+            <div class="post-hero-overlay" aria-hidden="true"></div>
             <div class="container post-hero-inner">
                 <nav class="post-breadcrumb" aria-label="Breadcrumb"><a href="/">Beranda</a><span aria-hidden="true">›</span><a href="/#blog">Artikel</a><span aria-hidden="true">›</span><span aria-current="page">${escapeHtml(post.title)}</span></nav>
                 <span class="post-category">Artikel DDU</span>
@@ -102,6 +122,7 @@ function renderPost(container, post, related) {
                     <span>${minutes} menit baca</span>
                 </div>
             </div>
+            ${heroImages.length > 1 ? `<div class="post-hero-slider-dots" aria-label="Pilih background header">${heroImages.map((image, index) => `<button type="button" class="${index === 0 ? 'active' : ''}" data-hero-slide="${index}" aria-label="Tampilkan background ${index + 1}"></button>`).join('')}</div>` : ''}
         </section>
         <div class="container post-page-layout">
             <div class="post-reading-column">
@@ -125,7 +146,32 @@ function renderPost(container, post, related) {
         <a href="${whatsappUrl}" class="whatsapp-popup" target="_blank" rel="noopener noreferrer" aria-label="Berdonasi melalui WhatsApp"><img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp"></a>`;
 
     initDetailSliders(container);
+    initPostHeroSlider(container);
     setupShareButtons(container, canonicalUrl, post.title);
+}
+
+function initPostHeroSlider(container) {
+    const hero = container.querySelector('.post-hero');
+    const slides = Array.from(hero?.querySelectorAll('.post-hero-background') || []);
+    const dots = Array.from(hero?.querySelectorAll('[data-hero-slide]') || []);
+    if (slides.length < 2) return;
+    let current = 0;
+    let timer = null;
+    const show = index => {
+        current = (index + slides.length) % slides.length;
+        slides.forEach((slide, slideIndex) => slide.classList.toggle('active', slideIndex === current));
+        dots.forEach((dot, dotIndex) => dot.classList.toggle('active', dotIndex === current));
+    };
+    const start = () => {
+        if (timer) window.clearInterval(timer);
+        if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            timer = window.setInterval(() => show(current + 1), 5000);
+        }
+    };
+    dots.forEach((dot, index) => dot.addEventListener('click', () => { show(index); start(); }));
+    hero.addEventListener('mouseenter', () => { if (timer) window.clearInterval(timer); });
+    hero.addEventListener('mouseleave', start);
+    start();
 }
 
 function setupShareButtons(container, canonicalUrl, title) {

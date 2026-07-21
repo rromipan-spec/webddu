@@ -25,11 +25,11 @@ function addGalleryRemoveButtons(editor) {
     });
 }
 
-function parseGalleryImages(value) {
-    if (Array.isArray(value)) return value.filter(Boolean).slice(0, 3);
+function parseGalleryImages(value, limit = 3) {
+    if (Array.isArray(value)) return value.filter(Boolean).slice(0, limit);
     try {
         const parsed = JSON.parse(value || '[]');
-        return Array.isArray(parsed) ? parsed.filter(Boolean).slice(0, 3) : [];
+        return Array.isArray(parsed) ? parsed.filter(Boolean).slice(0, limit) : [];
     } catch (error) {
         return [];
     }
@@ -63,6 +63,15 @@ function setSliderImages(prefix, previewId, images) {
     const preview = document.getElementById(previewId);
     if (!preview) return;
     preview.innerHTML = normalized.length ? `<div class="admin-slider-preview">${normalized.map((url, index) => `<div class="admin-slider-preview__item"><img src="${escapeHtml(url)}" alt="Foto slider ${index + 1}"><span>Foto ${index + 1}${index === 0 ? ' · Utama' : ''}</span><button type="button" data-remove-slider-image data-prefix="${escapeHtml(prefix)}" data-preview-id="${escapeHtml(previewId)}" data-index="${index}" aria-label="Hapus foto ${index + 1}">×</button></div>`).join('')}</div>` : '';
+}
+
+function setHeroImages(images) {
+    const normalized = [...new Set(images.filter(Boolean))].slice(0, 10);
+    document.getElementById('post-hero-images').value = JSON.stringify(normalized);
+    document.getElementById('post-hero-image-url').value = normalized[0] || '';
+    const preview = document.getElementById('post-hero-image-preview');
+    if (!preview) return;
+    preview.innerHTML = normalized.length ? `<div class="admin-slider-preview">${normalized.map((url, index) => `<div class="admin-slider-preview__item"><img src="${escapeHtml(url)}" alt="Background header ${index + 1}"><span>Background ${index + 1}${index === 0 ? ' · Utama' : ''}</span><button type="button" data-remove-hero-image data-index="${index}" aria-label="Hapus background ${index + 1}">×</button></div>`).join('')}</div>` : '';
 }
 
 async function api(resource, options = {}) {
@@ -109,9 +118,14 @@ function updatePreview() {
     const pSub = document.getElementById('p-sub');
     const pImage = document.getElementById('p-img');
     const pBody = document.getElementById('p-body');
+    const pHero = document.getElementById('p-hero');
     if (pTitle) pTitle.textContent = title;
     if (pSub) pSub.textContent = article ? `Diterbitkan pada ${new Date().toLocaleDateString('id-ID')}` : (document.getElementById('prog-hero-subtitle')?.value || 'Subjudul program');
     if (pImage) { pImage.src = image; pImage.style.display = image ? 'block' : 'none'; }
+    if (pHero) {
+        const heroImage = article ? (parseGalleryImages(document.getElementById('post-hero-images')?.value, 10)[0] || '') : image;
+        pHero.style.backgroundImage = heroImage ? `linear-gradient(rgba(10, 38, 71, .76), rgba(10, 38, 71, .76)), url("${heroImage.replace(/["\\]/g, '\\$&')}")` : '';
+    }
     if (pBody) pBody.innerHTML = content || 'Mulai mengetik untuk melihat hasil...';
 }
 
@@ -132,6 +146,43 @@ function setupDropZone(zoneId, inputId, urlId, previewId, prefix) {
         event.preventDefault();
         uploadMainAndGalleryImages(Array.from(event.dataTransfer?.files || []), input, urlId, previewId, prefix);
     });
+}
+
+function setupHeroImageDropZone(zoneId, inputId) {
+    const zone = document.getElementById(zoneId);
+    const input = document.getElementById(inputId);
+    if (!zone || !input) return;
+    const upload = files => uploadHeroImages(files, input);
+    zone.addEventListener('click', event => {
+        if (!event.target.closest('[data-remove-hero-image]')) input.click();
+    });
+    input.addEventListener('change', () => upload(Array.from(input.files || [])));
+    zone.addEventListener('dragover', event => event.preventDefault());
+    zone.addEventListener('drop', event => {
+        event.preventDefault();
+        upload(Array.from(event.dataTransfer?.files || []));
+    });
+}
+
+async function uploadHeroImages(files, input) {
+    if (!files.length) return;
+    const existing = parseGalleryImages(document.getElementById('post-hero-images').value, 10);
+    if (existing.length + files.length > 10) {
+        alert(`Slider background maksimal 10 foto. Saat ini sudah ada ${existing.length} foto.`);
+        input.value = '';
+        return;
+    }
+    const uploaded = [];
+    for (const file of files) {
+        try {
+            uploaded.push(await uploadImageFileWithRetry(file));
+        } catch (error) {
+            alert(`${file.name} gagal diunggah: ${error.message}`);
+        }
+    }
+    if (uploaded.length) setHeroImages([...existing, ...uploaded]);
+    updatePreview();
+    input.value = '';
 }
 
 async function uploadMainAndGalleryImages(files, input, urlId, previewId, prefix) {
@@ -300,6 +351,9 @@ async function saveForm(event, resource) {
     if (resource === 'programs') {
         payload.hero_title = document.getElementById('prog-hero-title').value;
         payload.hero_subtitle = document.getElementById('prog-hero-subtitle').value;
+    } else {
+        payload.hero_image = document.getElementById('post-hero-image-url').value;
+        payload.hero_images = parseGalleryImages(document.getElementById('post-hero-images').value, 10);
     }
     try {
         await api(resource, { method: 'POST', body: JSON.stringify(payload) });
@@ -376,6 +430,7 @@ function renderList(containerId, items, resource) {
 
 document.addEventListener('click', event => {
     const removeSliderImage = event.target.closest('[data-remove-slider-image]');
+    const removeHeroImage = event.target.closest('[data-remove-hero-image]');
     const removeContentPhoto = event.target.closest('.content-photo-remove');
     const edit = event.target.closest('[data-edit]');
     const remove = event.target.closest('[data-delete]');
@@ -385,6 +440,12 @@ document.addEventListener('click', event => {
         const images = parseGalleryImages(document.getElementById(`${prefix}-gallery-images`).value);
         images.splice(Number(removeSliderImage.dataset.index), 1);
         setSliderImages(prefix, previewId, images);
+        updatePreview();
+    }
+    if (removeHeroImage) {
+        const images = parseGalleryImages(document.getElementById('post-hero-images').value, 10);
+        images.splice(Number(removeHeroImage.dataset.index), 1);
+        setHeroImages(images);
         updatePreview();
     }
     if (removeContentPhoto) {
@@ -431,6 +492,10 @@ async function editItem(resource, id) {
         if (resource === 'programs') {
             document.getElementById('prog-hero-title').value = data.hero_title || '';
             document.getElementById('prog-hero-subtitle').value = data.hero_subtitle || '';
+        } else {
+            const heroImages = parseGalleryImages(data.hero_images, 10);
+            if (!heroImages.length && data.hero_image) heroImages.push(data.hero_image);
+            setHeroImages(heroImages);
         }
         updatePreview();
         scrollTo({ top: 0, behavior: 'smooth' });
@@ -450,6 +515,7 @@ async function init() {
     setupAutomaticSlug('prog');
     setupDropZone('article-drop-zone', 'post-image-file', 'post-image-url', 'image-preview', 'post');
     setupDropZone('prog-drop-zone', 'prog-image-file', 'prog-image-url', 'prog-image-preview', 'prog');
+    setupHeroImageDropZone('post-hero-drop-zone', 'post-hero-image-file');
     setupContentPhotoUpload('post');
     setupContentPhotoUpload('prog');
     try {

@@ -244,7 +244,34 @@ function validatePayload(string $table, array $body): array
         'whatsapp_message' => mb_substr(trim((string) ($body['whatsapp_message'] ?? '')), 0, 500),
     ];
 
-    if ($table === 'programs') {
+    if ($table === 'posts') {
+        $heroImage = trim((string) ($body['hero_image'] ?? ''));
+        if ($heroImage !== '' && !filter_var($heroImage, FILTER_VALIDATE_URL) && !str_starts_with($heroImage, '/uploads/')) {
+            Http::json(['ok' => false, 'message' => 'Alamat background header artikel tidak valid.'], 422);
+        }
+        $heroImagesInput = $body['hero_images'] ?? [];
+        if (is_string($heroImagesInput)) {
+            $decodedHeroImages = json_decode($heroImagesInput, true);
+            $heroImagesInput = is_array($decodedHeroImages) ? $decodedHeroImages : [];
+        }
+        if (!is_array($heroImagesInput)) {
+            Http::json(['ok' => false, 'message' => 'Data slider background artikel tidak valid.'], 422);
+        }
+        $heroImages = [];
+        foreach (array_slice($heroImagesInput, 0, 10) as $heroImageItem) {
+            $url = trim((string) $heroImageItem);
+            if ($url === '') continue;
+            if (!filter_var($url, FILTER_VALIDATE_URL) && !str_starts_with($url, '/uploads/')) {
+                Http::json(['ok' => false, 'message' => 'Salah satu background header tidak valid.'], 422);
+            }
+            if (!in_array($url, $heroImages, true)) $heroImages[] = $url;
+        }
+        if ($heroImage !== '' && !in_array($heroImage, $heroImages, true)) array_unshift($heroImages, $heroImage);
+        $heroImages = array_slice($heroImages, 0, 10);
+        if ($heroImage === '' && $heroImages !== []) $heroImage = $heroImages[0];
+        $payload['hero_image'] = $heroImage;
+        $payload['hero_images'] = json_encode($heroImages, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    } else {
         $payload['hero_title'] = mb_substr(trim((string) ($body['hero_title'] ?? '')), 0, 180);
         $payload['hero_subtitle'] = mb_substr(trim((string) ($body['hero_subtitle'] ?? '')), 0, 300);
     }

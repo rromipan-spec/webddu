@@ -17,6 +17,8 @@ CREATE TABLE IF NOT EXISTS posts (
     slug VARCHAR(180) NOT NULL UNIQUE,
     image VARCHAR(500) NOT NULL DEFAULT '',
     gallery_images TEXT NOT NULL,
+    hero_image VARCHAR(500) NOT NULL DEFAULT '',
+    hero_images TEXT NOT NULL,
     excerpt TEXT NOT NULL,
     content MEDIUMTEXT NOT NULL,
     whatsapp_number VARCHAR(20) NOT NULL DEFAULT '',

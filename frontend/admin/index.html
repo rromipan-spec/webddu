@@ -31,8 +31,8 @@
         .visual-editor .content-photo-grid figure, .mock-content .content-photo-grid figure { margin: 0; }
         .visual-editor .content-photo-grid img, .mock-content .content-photo-grid img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 10px; }
         .visual-editor .content-photo-grid figure { position: relative; }
-        .content-photo-remove, [data-remove-slider-image] { position: absolute; top: 8px; right: 8px; z-index: 3; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0; color: #fff; background: #dc2626; border: 2px solid #fff; border-radius: 50%; box-shadow: 0 3px 10px rgba(0,0,0,.25); cursor: pointer; font-size: 1.25rem; font-weight: 800; line-height: 1; }
-        .content-photo-remove:hover, [data-remove-slider-image]:hover { background: #b91c1c; }
+        .content-photo-remove, [data-remove-slider-image], [data-remove-hero-image] { position: absolute; top: 8px; right: 8px; z-index: 3; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0; color: #fff; background: #dc2626; border: 2px solid #fff; border-radius: 50%; box-shadow: 0 3px 10px rgba(0,0,0,.25); cursor: pointer; font-size: 1.25rem; font-weight: 800; line-height: 1; }
+        .content-photo-remove:hover, [data-remove-slider-image]:hover, [data-remove-hero-image]:hover { background: #b91c1c; }
         .admin-slider-preview { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 14px; }
         .admin-slider-preview__item { position: relative; min-width: 0; text-align: left; }
         .admin-slider-preview__item img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 9px; }
@@ -235,6 +235,16 @@
                             </div>
                         </div>
                         <div class="form-group">
+                            <label>Slider Background Header Artikel (Maksimal 10 Foto)</label>
+                            <div class="drop-zone" id="post-hero-drop-zone">
+                                <p>Upload beberapa foto horizontal yang akan berganti otomatis di belakang judul</p>
+                                <input type="file" id="post-hero-image-file" hidden accept="image/jpeg,image/png,image/webp" multiple>
+                                <input type="hidden" id="post-hero-image-url">
+                                <input type="hidden" id="post-hero-images" value="[]">
+                                <div id="post-hero-image-preview"></div>
+                            </div>
+                        </div>
+                        <div class="form-group">
                             <label>Ringkasan</label>
                             <textarea id="post-excerpt" rows="2"></textarea>
                         </div>
@@ -294,6 +304,6 @@
         </main>
     </div>
 
-    <script type="module" src="admin.js?v=20260721-7"></script>
+    <script type="module" src="admin.js?v=20260721-9"></script>
 </body>
 </html>
