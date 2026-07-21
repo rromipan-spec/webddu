@@ -149,10 +149,10 @@
                             <input type="text" id="prog-slug" required placeholder="zakat-maal">
                         </div>
                         <div class="form-group">
-                            <label>Gambar Banner</label>
+                            <label>Gambar Banner + Galeri</label>
                             <div class="drop-zone" id="prog-drop-zone">
-                                <p>Klik/Tarik gambar banner program</p>
-                                <input type="file" id="prog-image-file" hidden accept="image/*">
+                                <p>Pilih beberapa foto: foto pertama menjadi banner, sisanya masuk galeri</p>
+                                <input type="file" id="prog-image-file" hidden accept="image/jpeg,image/png,image/webp" multiple>
                                 <input type="hidden" id="prog-image-url">
                                 <div id="prog-image-preview"></div>
                             </div>
@@ -223,10 +223,10 @@
                             <input type="text" id="post-slug" required placeholder="misal: kegiatan-ramadhan-2024">
                         </div>
                         <div class="form-group">
-                            <label>Gambar Utama (Drag & Drop File)</label>
+                            <label>Gambar Utama + Galeri</label>
                             <div class="drop-zone" id="article-drop-zone">
-                                <p>Tarik gambar ke sini atau klik untuk pilih file</p>
-                                <input type="file" id="post-image-file" hidden accept="image/*">
+                                <p>Pilih beberapa foto: foto pertama menjadi gambar utama, sisanya masuk galeri</p>
+                                <input type="file" id="post-image-file" hidden accept="image/jpeg,image/png,image/webp" multiple>
                                 <input type="hidden" id="post-image-url">
                                 <div id="image-preview"></div>
                             </div>
@@ -291,6 +291,6 @@
         </main>
     </div>
 
-    <script type="module" src="admin.js?v=20260721-2"></script>
+    <script type="module" src="admin.js?v=20260721-3"></script>
 </body>
 </html>

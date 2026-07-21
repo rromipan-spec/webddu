@@ -59,14 +59,24 @@ document.addEventListener('input', event => {
     if (event.target.closest('#post-form, #program-form')) updatePreview();
 });
 
-function setupDropZone(zoneId, inputId, urlId, previewId) {
+function setupDropZone(zoneId, inputId, urlId, previewId, prefix) {
     const zone = document.getElementById(zoneId);
     const input = document.getElementById(inputId);
     if (!zone || !input) return;
     zone.addEventListener('click', () => input.click());
-    input.addEventListener('change', () => uploadImage(input.files?.[0], urlId, previewId));
+    input.addEventListener('change', () => uploadMainAndGalleryImages(Array.from(input.files || []), input, urlId, previewId, prefix));
     zone.addEventListener('dragover', event => event.preventDefault());
-    zone.addEventListener('drop', event => { event.preventDefault(); uploadImage(event.dataTransfer?.files?.[0], urlId, previewId); });
+    zone.addEventListener('drop', event => {
+        event.preventDefault();
+        uploadMainAndGalleryImages(Array.from(event.dataTransfer?.files || []), input, urlId, previewId, prefix);
+    });
+}
+
+async function uploadMainAndGalleryImages(files, input, urlId, previewId, prefix) {
+    if (!files.length) return;
+    await uploadImage(files[0], urlId, previewId);
+    if (files.length > 1) await uploadContentPhotos(prefix, files.slice(1));
+    input.value = '';
 }
 
 async function uploadImage(file, urlId, previewId) {
@@ -331,8 +341,8 @@ async function deleteItem(resource, id) {
 }
 
 async function init() {
-    setupDropZone('article-drop-zone', 'post-image-file', 'post-image-url', 'image-preview');
-    setupDropZone('prog-drop-zone', 'prog-image-file', 'prog-image-url', 'prog-image-preview');
+    setupDropZone('article-drop-zone', 'post-image-file', 'post-image-url', 'image-preview', 'post');
+    setupDropZone('prog-drop-zone', 'prog-image-file', 'prog-image-url', 'prog-image-preview', 'prog');
     setupContentPhotoUpload('post');
     setupContentPhotoUpload('prog');
     try {

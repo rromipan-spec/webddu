@@ -1104,6 +1104,7 @@ p {
         height: calc(100vh - 30px); /* Tidak full tinggi */
         border-radius: 20px;
         background: linear-gradient(160deg, rgba(10, 30, 60, 0.98) 0%, rgba(5, 20, 40, 0.96) 100%); /* Gradasi Dark Blue Premium */
+        -webkit-backdrop-filter: blur(10px);
         backdrop-filter: blur(10px); /* Blur lebih kuat */
         border: 1px solid rgba(255, 255, 255, 0.08); /* Border tipis elegan */
         box-shadow: 0 20px 50px rgba(0,0,0,0.5); /* Shadow lebih dalam */
@@ -2067,6 +2068,7 @@ select {
         transform: none;
         border-radius: 12px;
         background: rgba(7, 31, 68, 0.94);
+        -webkit-backdrop-filter: blur(12px);
         backdrop-filter: blur(12px);
     }
 
@@ -2506,27 +2508,23 @@ select {
 
 .home-page .program-card-body h3,
 .home-page .blog-content h3 {
-    display: -webkit-box;
     margin: 0 0 13px;
+    max-height: calc(1.35em * 3);
     overflow: hidden;
     color: #09284e;
     font-size: clamp(1.2rem, 1.55vw, 1.45rem);
     font-weight: 800;
     line-height: 1.35;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
 }
 
 .home-page .program-card-body p,
 .home-page .blog-content p {
-    display: -webkit-box;
     margin: 0 0 18px;
+    max-height: calc(1.7em * 3);
     overflow: hidden;
     color: #556980;
     font-size: 0.98rem;
     line-height: 1.7;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
 }
 
 .home-page .blog-card-date {
