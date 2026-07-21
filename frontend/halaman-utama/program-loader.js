@@ -1,5 +1,5 @@
 import { siteFooterHtml } from './site-footer.js';
-import { detailSliderHtml, initDetailSliders, recordSliderImages } from './detail-slider.js';
+import { detailSliderHtml, initDetailSliders, recordSliderImages } from './detail-slider.js?v=20260721-2';
 
 const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, char => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'

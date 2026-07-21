@@ -28,16 +28,18 @@ export function detailSliderHtml(images, title, extraClass = '') {
         <div class="detail-slider-dots" aria-label="Pilih foto">
             ${images.map((image, index) => `<button type="button" class="detail-slider-dot${index === 0 ? ' active' : ''}" data-slide-index="${index}" aria-label="Tampilkan foto ${index + 1}"></button>`).join('')}
         </div>` : '';
-    return `<div class="detail-image-slider ${escapeHtml(extraClass)}" data-detail-slider>
+    return `<figure class="detail-image-slider ${escapeHtml(extraClass)}" data-detail-slider>
         ${images.map((image, index) => `<div class="detail-image-slide${index === 0 ? ' active' : ''}" aria-hidden="${index === 0 ? 'false' : 'true'}"><img src="${escapeHtml(image)}" alt="${escapeHtml(title)} - foto ${index + 1}"${index > 0 ? ' loading="lazy"' : ''}></div>`).join('')}
         ${controls}
-    </div>`;
+        <figcaption class="detail-slider-caption"><span>${escapeHtml(title)}</span><strong data-slider-count>${images.length > 1 ? `1 / ${images.length}` : '1 / 1'}</strong></figcaption>
+    </figure>`;
 }
 
 export function initDetailSliders(root = document) {
     root.querySelectorAll('[data-detail-slider]').forEach(slider => {
         const slides = Array.from(slider.querySelectorAll('.detail-image-slide'));
         const dots = Array.from(slider.querySelectorAll('.detail-slider-dot'));
+        const count = slider.querySelector('[data-slider-count]');
         if (slides.length < 2) return;
         let current = 0;
         let timer = null;
@@ -49,6 +51,7 @@ export function initDetailSliders(root = document) {
                 slide.setAttribute('aria-hidden', String(!active));
             });
             dots.forEach((dot, dotIndex) => dot.classList.toggle('active', dotIndex === current));
+            if (count) count.textContent = `${current + 1} / ${slides.length}`;
         };
         const stop = () => {
             if (timer) window.clearInterval(timer);
