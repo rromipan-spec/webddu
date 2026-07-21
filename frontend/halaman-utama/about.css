@@ -225,6 +225,17 @@
     .about-cta h2 { font-size: 2rem; line-height: 1.2; }
     .about-cta p { font-size: .96rem; line-height: 1.7; }
     .about-cta .about-btn { margin-top: 24px; }
+
+    .about-page .footer-grid {
+        grid-template-columns: 1fr;
+        text-align: left;
+    }
+
+    .about-page .footer-logo,
+    .about-page .contact-info li,
+    .about-page .social-links {
+        justify-content: flex-start;
+    }
 }
 
 @media (max-width: 480px) {
