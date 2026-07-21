@@ -67,7 +67,23 @@
         .stat-card-admin h4 { font-size: 0.9rem; color: #5a6e8a; text-transform: uppercase; margin-bottom: 10px; }
         .stat-card-admin .number { font-size: 2.5rem; font-weight: 800; color: #0a2647; }
 
-        @media (max-width: 768px) { .admin-container { grid-template-columns: 1fr; } .admin-slider-preview { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+        @media (max-width: 768px) {
+            .admin-container { grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 22px 12px 60px; }
+            .admin-sidebar { position: static; height: auto; }
+            .preview-group { display: none; }
+            .card { padding: 20px 16px; }
+            .admin-slider-preview { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+            .drop-zone { padding: 18px 12px; }
+            .form-group input, .form-group textarea, .toolbar select { font-size: 16px; }
+            .visual-editor { min-height: 360px; padding: 16px; font-size: 1rem; }
+            .post-list-item { align-items: flex-start; gap: 12px; }
+            .post-list-item > div { display: flex; flex: 0 0 auto; gap: 6px; }
+        }
+
+        @media (max-width: 420px) {
+            .admin-slider-preview { grid-template-columns: minmax(0, 1fr); }
+            .toolbar button, .toolbar select { flex: 1 1 auto; }
+        }
     </style>
 </head>
 <body>
