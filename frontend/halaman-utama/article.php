@@ -42,7 +42,26 @@ if ($socialImage === '') {
 }
 if ($socialImage === '') $socialImage = trim((string) ($post['hero_image'] ?? ''));
 if ($socialImage === '') $socialImage = $appUrl . '/asset/logo-dompet-dana-umat.png';
-if (str_starts_with($socialImage, '/')) $socialImage = $appUrl . $socialImage;
+
+$imageWidth = null;
+$imageHeight = null;
+$imageMime = null;
+if (str_starts_with($socialImage, '/')) {
+    $localImagePath = dirname(__DIR__) . str_replace('/', DIRECTORY_SEPARATOR, $socialImage);
+    if (is_file($localImagePath)) {
+        $imageInfo = @getimagesize($localImagePath);
+        if (is_array($imageInfo)) {
+            $imageWidth = (int) ($imageInfo[0] ?? 0) ?: null;
+            $imageHeight = (int) ($imageInfo[1] ?? 0) ?: null;
+            $imageMime = (string) ($imageInfo['mime'] ?? '') ?: null;
+        }
+    }
+    $socialImage = $appUrl . $socialImage;
+}
+
+// Versi URL berubah ketika artikel diperbarui sehingga cache thumbnail platform sosial ikut diperbarui.
+$imageVersion = strtotime((string) ($post['updated_at'] ?? $post['created_at'] ?? '')) ?: time();
+$socialImageMeta = $socialImage . (str_contains($socialImage, '?') ? '&' : '?') . 'v=' . $imageVersion;
 
 $publishedTime = date(DATE_ATOM, strtotime((string) ($post['created_at'] ?? 'now')) ?: time());
 $modifiedTime = date(DATE_ATOM, strtotime((string) ($post['updated_at'] ?? $post['created_at'] ?? 'now')) ?: time());
@@ -52,7 +71,7 @@ $structuredData = [
     '@type' => 'Article',
     'headline' => (string) $post['title'],
     'description' => $description,
-    'image' => [$socialImage],
+    'image' => [$socialImageMeta],
     'datePublished' => $publishedTime,
     'dateModified' => $modifiedTime,
     'mainEntityOfPage' => $canonicalUrl,
@@ -74,15 +93,18 @@ $socialMeta = '<title>' . $escape($pageTitle) . '</title>' . "\n"
     . '    <meta property="og:title" content="' . $escape((string) $post['title']) . '">' . "\n"
     . '    <meta property="og:description" content="' . $escape($description) . '">' . "\n"
     . '    <meta property="og:url" content="' . $escape($canonicalUrl) . '">' . "\n"
-    . '    <meta property="og:image" content="' . $escape($socialImage) . '">' . "\n"
-    . '    <meta property="og:image:secure_url" content="' . $escape($socialImage) . '">' . "\n"
+    . '    <meta property="og:image" content="' . $escape($socialImageMeta) . '">' . "\n"
+    . '    <meta property="og:image:secure_url" content="' . $escape($socialImageMeta) . '">' . "\n"
     . '    <meta property="og:image:alt" content="' . $escape((string) $post['title']) . '">' . "\n"
+    . ($imageWidth ? '    <meta property="og:image:width" content="' . $imageWidth . '">' . "\n" : '')
+    . ($imageHeight ? '    <meta property="og:image:height" content="' . $imageHeight . '">' . "\n" : '')
+    . ($imageMime ? '    <meta property="og:image:type" content="' . $escape($imageMime) . '">' . "\n" : '')
     . '    <meta property="article:published_time" content="' . $escape($publishedTime) . '">' . "\n"
     . '    <meta property="article:modified_time" content="' . $escape($modifiedTime) . '">' . "\n"
     . '    <meta name="twitter:card" content="summary_large_image">' . "\n"
     . '    <meta name="twitter:title" content="' . $escape((string) $post['title']) . '">' . "\n"
     . '    <meta name="twitter:description" content="' . $escape($description) . '">' . "\n"
-    . '    <meta name="twitter:image" content="' . $escape($socialImage) . '">' . "\n"
+    . '    <meta name="twitter:image" content="' . $escape($socialImageMeta) . '">' . "\n"
     . '    <script id="article-structured-data" type="application/ld+json">'
     . json_encode($structuredData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP)
     . '</script>';

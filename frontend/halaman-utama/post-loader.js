@@ -83,13 +83,13 @@ function relatedArticlesHtml(related) {
     </section>`;
 }
 
-function shareButtonsHtml(canonicalUrl, title) {
+function shareButtonsHtml(previewUrl, title, canonicalUrl = previewUrl) {
     const text = `${title} - ${SITE_NAME}`;
     return `<aside class="post-share" aria-label="Bagikan artikel">
         <span>Bagikan</span>
         <div class="post-share-buttons">
-            <a href="https://wa.me/?text=${encodeURIComponent(`${text} ${canonicalUrl}`)}" target="_blank" rel="noopener noreferrer" aria-label="Bagikan ke WhatsApp">WA</a>
-            <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(canonicalUrl)}" target="_blank" rel="noopener noreferrer" aria-label="Bagikan ke Facebook">f</a>
+            <a href="https://wa.me/?text=${encodeURIComponent(`${text} ${previewUrl}`)}" target="_blank" rel="noopener noreferrer" aria-label="Bagikan ke WhatsApp">WA</a>
+            <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(previewUrl)}" target="_blank" rel="noopener noreferrer" aria-label="Bagikan ke Facebook">f</a>
             <button type="button" data-copy-article-url="${escapeHtml(canonicalUrl)}" aria-label="Salin tautan artikel">🔗</button>
         </div>
         <span class="post-share-status" aria-live="polite"></span>
@@ -104,6 +104,8 @@ function renderPost(container, post, related) {
     const heroImages = articleHeroImages(post);
     const minutes = readingTime(post.content);
     const canonicalUrl = `${location.origin}/artikel/${encodeURIComponent(post.slug)}`;
+    const updatedAt = new Date(String(post.updated_at || post.created_at || '').replace(' ', 'T')).getTime();
+    const previewUrl = `${canonicalUrl}?v=${Number.isNaN(updatedAt) ? Date.now() : updatedAt}`;
     const summary = articleSummary(post);
     const summaryHtml = summary.length ? `<section class="post-summary" aria-labelledby="summary-title"><span>RINGKASAN ARTIKEL</span><h2 id="summary-title">Yang perlu Anda ketahui</h2><ul>${summary.map(point => `<li>${escapeHtml(point)}</li>`).join('')}</ul></section>` : '';
 
@@ -130,7 +132,7 @@ function renderPost(container, post, related) {
                     ${detailSliderHtml(sliderImages, post.title)}
                     ${summaryHtml}
                     <div class="post-full-content">${post.content}</div>
-                    ${shareButtonsHtml(canonicalUrl, post.title)}
+                    ${shareButtonsHtml(previewUrl, post.title, canonicalUrl)}
                 </article>
                 <section class="cta-minimal post-donation-cta" aria-labelledby="donation-title">
                     <div class="post-donation-icon" aria-hidden="true">♥</div>
@@ -147,7 +149,7 @@ function renderPost(container, post, related) {
 
     initDetailSliders(container);
     initPostHeroSlider(container);
-    setupShareButtons(container, canonicalUrl, post.title);
+    setupShareButtons(container, previewUrl, post.title, canonicalUrl);
 }
 
 function initPostHeroSlider(container) {
@@ -174,7 +176,7 @@ function initPostHeroSlider(container) {
     start();
 }
 
-function setupShareButtons(container, canonicalUrl, title) {
+function setupShareButtons(container, previewUrl, title, canonicalUrl) {
     container.querySelector('[data-copy-article-url]')?.addEventListener('click', async event => {
         const status = container.querySelector('.post-share-status');
         try {
@@ -190,7 +192,7 @@ function setupShareButtons(container, canonicalUrl, title) {
         share.type = 'button';
         share.className = 'post-native-share';
         share.textContent = 'Bagikan';
-        share.addEventListener('click', () => navigator.share({ title, text: `${title} - ${SITE_NAME}`, url: canonicalUrl }).catch(() => {}));
+        share.addEventListener('click', () => navigator.share({ title, text: `${title} - ${SITE_NAME}`, url: previewUrl }).catch(() => {}));
         container.querySelector('.post-share-buttons')?.appendChild(share);
     }
 }
