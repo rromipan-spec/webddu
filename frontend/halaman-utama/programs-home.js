@@ -11,10 +11,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!response.ok) throw new Error(result.message);
         const programs = result.data || [];
         grid.innerHTML = programs.length ? programs.map(program => `
-            <a class="gallery-item" href="/${encodeURIComponent(program.slug)}">
-                <img src="${escapeHtml(program.image)}" alt="${escapeHtml(program.title)}" loading="lazy">
-                <div class="program-card-title">${escapeHtml(program.title)}</div>
-                <div class="gallery-overlay"><div class="gallery-text"><h4>${escapeHtml(program.title)}</h4><p>${escapeHtml(program.excerpt || 'Klik untuk melihat detail program kebaikan ini.')}</p><span>Selengkapnya →</span></div></div>
+            <a class="gallery-item program-card" href="/${encodeURIComponent(program.slug)}">
+                <div class="program-card-media">
+                    <img src="${escapeHtml(program.image)}" alt="${escapeHtml(program.title)}" loading="lazy">
+                </div>
+                <div class="program-card-body">
+                    <h3>${escapeHtml(program.title)}</h3>
+                    <p>${escapeHtml(program.excerpt || 'Klik untuk melihat detail program kebaikan ini.')}</p>
+                    <span class="program-card-action">Lihat Program <span aria-hidden="true">→</span></span>
+                </div>
             </a>`).join('') : '<p style="text-align:center;grid-column:1/-1">Belum ada program yang tersedia.</p>';
     } catch (error) {
         console.error('Gagal memuat program:', error);

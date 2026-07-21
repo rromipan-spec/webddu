@@ -10,15 +10,27 @@ const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, char => ({
 
 function createBlogCard(post) {
     const slug = encodeURIComponent(post.slug);
-    return `<div class="blog-card">
-        <div class="blog-img"><img src="${escapeHtml(post.image)}" alt="${escapeHtml(post.title)}" loading="lazy"><span class="blog-date">${escapeHtml(formatDate(post.created_at))}</span></div>
-        <div class="blog-content"><h3>${escapeHtml(post.title)}</h3><p>${escapeHtml(post.excerpt)}</p><a href="post.html?slug=${slug}" class="read-more">Baca Selengkapnya →</a></div>
-    </div>`;
+    return `<article class="blog-card">
+        <a href="post.html?slug=${slug}" class="blog-card-link">
+            <div class="blog-img"><img src="${escapeHtml(post.image)}" alt="${escapeHtml(post.title)}" loading="lazy"></div>
+            <div class="blog-content">
+                <h3>${escapeHtml(post.title)}</h3>
+                <p>${escapeHtml(post.excerpt)}</p>
+                <time class="blog-card-date" datetime="${escapeHtml(formatIsoDate(post.created_at))}">${escapeHtml(formatDate(post.created_at))}</time>
+                <span class="read-more">Baca Selengkapnya <span aria-hidden="true">→</span></span>
+            </div>
+        </a>
+    </article>`;
 }
 
 function formatDate(value) {
     const date = new Date(value);
     return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function formatIsoDate(value) {
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? '' : date.toISOString().slice(0, 10);
 }
 
 function renderBlogPosts(posts = allPosts) {
