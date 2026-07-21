@@ -42,7 +42,7 @@ DirectoryIndex index.php index.html
 
     # Artikel memakai awalan /artikel/ agar tidak bertabrakan dengan program.
     RewriteCond %{REQUEST_URI} !^/(admin|api|uploads|halaman-utama)(/|$) [NC]
-    RewriteRule ^artikel/([a-z0-9]+(?:-[a-z0-9]+)*)/?$ halaman-utama/post.html?slug=$1 [L,QSA]
+    RewriteRule ^artikel/([a-z0-9]+(?:-[a-z0-9]+)*)/?$ halaman-utama/article.php?slug=$1 [L,QSA]
 
     # Slug satu tingkat di root domain digunakan sebagai halaman detail program.
     RewriteCond %{REQUEST_URI} !^/(admin|api|uploads|halaman-utama)(/|$) [NC]

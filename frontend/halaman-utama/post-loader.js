@@ -107,7 +107,7 @@ function renderPost(container, post, related) {
     const summary = articleSummary(post);
     const summaryHtml = summary.length ? `<section class="post-summary" aria-labelledby="summary-title"><span>RINGKASAN ARTIKEL</span><h2 id="summary-title">Yang perlu Anda ketahui</h2><ul>${summary.map(point => `<li>${escapeHtml(point)}</li>`).join('')}</ul></section>` : '';
 
-    updateSeo(post, heroImages[0] || sliderImages[0] || post.image || DEFAULT_IMAGE, canonicalUrl, minutes);
+    updateSeo(post, post.image || sliderImages[0] || heroImages[0] || DEFAULT_IMAGE, canonicalUrl, minutes);
     container.innerHTML = `
         <section class="post-hero">
             ${heroImages.map((image, index) => `<img class="post-hero-background${index === 0 ? ' active' : ''}" src="${escapeHtml(image)}" alt="" aria-hidden="true"${index > 0 ? ' loading="lazy"' : ''}>`).join('')}
