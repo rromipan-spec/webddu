@@ -11,7 +11,9 @@ const dateText = value => {
 
 document.addEventListener('DOMContentLoaded', async () => {
     const container = document.getElementById('post-container');
-    const slug = new URLSearchParams(location.search).get('slug');
+    const querySlug = new URLSearchParams(location.search).get('slug');
+    const routeSlug = location.pathname.match(/^\/artikel\/([a-z0-9]+(?:-[a-z0-9]+)*)\/?$/i)?.[1] || '';
+    const slug = querySlug || routeSlug;
     if (!container || !slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) return showError(container);
     try {
         const [postResponse, relatedResponse] = await Promise.all([
@@ -35,8 +37,8 @@ function renderPost(container, post, related) {
     const whatsappUrl = `https://wa.me/${encodeURIComponent(wa)}?text=${encodeURIComponent(message)}`;
     const sliderImages = recordSliderImages(post);
     const relatedHtml = related.length ? `<div class="related-section"><h3>Artikel Terkait</h3><div class="related-grid">${related.map(item => `
-        <div class="related-card"><a href="post.html?slug=${encodeURIComponent(item.slug)}" class="related-img-wrapper"><img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.title)}" loading="lazy"></a>
-        <div class="related-content"><h4><a href="post.html?slug=${encodeURIComponent(item.slug)}">${escapeHtml(item.title)}</a></h4><span class="related-date">${escapeHtml(dateText(item.created_at))}</span></div></div>`).join('')}</div></div>` : '';
+        <div class="related-card"><a href="/artikel/${encodeURIComponent(item.slug)}" class="related-img-wrapper"><img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.title)}" loading="lazy"></a>
+        <div class="related-content"><h4><a href="/artikel/${encodeURIComponent(item.slug)}">${escapeHtml(item.title)}</a></h4><span class="related-date">${escapeHtml(dateText(item.created_at))}</span></div></div>`).join('')}</div></div>` : '';
     container.innerHTML = `
         <section class="hero" style="background:#0a2b5e;padding:150px 0 80px"><div class="hero-overlay"></div><div class="container hero-container" style="text-align:center"><div class="hero-content" style="max-width:100%;margin:0 auto"><h5>ARTIKEL & BERITA</h5><h1 style="color:white">${escapeHtml(post.title)}</h1><p style="color:#e0e0e0;margin-bottom:0">Diterbitkan pada ${escapeHtml(dateText(post.created_at))}</p></div></div></section>
         <div class="container" style="padding:60px 20px"><article class="post-full" style="max-width:800px;margin:0 auto;background:white;padding:40px;border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,.05);position:relative;z-index:10">

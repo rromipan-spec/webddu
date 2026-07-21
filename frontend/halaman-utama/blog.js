@@ -11,7 +11,7 @@ const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, char => ({
 function createBlogCard(post) {
     const slug = encodeURIComponent(post.slug);
     return `<article class="blog-card">
-        <a href="post.html?slug=${slug}" class="blog-card-link">
+        <a href="/artikel/${slug}" class="blog-card-link">
             <div class="blog-img"><img src="${escapeHtml(post.image)}" alt="${escapeHtml(post.title)}" loading="lazy"></div>
             <div class="blog-content">
                 <h3>${escapeHtml(post.title)}</h3>

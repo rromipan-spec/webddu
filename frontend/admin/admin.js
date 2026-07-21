@@ -35,6 +35,27 @@ function parseGalleryImages(value) {
     }
 }
 
+function slugify(value) {
+    return String(value || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 180)
+        .replace(/-+$/g, '');
+}
+
+function setupAutomaticSlug(prefix) {
+    const title = document.getElementById(`${prefix}-title`);
+    const slug = document.getElementById(`${prefix}-slug`);
+    const id = document.getElementById(`${prefix}-id`);
+    if (!title || !slug) return;
+    title.addEventListener('input', () => {
+        if (!id?.value) slug.value = slugify(title.value);
+    });
+}
+
 function setSliderImages(prefix, previewId, images) {
     const normalized = [...new Set(images.filter(Boolean))].slice(0, 3);
     document.getElementById(`${prefix}-gallery-images`).value = JSON.stringify(normalized);
@@ -264,10 +285,11 @@ async function saveForm(event, resource) {
     event.preventDefault();
     updatePreview();
     const prefix = resource === 'posts' ? 'post' : 'prog';
+    const title = document.getElementById(`${prefix}-title`).value.trim();
     const payload = {
         id: document.getElementById(`${prefix}-id`).value,
-        title: document.getElementById(`${prefix}-title`).value.trim(),
-        slug: document.getElementById(`${prefix}-slug`).value.trim().toLowerCase(),
+        title,
+        slug: document.getElementById(`${prefix}-slug`).value.trim().toLowerCase() || slugify(title),
         image: document.getElementById(`${prefix}-image-url`).value,
         gallery_images: parseGalleryImages(document.getElementById(`${prefix}-gallery-images`).value),
         excerpt: document.getElementById(`${prefix}-excerpt`).value,
@@ -424,6 +446,8 @@ async function deleteItem(resource, id) {
 }
 
 async function init() {
+    setupAutomaticSlug('post');
+    setupAutomaticSlug('prog');
     setupDropZone('article-drop-zone', 'post-image-file', 'post-image-url', 'image-preview', 'post');
     setupDropZone('prog-drop-zone', 'prog-image-file', 'prog-image-url', 'prog-image-preview', 'prog');
     setupContentPhotoUpload('post');
