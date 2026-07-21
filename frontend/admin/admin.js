@@ -96,12 +96,15 @@ window.switchTab = tab => {
     document.getElementById('content-articles')?.classList.toggle('hidden', tab !== 'articles');
     document.getElementById('content-programs-admin')?.classList.toggle('hidden', tab !== 'programs-admin');
     document.getElementById('content-admins')?.classList.toggle('hidden', tab !== 'admins');
-    document.querySelector('.preview-group')?.classList.toggle('hidden', tab === 'dashboard' || tab === 'admins');
+    document.getElementById('content-history')?.classList.toggle('hidden', tab !== 'history');
+    document.querySelector('.preview-group')?.classList.toggle('hidden', tab === 'dashboard' || tab === 'admins' || tab === 'history');
     document.getElementById('tab-dashboard')?.classList.toggle('active', tab === 'dashboard');
     document.getElementById('tab-articles')?.classList.toggle('active', tab === 'articles');
     document.getElementById('tab-programs-admin')?.classList.toggle('active', tab === 'programs-admin');
     document.getElementById('tab-admins')?.classList.toggle('active', tab === 'admins');
+    document.getElementById('tab-history')?.classList.toggle('active', tab === 'history');
     if (tab === 'dashboard') fetchStats();
+    if (tab === 'history') loadHistory();
     updatePreview();
 };
 
@@ -393,11 +396,15 @@ async function saveForm(event, resource) {
         seo_title: document.getElementById(`${prefix}-seo-title`).value,
         seo_description: document.getElementById(`${prefix}-seo-description`).value,
         social_image: document.getElementById(`${prefix}-social-image`).value,
-        image_alt: document.getElementById(`${prefix}-image-alt`).value
+        image_alt: document.getElementById(`${prefix}-image-alt`).value,
+        category: document.getElementById(`${prefix}-category`).value,
+        status: document.getElementById(`${prefix}-status`).value,
+        published_at: document.getElementById(`${prefix}-published-at`).value
     };
     if (resource === 'programs') {
         payload.hero_title = document.getElementById('prog-hero-title').value;
         payload.hero_subtitle = document.getElementById('prog-hero-subtitle').value;
+        payload.featured_order = document.getElementById('prog-featured-order').value;
     } else {
         payload.hero_image = document.getElementById('post-hero-image-url').value;
         payload.hero_images = parseGalleryImages(document.getElementById('post-hero-images').value, 10);
@@ -428,7 +435,7 @@ async function showDashboard() {
 
 async function loadLists() {
     try {
-        const [posts, programs] = await Promise.all([api('posts'), api('programs')]);
+        const [posts, programs] = await Promise.all([api('posts&admin=1'), api('programs&admin=1')]);
         renderList('admin-post-list', posts.data || [], 'posts');
         renderList('admin-program-list', programs.data || [], 'programs');
         if (currentRole === 'super_admin') await loadAdminAccounts();
@@ -469,10 +476,53 @@ async function loadAdminAccounts() {
 function renderList(containerId, items, resource) {
     const container = document.getElementById(containerId);
     if (!container) return;
-    container.innerHTML = items.map(item => `<div class="post-list-item"><span><strong>${escapeHtml(item.title)}</strong></span><div>
+    container.innerHTML = items.map(item => {
+        const publication = publicationLabel(item);
+        const previewUrl = resource === 'posts'
+            ? `/artikel/${encodeURIComponent(item.slug)}?preview=1`
+            : `/${encodeURIComponent(item.slug)}?preview=1`;
+        return `<div class="post-list-item"><span><strong>${escapeHtml(item.title)}</strong><br><small>${escapeHtml(item.category || 'Umum')}</small><br><span class="status-badge ${publication.className}">${publication.label}</span></span><div>
+        <button type="button" class="btn-secondary" data-preview-url="${escapeHtml(previewUrl)}" style="padding:5px 10px;font-size:.8rem">Preview</button>
         <button type="button" class="btn-secondary" data-edit="${resource}" data-id="${Number(item.id)}" style="padding:5px 10px;font-size:.8rem">Edit</button>
         <button type="button" class="btn-delete" data-delete="${resource}" data-id="${Number(item.id)}">Hapus</button>
-    </div></div>`).join('');
+    </div></div>`;
+    }).join('');
+}
+
+function publicationLabel(item) {
+    if (item.status !== 'published') return { label: 'Draft', className: 'status-draft' };
+    const publishedAt = utcDate(item.published_at);
+    if (publishedAt && publishedAt.getTime() > Date.now()) {
+        return { label: `Terjadwal ${publishedAt.toLocaleString('id-ID')}`, className: 'status-scheduled' };
+    }
+    return { label: 'Dipublikasikan', className: 'status-published' };
+}
+
+function utcDate(value) {
+    if (!value) return null;
+    const date = new Date(String(value).replace(' ', 'T') + (String(value).includes('Z') ? '' : 'Z'));
+    return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function utcToLocalInput(value) {
+    const date = utcDate(value);
+    if (!date) return '';
+    const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+    return local.toISOString().slice(0, 16);
+}
+
+async function loadHistory() {
+    const container = document.getElementById('admin-history-list');
+    if (!container) return;
+    container.innerHTML = '<p>Memuat riwayat...</p>';
+    try {
+        const result = await api('history&limit=100');
+        container.innerHTML = (result.data || []).length
+            ? result.data.map(item => `<div class="history-item"><p>${escapeHtml(item.summary)}</p><small>${escapeHtml(item.admin_email || `Admin #${item.admin_id}`)} · ${escapeHtml(utcDate(item.created_at)?.toLocaleString('id-ID') || item.created_at)}</small></div>`).join('')
+            : '<p>Belum ada riwayat perubahan.</p>';
+    } catch (error) {
+        container.innerHTML = `<p>${escapeHtml(error.message)}</p>`;
+    }
 }
 
 document.addEventListener('click', event => {
@@ -480,6 +530,7 @@ document.addEventListener('click', event => {
     const removeHeroImage = event.target.closest('[data-remove-hero-image]');
     const removeContentPhoto = event.target.closest('.content-photo-remove');
     const clearSeoImage = event.target.closest('[data-clear-seo-image]');
+    const previewButton = event.target.closest('[data-preview-url]');
     const edit = event.target.closest('[data-edit]');
     const remove = event.target.closest('[data-delete]');
     if (removeSliderImage) {
@@ -509,6 +560,7 @@ document.addEventListener('click', event => {
     if (clearSeoImage) {
         setSeoImage(clearSeoImage.dataset.clearSeoImage, '');
     }
+    if (previewButton) window.open(previewButton.dataset.previewUrl, '_blank', 'noopener,noreferrer');
     if (edit) editItem(edit.dataset.edit, edit.dataset.id);
     if (remove) deleteItem(remove.dataset.delete, remove.dataset.id);
     const disableAdmin = event.target.closest('[data-disable-admin]');
@@ -529,12 +581,13 @@ async function editItem(resource, id) {
         const data = result.data;
         const prefix = resource === 'posts' ? 'post' : 'prog';
         window.switchTab(resource === 'posts' ? 'articles' : 'programs-admin');
-        ['id', 'title', 'slug', 'excerpt', 'seo-title', 'seo-description', 'image-alt'].forEach(field => {
+        ['id', 'title', 'slug', 'excerpt', 'seo-title', 'seo-description', 'image-alt', 'category', 'status'].forEach(field => {
             const databaseField = field.replaceAll('-', '_');
             const el = document.getElementById(`${prefix}-${field}`);
             if (el) el.value = data[databaseField] || '';
         });
         setSeoImage(prefix, data.social_image || '');
+        document.getElementById(`${prefix}-published-at`).value = utcToLocalInput(data.published_at);
         const previewId = resource === 'posts' ? 'image-preview' : 'prog-image-preview';
         const galleryImages = parseGalleryImages(data.gallery_images);
         if (!galleryImages.length && data.image) galleryImages.push(data.image);
@@ -548,6 +601,7 @@ async function editItem(resource, id) {
         if (resource === 'programs') {
             document.getElementById('prog-hero-title').value = data.hero_title || '';
             document.getElementById('prog-hero-subtitle').value = data.hero_subtitle || '';
+            document.getElementById('prog-featured-order').value = data.featured_order ?? '';
         } else {
             const heroImages = parseGalleryImages(data.hero_images, 10);
             if (!heroImages.length && data.hero_image) heroImages.push(data.hero_image);

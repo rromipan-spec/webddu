@@ -15,7 +15,7 @@
         .hidden { display: none !important; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-        .form-group input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; background: #fff; font-family: inherit; }
         .form-group textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; }
         .post-list-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #eee; }
         .btn-delete { background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
@@ -45,6 +45,18 @@
          .seo-settings h3 { margin: 0 0 8px; color: #0a2b5e; }
          .seo-settings-note { margin: 0 0 18px; color: #64748b; font-size: .9rem; }
          .seo-social-preview img { width: min(100%, 360px); aspect-ratio: 1200 / 630; object-fit: cover; border-radius: 10px; }
+        .publication-settings { margin: 18px 0 24px; padding: 20px; border: 1px solid #cbd8ea; border-radius: 12px; background: #f7faff; }
+        .publication-settings h3 { margin: 0 0 14px; color: #0a2b5e; }
+        .publication-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+        .publication-grid .form-group { margin: 0; }
+        .status-badge { display: inline-flex; align-items: center; margin-top: 5px; padding: 4px 9px; border-radius: 999px; font-size: .74rem; font-weight: 800; }
+        .status-published { color: #166534; background: #dcfce7; }
+        .status-draft { color: #92400e; background: #fef3c7; }
+        .status-scheduled { color: #1e40af; background: #dbeafe; }
+        .history-item { padding: 14px 0; border-bottom: 1px solid #e2e8f0; }
+        .history-item:last-child { border-bottom: 0; }
+        .history-item p { margin: 0 0 4px; font-weight: 700; color: #173b68; }
+        .history-item small { color: #64748b; }
         
         /* Live Preview Miniature (Super Mini Scale to see whole page at once) */
         .preview-group { flex-grow: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
@@ -78,10 +90,11 @@
             .card { padding: 20px 16px; }
             .admin-slider-preview { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
             .drop-zone { padding: 18px 12px; }
-            .form-group input, .form-group textarea, .toolbar select { font-size: 16px; }
+            .form-group input, .form-group textarea, .form-group select, .toolbar select { font-size: 16px; }
             .visual-editor { min-height: 360px; padding: 16px; font-size: 1rem; }
             .post-list-item { align-items: flex-start; gap: 12px; }
             .post-list-item > div { display: flex; flex: 0 0 auto; gap: 6px; }
+            .publication-grid { grid-template-columns: minmax(0, 1fr); }
         }
 
         @media (max-width: 420px) {
@@ -118,6 +131,7 @@
                     <button onclick="switchTab('dashboard')" id="tab-dashboard" class="active">📊 Dashboard</button>
                     <button onclick="switchTab('articles')" id="tab-articles">📰 Artikel</button>
                     <button onclick="switchTab('programs-admin')" id="tab-programs-admin">🚀 Program</button>
+                    <button onclick="switchTab('history')" id="tab-history">🕘 Riwayat</button>
                     <button onclick="switchTab('admins')" id="tab-admins" class="hidden">👤 Admin</button>
                     <hr style="margin: 15px 0;">
                     <button id="btn-logout" style="color: #e74c3c;">Logout</button>
@@ -172,6 +186,15 @@
                             <input type="text" id="prog-title" required placeholder="Contoh: Zakat Maal">
                         </div>
                         <input type="hidden" id="prog-slug">
+                        <section class="publication-settings" aria-labelledby="prog-publication-heading">
+                            <h3 id="prog-publication-heading">Publikasi Program</h3>
+                            <div class="publication-grid">
+                                <div class="form-group"><label>Kategori</label><input type="text" id="prog-category" maxlength="100" value="Umum" placeholder="Contoh: Wakaf"></div>
+                                <div class="form-group"><label>Status</label><select id="prog-status"><option value="draft">Draft</option><option value="published">Publikasi</option></select></div>
+                                <div class="form-group"><label>Jadwal Tayang (WIB)</label><input type="datetime-local" id="prog-published-at"><small>Kosongkan agar tayang sekarang ketika status Publikasi.</small></div>
+                                <div class="form-group"><label>Urutan Program Unggulan</label><input type="number" id="prog-featured-order" min="0" max="9999" placeholder="Kosongkan jika bukan unggulan"><small>Angka lebih kecil tampil lebih dahulu.</small></div>
+                            </div>
+                        </section>
                         <div class="form-group">
                             <label>Slider Utama Program (Maksimal 3 Foto)</label>
                             <div class="drop-zone" id="prog-drop-zone">
@@ -260,6 +283,14 @@
                             <input type="text" id="post-title" required placeholder="Judul yang menarik...">
                         </div>
                         <input type="hidden" id="post-slug">
+                        <section class="publication-settings" aria-labelledby="post-publication-heading">
+                            <h3 id="post-publication-heading">Publikasi Artikel</h3>
+                            <div class="publication-grid">
+                                <div class="form-group"><label>Kategori</label><input type="text" id="post-category" maxlength="100" value="Umum" placeholder="Contoh: Kabar Umat"></div>
+                                <div class="form-group"><label>Status</label><select id="post-status"><option value="draft">Draft</option><option value="published">Publikasi</option></select></div>
+                                <div class="form-group"><label>Jadwal Tayang (WIB)</label><input type="datetime-local" id="post-published-at"><small>Kosongkan agar tayang sekarang ketika status Publikasi.</small></div>
+                            </div>
+                        </section>
                         <div class="form-group">
                             <label>Slider Utama Artikel (Maksimal 3 Foto)</label>
                             <div class="drop-zone" id="article-drop-zone">
@@ -330,7 +361,7 @@
                             <div id="post-content-editor" class="visual-editor" contenteditable="true" placeholder="Tulis artikel Anda di sini..."></div>
                             <textarea id="post-content" class="hidden-input"></textarea>
                         </div>
-                        <button type="submit" class="btn btn-primary">Publikasikan Artikel</button>
+                        <button type="submit" class="btn btn-primary">Simpan Artikel</button>
                     </form>
                 </div>
                 <div class="card" style="margin-top: 20px;">
@@ -353,9 +384,17 @@
                 </div>
                 <div class="card" style="margin-top:20px"><h3>Daftar Admin</h3><div id="admin-account-list"></div></div>
             </div>
+
+            <div id="content-history" class="hidden">
+                <div class="card">
+                    <h2>Riwayat Perubahan</h2>
+                    <p>Catatan admin yang membuat, mengubah, atau menghapus artikel dan program.</p>
+                    <div id="admin-history-list"></div>
+                </div>
+            </div>
         </main>
     </div>
 
-    <script type="module" src="admin.js?v=20260721-11"></script>
+    <script type="module" src="admin.js?v=20260721-12"></script>
 </body>
 </html>

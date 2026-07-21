@@ -18,8 +18,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const slug = querySlug || routeSlug;
     if (!container || !slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) return showError(container);
     try {
+        const preview = new URLSearchParams(location.search).get('preview') === '1' ? '&preview=1' : '';
         const [postResponse, relatedResponse] = await Promise.all([
-            fetch(`${API}?resource=posts&slug=${encodeURIComponent(slug)}`, { credentials: 'same-origin' }),
+            fetch(`${API}?resource=posts&slug=${encodeURIComponent(slug)}${preview}`, { credentials: 'same-origin' }),
             fetch(`${API}?resource=posts&exclude=${encodeURIComponent(slug)}&limit=3`, { credentials: 'same-origin' })
         ]);
         const postResult = await postResponse.json();
@@ -116,11 +117,11 @@ function renderPost(container, post, related) {
             <div class="post-hero-overlay" aria-hidden="true"></div>
             <div class="container post-hero-inner">
                 <nav class="post-breadcrumb" aria-label="Breadcrumb"><a href="/">Beranda</a><span aria-hidden="true">›</span><a href="/#blog">Artikel</a><span aria-hidden="true">›</span><span aria-current="page">${escapeHtml(post.title)}</span></nav>
-                <span class="post-category">Artikel DDU</span>
+                <span class="post-category">${escapeHtml(post.category || 'Artikel DDU')}</span>
                 <h1>${escapeHtml(post.title)}</h1>
                 <div class="post-hero-meta">
                     <span>Oleh <strong>${SITE_NAME}</strong></span><span aria-hidden="true">•</span>
-                    <time datetime="${escapeHtml(String(post.created_at || '').slice(0, 10))}">${escapeHtml(dateText(post.created_at))}</time><span aria-hidden="true">•</span>
+                    <time datetime="${escapeHtml(String(post.published_at || post.created_at || '').slice(0, 10))}">${escapeHtml(dateText(post.published_at || post.created_at))}</time><span aria-hidden="true">•</span>
                     <span>${minutes} menit baca</span>
                 </div>
             </div>
@@ -250,7 +251,7 @@ function updateSeo(post, image, canonicalUrl, minutes) {
         headline: post.title,
         description,
         image: [absoluteImage],
-        datePublished: post.created_at,
+        datePublished: post.published_at || post.created_at,
         dateModified: post.updated_at || post.created_at,
         mainEntityOfPage: canonicalUrl,
         timeRequired: `PT${minutes}M`,

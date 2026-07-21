@@ -13,10 +13,10 @@ $urls = [
     ['loc' => $baseUrl . '/about.html', 'lastmod' => null],
 ];
 
-foreach (Database::connection()->query('SELECT slug, updated_at FROM posts ORDER BY updated_at DESC')->fetchAll() as $post) {
+foreach (Database::connection()->query("SELECT slug, updated_at FROM posts WHERE status = 'published' AND (published_at IS NULL OR published_at <= UTC_TIMESTAMP()) ORDER BY updated_at DESC")->fetchAll() as $post) {
     $urls[] = ['loc' => $baseUrl . '/artikel/' . rawurlencode((string) $post['slug']), 'lastmod' => $post['updated_at'] ?? null];
 }
-foreach (Database::connection()->query('SELECT slug, updated_at FROM programs ORDER BY updated_at DESC')->fetchAll() as $program) {
+foreach (Database::connection()->query("SELECT slug, updated_at FROM programs WHERE status = 'published' AND (published_at IS NULL OR published_at <= UTC_TIMESTAMP()) ORDER BY updated_at DESC")->fetchAll() as $program) {
     $urls[] = ['loc' => $baseUrl . '/' . rawurlencode((string) $program['slug']), 'lastmod' => $program['updated_at'] ?? null];
 }
 

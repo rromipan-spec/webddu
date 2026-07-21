@@ -95,6 +95,19 @@ if ($resource === 'admins') {
     Http::json(['ok' => false, 'message' => 'Metode tidak diizinkan.'], 405);
 }
 
+if ($resource === 'history') {
+    Auth::requireAdmin();
+    if ($method !== 'GET') {
+        Http::json(['ok' => false, 'message' => 'Metode tidak diizinkan.'], 405);
+    }
+    $limit = max(1, min(200, (int) ($_GET['limit'] ?? 100)));
+    $rows = Database::connection()->query(
+        "SELECT id, content_type, content_id, action, admin_id, admin_email, summary, created_at
+         FROM content_history ORDER BY created_at DESC, id DESC LIMIT {$limit}"
+    )->fetchAll();
+    Http::json(['ok' => true, 'data' => $rows]);
+}
+
 if (!in_array($resource, $allowedTables, true)) {
     Http::json(['ok' => false, 'message' => 'Endpoint tidak ditemukan.'], 404);
 }
@@ -124,6 +137,8 @@ function readResource(string $table): never
     $slug = trim((string) ($_GET['slug'] ?? ''));
     $limit = max(1, min(50, (int) ($_GET['limit'] ?? 50)));
     $exclude = trim((string) ($_GET['exclude'] ?? ''));
+    $preview = (string) ($_GET['preview'] ?? '') === '1' && Auth::check();
+    $publicWhere = "status = 'published' AND (published_at IS NULL OR published_at <= UTC_TIMESTAMP())";
 
     if ($id) {
         Auth::requireAdmin();
@@ -137,19 +152,37 @@ function readResource(string $table): never
         if (!preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $slug)) {
             Http::json(['ok' => false, 'message' => 'Slug tidak valid.'], 422);
         }
-        $stmt = $db->prepare("SELECT * FROM {$table} WHERE slug = :slug LIMIT 1");
+        $publicationFilter = $preview ? '' : " AND {$publicWhere}";
+        $stmt = $db->prepare("SELECT * FROM {$table} WHERE slug = :slug{$publicationFilter} LIMIT 1");
         $stmt->execute(['slug' => $slug]);
         $row = $stmt->fetch();
+        if ($row && !$preview) $row = publicContentRow($row);
         Http::json(['ok' => true, 'data' => $row ?: null], $row ? 200 : 404);
     }
 
+    $adminListing = (string) ($_GET['admin'] ?? '') === '1';
+    if ($adminListing) Auth::requireAdmin();
+    $where = $adminListing ? '' : "WHERE {$publicWhere}";
+    $order = $table === 'programs' && !$adminListing
+        ? 'ORDER BY CASE WHEN featured_order IS NULL THEN 1 ELSE 0 END, featured_order ASC, published_at DESC'
+        : 'ORDER BY created_at DESC';
+
     if ($exclude !== '' && preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $exclude)) {
-        $stmt = $db->prepare("SELECT * FROM {$table} WHERE slug <> :slug ORDER BY created_at DESC LIMIT {$limit}");
+        $where = $adminListing ? 'WHERE slug <> :slug' : "WHERE slug <> :slug AND {$publicWhere}";
+        $stmt = $db->prepare("SELECT * FROM {$table} {$where} {$order} LIMIT {$limit}");
         $stmt->execute(['slug' => $exclude]);
     } else {
-        $stmt = $db->query("SELECT * FROM {$table} ORDER BY created_at DESC LIMIT {$limit}");
+        $stmt = $db->query("SELECT * FROM {$table} {$where} {$order} LIMIT {$limit}");
     }
-    Http::json(['ok' => true, 'data' => $stmt->fetchAll()]);
+    $rows = $stmt->fetchAll();
+    if (!$adminListing) $rows = array_map('publicContentRow', $rows);
+    Http::json(['ok' => true, 'data' => $rows]);
+}
+
+function publicContentRow(array $row): array
+{
+    unset($row['created_by'], $row['updated_by']);
+    return $row;
 }
 
 function writeResource(string $table, array $body): never
@@ -159,23 +192,47 @@ function writeResource(string $table, array $body): never
     $db = Database::connection();
 
     try {
+        $db->beginTransaction();
         if ($id) {
+            $oldStatement = $db->prepare("SELECT * FROM {$table} WHERE id = :id LIMIT 1 FOR UPDATE");
+            $oldStatement->execute(['id' => $id]);
+            $before = $oldStatement->fetch();
+            if (!$before) {
+                $db->rollBack();
+                Http::json(['ok' => false, 'message' => 'Data tidak ditemukan.'], 404);
+            }
+            $fields['updated_by'] = Auth::id();
             $sets = implode(', ', array_map(static fn(string $field): string => "{$field} = :{$field}", array_keys($fields)));
             $fields['id'] = $id;
             $stmt = $db->prepare("UPDATE {$table} SET {$sets} WHERE id = :id");
             $stmt->execute($fields);
+            $afterStatement = $db->prepare("SELECT * FROM {$table} WHERE id = :id LIMIT 1");
+            $afterStatement->execute(['id' => $id]);
+            recordContentHistory($db, $table, (int) $id, 'updated', $before, $afterStatement->fetch() ?: []);
+            $db->commit();
             Http::json(['ok' => true, 'id' => $id]);
         }
 
+        $fields['created_by'] = Auth::id();
+        $fields['updated_by'] = Auth::id();
         $columns = implode(', ', array_keys($fields));
         $params = implode(', ', array_map(static fn(string $field): string => ":{$field}", array_keys($fields)));
         $stmt = $db->prepare("INSERT INTO {$table} ({$columns}) VALUES ({$params})");
         $stmt->execute($fields);
-        Http::json(['ok' => true, 'id' => (int) $db->lastInsertId()], 201);
+        $newId = (int) $db->lastInsertId();
+        $newStatement = $db->prepare("SELECT * FROM {$table} WHERE id = :id LIMIT 1");
+        $newStatement->execute(['id' => $newId]);
+        recordContentHistory($db, $table, $newId, 'created', [], $newStatement->fetch() ?: []);
+        $db->commit();
+        Http::json(['ok' => true, 'id' => $newId], 201);
     } catch (PDOException $error) {
+        if ($db->inTransaction()) $db->rollBack();
         if ((string) $error->getCode() === '23000') {
             Http::json(['ok' => false, 'message' => 'Slug sudah digunakan.'], 409);
         }
+        throw $error;
+    } catch (Throwable $error) {
+        if ($db->inTransaction()) $db->rollBack();
         throw $error;
     }
 }
@@ -186,9 +243,25 @@ function deleteResource(string $table): never
     if (!$id) {
         Http::json(['ok' => false, 'message' => 'ID tidak valid.'], 422);
     }
-    $stmt = Database::connection()->prepare("DELETE FROM {$table} WHERE id = :id");
-    $stmt->execute(['id' => $id]);
-    Http::json(['ok' => true, 'deleted' => $stmt->rowCount()]);
+    $db = Database::connection();
+    try {
+        $db->beginTransaction();
+        $oldStatement = $db->prepare("SELECT * FROM {$table} WHERE id = :id LIMIT 1 FOR UPDATE");
+        $oldStatement->execute(['id' => $id]);
+        $before = $oldStatement->fetch();
+        if (!$before) {
+            $db->rollBack();
+            Http::json(['ok' => false, 'message' => 'Data tidak ditemukan.'], 404);
+        }
+        $stmt = $db->prepare("DELETE FROM {$table} WHERE id = :id");
+        $stmt->execute(['id' => $id]);
+        recordContentHistory($db, $table, (int) $id, 'deleted', $before, []);
+        $db->commit();
+        Http::json(['ok' => true, 'deleted' => $stmt->rowCount()]);
+    } catch (Throwable $error) {
+        if ($db->inTransaction()) $db->rollBack();
+        throw $error;
+    }
 }
 
 function validatePayload(string $table, array $body): array
@@ -250,6 +323,9 @@ function validatePayload(string $table, array $body): array
         'seo_description' => mb_substr(trim((string) ($body['seo_description'] ?? '')), 0, 170),
         'social_image' => $socialImage,
         'image_alt' => mb_substr(trim((string) ($body['image_alt'] ?? '')), 0, 180),
+        'category' => publicationCategory($body['category'] ?? ''),
+        'status' => publicationStatus($body['status'] ?? ''),
+        'published_at' => publicationDate($body['status'] ?? '', $body['published_at'] ?? ''),
     ];
 
     if ($table === 'posts') {
@@ -282,8 +358,69 @@ function validatePayload(string $table, array $body): array
     } else {
         $payload['hero_title'] = mb_substr(trim((string) ($body['hero_title'] ?? '')), 0, 180);
         $payload['hero_subtitle'] = mb_substr(trim((string) ($body['hero_subtitle'] ?? '')), 0, 300);
+        $featuredOrder = trim((string) ($body['featured_order'] ?? ''));
+        if ($featuredOrder !== '' && (!ctype_digit($featuredOrder) || (int) $featuredOrder > 9999)) {
+            Http::json(['ok' => false, 'message' => 'Urutan program unggulan harus berupa angka 0 sampai 9999.'], 422);
+        }
+        $payload['featured_order'] = $featuredOrder === '' ? null : (int) $featuredOrder;
     }
     return $payload;
+}
+
+function publicationCategory(mixed $value): string
+{
+    $category = trim((string) $value);
+    if ($category === '') return 'Umum';
+    if (mb_strlen($category) > 100) {
+        Http::json(['ok' => false, 'message' => 'Kategori maksimal 100 karakter.'], 422);
+    }
+    return $category;
+}
+
+function publicationStatus(mixed $value): string
+{
+    $status = (string) $value;
+    if (!in_array($status, ['draft', 'published'], true)) {
+        Http::json(['ok' => false, 'message' => 'Status publikasi tidak valid.'], 422);
+    }
+    return $status;
+}
+
+function publicationDate(mixed $statusValue, mixed $dateValue): ?string
+{
+    $status = publicationStatus($statusValue);
+    if ($status === 'draft') return null;
+    $value = trim((string) $dateValue);
+    if ($value === '') return gmdate('Y-m-d H:i:s');
+    try {
+        $local = new DateTimeImmutable($value, new DateTimeZone('Asia/Jakarta'));
+        return $local->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s');
+    } catch (Throwable) {
+        Http::json(['ok' => false, 'message' => 'Jadwal publikasi tidak valid.'], 422);
+    }
+}
+
+function recordContentHistory(PDO $db, string $table, int $id, string $action, array $before, array $after): void
+{
+    $labels = ['posts' => 'artikel', 'programs' => 'program'];
+    $verbs = ['created' => 'Membuat', 'updated' => 'Mengubah', 'deleted' => 'Menghapus'];
+    $record = $after ?: $before;
+    $summary = ($verbs[$action] ?? 'Mengubah') . ' ' . ($labels[$table] ?? 'konten') . ' “' . (string) ($record['title'] ?? ('#' . $id)) . '”';
+    if ($action === 'updated' && ($before['status'] ?? null) !== ($after['status'] ?? null)) {
+        $summary .= ' (status: ' . (string) ($before['status'] ?? '-') . ' → ' . (string) ($after['status'] ?? '-') . ')';
+    }
+    $statement = $db->prepare(
+        'INSERT INTO content_history (content_type, content_id, action, admin_id, admin_email, summary)
+         VALUES (:content_type, :content_id, :action, :admin_id, :admin_email, :summary)'
+    );
+    $statement->execute([
+        'content_type' => $table,
+        'content_id' => $id,
+        'action' => $action,
+        'admin_id' => Auth::id(),
+        'admin_email' => Auth::email(),
+        'summary' => mb_substr($summary, 0, 500),
+    ]);
 }
 
 function handleUpload(): never

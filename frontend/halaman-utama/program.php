@@ -4,12 +4,14 @@ declare(strict_types=1);
 require_once dirname(__DIR__, 2) . '/backend/bootstrap.php';
 
 header('Content-Type: text/html; charset=utf-8');
-header('Cache-Control: public, max-age=300, stale-while-revalidate=600');
 
 $slug = strtolower(trim((string) ($_GET['slug'] ?? '')));
+$preview = (string) ($_GET['preview'] ?? '') === '1' && Auth::check();
+header('Cache-Control: ' . ($preview ? 'private, no-store, max-age=0' : 'public, max-age=300, stale-while-revalidate=600'));
 $program = null;
 if (preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $slug)) {
-    $statement = Database::connection()->prepare('SELECT * FROM programs WHERE slug = :slug LIMIT 1');
+    $publicationFilter = $preview ? '' : " AND status = 'published' AND (published_at IS NULL OR published_at <= UTC_TIMESTAMP())";
+    $statement = Database::connection()->prepare("SELECT * FROM programs WHERE slug = :slug{$publicationFilter} LIMIT 1");
     $statement->execute(['slug' => $slug]);
     $program = $statement->fetch() ?: null;
 }
@@ -94,4 +96,8 @@ $meta = '<title>' . $escape($metaTitle . ' - ' . $siteName) . '</title>' . "\n"
     . '    <script type="application/ld+json">' . json_encode($structuredData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) . '</script>';
 
 $template = str_replace('    <meta name="description" content="Detail program pemberdayaan dan sosial Dompet Dana Umat.">' . "\n", '', $template);
-echo str_replace('<title>Program - Dompet Dana Umat</title>', $meta, $template);
+$template = str_replace('<title>Program - Dompet Dana Umat</title>', $meta, $template);
+if ($preview) {
+    $template = str_replace('content="index, follow, max-image-preview:large"', 'content="noindex, nofollow"', $template);
+}
+echo $template;

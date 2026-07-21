@@ -2506,6 +2506,16 @@ select {
     padding: 24px 25px 26px;
 }
 
+.content-category {
+    display: inline-flex;
+    margin-bottom: 10px;
+    color: #1e5ba8;
+    font-size: .76rem;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
 .home-page .program-card-body h3,
 .home-page .blog-content h3 {
     margin: 0 0 13px;

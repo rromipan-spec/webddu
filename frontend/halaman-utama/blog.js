@@ -14,9 +14,10 @@ function createBlogCard(post) {
         <a href="/artikel/${slug}" class="blog-card-link">
             <div class="blog-img"><img src="${escapeHtml(post.image)}" alt="${escapeHtml(post.image_alt || post.title)}" width="800" height="520" loading="lazy" decoding="async"></div>
             <div class="blog-content">
+                <span class="content-category">${escapeHtml(post.category || 'Umum')}</span>
                 <h3>${escapeHtml(post.title)}</h3>
                 <p>${escapeHtml(post.excerpt)}</p>
-                <time class="blog-card-date" datetime="${escapeHtml(formatIsoDate(post.created_at))}">${escapeHtml(formatDate(post.created_at))}</time>
+                <time class="blog-card-date" datetime="${escapeHtml(formatIsoDate(post.published_at || post.created_at))}">${escapeHtml(formatDate(post.published_at || post.created_at))}</time>
                 <span class="read-more">Baca Selengkapnya <span aria-hidden="true">→</span></span>
             </div>
         </a>

@@ -27,9 +27,15 @@ CREATE TABLE IF NOT EXISTS posts (
     seo_description VARCHAR(170) NOT NULL DEFAULT '',
     social_image VARCHAR(500) NOT NULL DEFAULT '',
     image_alt VARCHAR(180) NOT NULL DEFAULT '',
+    category VARCHAR(100) NOT NULL DEFAULT 'Umum',
+    status ENUM('draft', 'published') NOT NULL DEFAULT 'draft',
+    published_at DATETIME NULL,
+    created_by BIGINT UNSIGNED NULL,
+    updated_by BIGINT UNSIGNED NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_posts_created_at (created_at)
+    INDEX idx_posts_created_at (created_at),
+    INDEX idx_posts_publication (status, published_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS programs (
@@ -48,9 +54,30 @@ CREATE TABLE IF NOT EXISTS programs (
     seo_description VARCHAR(170) NOT NULL DEFAULT '',
     social_image VARCHAR(500) NOT NULL DEFAULT '',
     image_alt VARCHAR(180) NOT NULL DEFAULT '',
+    category VARCHAR(100) NOT NULL DEFAULT 'Umum',
+    status ENUM('draft', 'published') NOT NULL DEFAULT 'draft',
+    published_at DATETIME NULL,
+    featured_order INT UNSIGNED NULL,
+    created_by BIGINT UNSIGNED NULL,
+    updated_by BIGINT UNSIGNED NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_programs_created_at (created_at)
+    INDEX idx_programs_created_at (created_at),
+    INDEX idx_programs_publication (status, published_at),
+    INDEX idx_programs_featured (featured_order)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS content_history (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    content_type ENUM('posts', 'programs') NOT NULL,
+    content_id BIGINT UNSIGNED NOT NULL,
+    action ENUM('created', 'updated', 'deleted') NOT NULL,
+    admin_id BIGINT UNSIGNED NOT NULL,
+    admin_email VARCHAR(190) NOT NULL DEFAULT '',
+    summary VARCHAR(500) NOT NULL DEFAULT '',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_history_content (content_type, content_id, created_at),
+    INDEX idx_history_admin (admin_id, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS stats (

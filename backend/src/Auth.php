@@ -90,6 +90,11 @@ final class Auth
         return (int) ($_SESSION['admin_id'] ?? 0);
     }
 
+    public static function email(): string
+    {
+        return (string) ($_SESSION['admin_email'] ?? '');
+    }
+
     public static function requireSuperAdmin(): void
     {
         self::requireAdmin();

@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <img src="${escapeHtml(program.image)}" alt="${escapeHtml(program.image_alt || program.title)}" width="800" height="520" loading="lazy" decoding="async">
                 </div>
                 <div class="program-card-body">
+                    <span class="content-category">${escapeHtml(program.category || 'Umum')}</span>
                     <h3>${escapeHtml(program.title)}</h3>
                     <p>${escapeHtml(program.excerpt || 'Klik untuk melihat detail program kebaikan ini.')}</p>
                     <span class="program-card-action">Lihat Program <span aria-hidden="true">→</span></span>

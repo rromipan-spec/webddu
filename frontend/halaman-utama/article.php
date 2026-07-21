@@ -4,12 +4,14 @@ declare(strict_types=1);
 require_once dirname(__DIR__, 2) . '/backend/bootstrap.php';
 
 header('Content-Type: text/html; charset=utf-8');
-header('Cache-Control: public, max-age=300, stale-while-revalidate=600');
 
 $slug = strtolower(trim((string) ($_GET['slug'] ?? '')));
+$preview = (string) ($_GET['preview'] ?? '') === '1' && Auth::check();
+header('Cache-Control: ' . ($preview ? 'private, no-store, max-age=0' : 'public, max-age=300, stale-while-revalidate=600'));
 $post = null;
 if (preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $slug)) {
-    $statement = Database::connection()->prepare('SELECT * FROM posts WHERE slug = :slug LIMIT 1');
+    $publicationFilter = $preview ? '' : " AND status = 'published' AND (published_at IS NULL OR published_at <= UTC_TIMESTAMP())";
+    $statement = Database::connection()->prepare("SELECT * FROM posts WHERE slug = :slug{$publicationFilter} LIMIT 1");
     $statement->execute(['slug' => $slug]);
     $post = $statement->fetch() ?: null;
 }
@@ -82,7 +84,7 @@ if (str_starts_with($socialImage, '/')) {
 $imageVersion = strtotime((string) ($post['updated_at'] ?? $post['created_at'] ?? '')) ?: time();
 $socialImageMeta = $socialImage . (str_contains($socialImage, '?') ? '&' : '?') . 'v=' . $imageVersion;
 
-$publishedTime = date(DATE_ATOM, strtotime((string) ($post['created_at'] ?? 'now')) ?: time());
+$publishedTime = date(DATE_ATOM, strtotime((string) ($post['published_at'] ?? $post['created_at'] ?? 'now')) ?: time());
 $modifiedTime = date(DATE_ATOM, strtotime((string) ($post['updated_at'] ?? $post['created_at'] ?? 'now')) ?: time());
 $imageAlt = trim((string) ($post['image_alt'] ?? '')) ?: (string) $post['title'];
 $pageTitle = $metaTitle . ' - ' . $siteName;
@@ -90,6 +92,7 @@ $structuredData = [
     '@context' => 'https://schema.org',
     '@type' => 'Article',
     'headline' => (string) $post['title'],
+    'articleSection' => (string) ($post['category'] ?? 'Umum'),
     'description' => $description,
     'image' => [$socialImageMeta],
     'datePublished' => $publishedTime,
@@ -130,4 +133,7 @@ $socialMeta = '<title>' . $escape($pageTitle) . '</title>' . "\n"
     . '</script>';
 
 $template = str_replace('<title>Artikel - Dompet Dana Umat</title>', $socialMeta, $template);
+if ($preview) {
+    $template = str_replace('content="index, follow, max-image-preview:large"', 'content="noindex, nofollow"', $template);
+}
 echo $template;
