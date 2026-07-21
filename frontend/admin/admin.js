@@ -5,6 +5,13 @@ const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, char => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
 }[char]));
 
+function managedImageVariant(url, variant) {
+    return String(url || '').replace(
+        /(\/uploads\/[a-f0-9]{32})\/(?:thumb|card|content|hero|social)\.(?:webp|jpg)$/i,
+        `$1/${variant}.${variant === 'social' ? 'jpg' : 'webp'}`
+    );
+}
+
 function serializeEditorContent(editor) {
     if (!editor) return '';
     const clone = editor.cloneNode(true);
@@ -121,7 +128,7 @@ function updatePreview() {
     const pHero = document.getElementById('p-hero');
     if (pTitle) pTitle.textContent = title;
     if (pSub) pSub.textContent = article ? `Diterbitkan pada ${new Date().toLocaleDateString('id-ID')}` : (document.getElementById('prog-hero-subtitle')?.value || 'Subjudul program');
-    if (pImage) { pImage.src = image; pImage.style.display = image ? 'block' : 'none'; }
+    if (pImage) { pImage.src = managedImageVariant(image, 'thumb'); pImage.style.display = image ? 'block' : 'none'; }
     if (pHero) {
         const heroImage = article ? (parseGalleryImages(document.getElementById('post-hero-images')?.value, 10)[0] || '') : image;
         pHero.style.backgroundImage = heroImage ? `linear-gradient(rgba(10, 38, 71, .76), rgba(10, 38, 71, .76)), url("${heroImage.replace(/["\\]/g, '\\$&')}")` : '';
@@ -175,7 +182,7 @@ async function uploadHeroImages(files, input) {
     const uploaded = [];
     for (const file of files) {
         try {
-            uploaded.push(await uploadImageFileWithRetry(file));
+            uploaded.push(await uploadImageFileWithRetry(file, 3, 'hero'));
         } catch (error) {
             alert(`${file.name} gagal diunggah: ${error.message}`);
         }
@@ -226,21 +233,21 @@ function validateImageFile(file) {
     }
 }
 
-async function uploadImageFile(file) {
+async function uploadImageFile(file, variant = 'card') {
     validateImageFile(file);
     const form = new FormData();
     form.append('image', file);
     const result = await api('upload', { method: 'POST', body: form });
-    return result.url;
+    return result.variants?.[variant] || result.url;
 }
 
 const wait = milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds));
 
-async function uploadImageFileWithRetry(file, attempts = 3) {
+async function uploadImageFileWithRetry(file, attempts = 3, variant = 'card') {
     let lastError = new Error('Upload gagal.');
     for (let attempt = 1; attempt <= attempts; attempt += 1) {
         try {
-            return await uploadImageFile(file);
+            return await uploadImageFile(file, variant);
         } catch (error) {
             lastError = error;
             if (attempt < attempts) await wait(attempt * 700);
@@ -283,7 +290,7 @@ async function uploadContentPhotos(prefix, files) {
     for (let index = 0; index < files.length; index += 1) {
         if (status) status.textContent = `Mengunggah ${index + 1}/${files.length}...`;
         try {
-            uploaded.push(await uploadImageFileWithRetry(files[index]));
+            uploaded.push(await uploadImageFileWithRetry(files[index], 3, 'content'));
         } catch (error) {
             failed.push(`${files[index].name}: ${error.message || 'Upload gagal'}`);
         }

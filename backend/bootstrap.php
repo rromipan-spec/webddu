@@ -7,6 +7,7 @@ require_once __DIR__ . '/src/Database.php';
 require_once __DIR__ . '/src/LoginThrottle.php';
 require_once __DIR__ . '/src/Auth.php';
 require_once __DIR__ . '/src/Sanitizer.php';
+require_once __DIR__ . '/src/ImageProcessor.php';
 
 set_exception_handler(static function (Throwable $error): void {
     $log = sprintf("[%s] %s in %s:%d\n", date('c'), $error->getMessage(), $error->getFile(), $error->getLine());

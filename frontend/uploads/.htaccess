@@ -3,3 +3,6 @@ Options -Indexes
     Require all denied
 </FilesMatch>
 
+<IfModule mod_headers.c>
+    Header set Cache-Control "public, max-age=31536000, immutable"
+</IfModule>

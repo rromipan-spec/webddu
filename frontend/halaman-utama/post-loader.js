@@ -1,4 +1,4 @@
-import { detailSliderHtml, initDetailSliders, recordSliderImages } from './detail-slider.js?v=20260721-2';
+import { detailSliderHtml, initDetailSliders, recordSliderImages } from './detail-slider.js?v=20260721-3';
 
 const API = '../api/index.php';
 const SITE_NAME = 'Dompet Dana Umat';
@@ -112,7 +112,7 @@ function renderPost(container, post, related) {
     updateSeo(post, post.image || sliderImages[0] || heroImages[0] || DEFAULT_IMAGE, canonicalUrl, minutes);
     container.innerHTML = `
         <section class="post-hero">
-            ${heroImages.map((image, index) => `<img class="post-hero-background${index === 0 ? ' active' : ''}" src="${escapeHtml(image)}" alt="" aria-hidden="true"${index > 0 ? ' loading="lazy"' : ''}>`).join('')}
+            ${heroImages.map((image, index) => `<img class="post-hero-background${index === 0 ? ' active' : ''}" src="${escapeHtml(image)}" alt="" width="1920" height="1080" decoding="async" aria-hidden="true"${index > 0 ? ' loading="lazy"' : ' fetchpriority="high"'}>`).join('')}
             <div class="post-hero-overlay" aria-hidden="true"></div>
             <div class="container post-hero-inner">
                 <nav class="post-breadcrumb" aria-label="Breadcrumb"><a href="/">Beranda</a><span aria-hidden="true">›</span><a href="/#blog">Artikel</a><span aria-hidden="true">›</span><span aria-current="page">${escapeHtml(post.title)}</span></nav>

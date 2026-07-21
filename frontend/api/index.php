@@ -280,6 +280,9 @@ function validatePayload(string $table, array $body): array
 
 function handleUpload(): never
 {
+    if (!extension_loaded('gd') || !function_exists('imagewebp')) {
+        Http::json(['ok' => false, 'message' => 'Pemrosesan gambar WebP belum aktif di server. Hubungi administrator hosting.'], 503);
+    }
     if (!isset($_FILES['image']) || !is_uploaded_file($_FILES['image']['tmp_name'])) {
         Http::json(['ok' => false, 'message' => 'File gambar tidak ditemukan.'], 422);
     }
@@ -293,15 +296,14 @@ function handleUpload(): never
     if (!isset($allowed[$mime])) {
         Http::json(['ok' => false, 'message' => 'Hanya JPG, PNG, dan WebP yang diperbolehkan.'], 422);
     }
-    $name = bin2hex(random_bytes(16)) . '.' . $allowed[$mime];
     $targetDir = dirname(__DIR__) . '/uploads';
-    if (!is_dir($targetDir) && !mkdir($targetDir, 0755, true) && !is_dir($targetDir)) {
-        throw new RuntimeException('Folder upload tidak dapat dibuat.');
+    $keepOriginal = filter_var(Config::get('KEEP_UPLOAD_ORIGINAL', 'false'), FILTER_VALIDATE_BOOLEAN);
+    try {
+        $result = ImageProcessor::process($file['tmp_name'], $mime, $targetDir, $keepOriginal);
+    } catch (InvalidArgumentException $error) {
+        Http::json(['ok' => false, 'message' => $error->getMessage()], 422);
     }
-    if (!move_uploaded_file($file['tmp_name'], $targetDir . '/' . $name)) {
-        throw new RuntimeException('Gagal menyimpan gambar.');
-    }
-    Http::json(['ok' => true, 'url' => '/uploads/' . $name], 201);
+    Http::json(['ok' => true] + $result, 201);
 }
 
 function saveAdmin(array $body): never

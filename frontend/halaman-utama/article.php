@@ -43,6 +43,21 @@ if ($socialImage === '') {
 if ($socialImage === '') $socialImage = trim((string) ($post['hero_image'] ?? ''));
 if ($socialImage === '') $socialImage = $appUrl . '/asset/logo-dompet-dana-umat.png';
 
+// Upload baru memiliki varian JPEG 1200x630 khusus pratinjau WhatsApp/Facebook.
+if (str_starts_with($socialImage, '/uploads/')) {
+    $socialVariant = preg_replace(
+        '#(/uploads/[a-f0-9]{32})/(?:thumb|card|content|hero|social)\.(?:webp|jpg)$#i',
+        '$1/social.jpg',
+        $socialImage
+    );
+    if (is_string($socialVariant) && $socialVariant !== $socialImage) {
+        $socialVariantPath = dirname(__DIR__) . str_replace('/', DIRECTORY_SEPARATOR, $socialVariant);
+        if (is_file($socialVariantPath)) {
+            $socialImage = $socialVariant;
+        }
+    }
+}
+
 $imageWidth = null;
 $imageHeight = null;
 $imageMime = null;

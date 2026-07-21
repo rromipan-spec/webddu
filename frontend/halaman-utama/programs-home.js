@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         grid.innerHTML = programs.length ? programs.map(program => `
             <a class="gallery-item program-card" href="/${encodeURIComponent(program.slug)}">
                 <div class="program-card-media">
-                    <img src="${escapeHtml(program.image)}" alt="${escapeHtml(program.title)}" loading="lazy">
+                    <img src="${escapeHtml(program.image)}" alt="${escapeHtml(program.title)}" width="800" height="520" loading="lazy" decoding="async">
                 </div>
                 <div class="program-card-body">
                     <h3>${escapeHtml(program.title)}</h3>

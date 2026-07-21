@@ -214,7 +214,7 @@
                             <button type="button" onclick="formatDoc('insertHorizontalRule')">Garis Pemisah</button>
                             <button type="button" id="prog-add-content-photos">+ Tambah Foto</button>
                             <input type="file" id="prog-content-image-files" hidden accept="image/jpeg,image/png,image/webp" multiple>
-                            <span id="prog-content-upload-status" class="content-upload-status" aria-live="polite">Maksimal 20 foto, 5 MB per foto.</span>
+                            <span id="prog-content-upload-status" class="content-upload-status" aria-live="polite">Maksimal 20 foto, 5 MB dan 24 MP per foto. Otomatis dioptimalkan ke WebP.</span>
                         </div>
                         <div class="editor-area">
                             <div id="prog-content-editor" class="visual-editor" contenteditable="true"></div>
@@ -288,7 +288,7 @@
                             <button type="button" onclick="formatDoc('insertHorizontalRule')">Garis Pemisah</button>
                             <button type="button" id="post-add-content-photos">+ Tambah Foto</button>
                             <input type="file" id="post-content-image-files" hidden accept="image/jpeg,image/png,image/webp" multiple>
-                            <span id="post-content-upload-status" class="content-upload-status" aria-live="polite">Maksimal 20 foto, 5 MB per foto.</span>
+                            <span id="post-content-upload-status" class="content-upload-status" aria-live="polite">Maksimal 20 foto, 5 MB dan 24 MP per foto. Otomatis dioptimalkan ke WebP.</span>
                         </div>
                         <div class="editor-area">
                             <div id="post-content-editor" class="visual-editor" contenteditable="true" placeholder="Tulis artikel Anda di sini..."></div>
@@ -320,6 +320,6 @@
         </main>
     </div>
 
-    <script type="module" src="admin.js?v=20260721-9"></script>
+    <script type="module" src="admin.js?v=20260721-10"></script>
 </body>
 </html>
