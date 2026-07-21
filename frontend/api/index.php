@@ -206,6 +206,28 @@ function validatePayload(string $table, array $body): array
     if ($image !== '' && !filter_var($image, FILTER_VALIDATE_URL) && !str_starts_with($image, '/uploads/')) {
         Http::json(['ok' => false, 'message' => 'Alamat gambar tidak valid.'], 422);
     }
+    $galleryInput = $body['gallery_images'] ?? [];
+    if (is_string($galleryInput)) {
+        $decodedGallery = json_decode($galleryInput, true);
+        $galleryInput = is_array($decodedGallery) ? $decodedGallery : [];
+    }
+    if (!is_array($galleryInput)) {
+        Http::json(['ok' => false, 'message' => 'Data slider gambar tidak valid.'], 422);
+    }
+    $galleryImages = [];
+    foreach (array_slice($galleryInput, 0, 3) as $galleryImage) {
+        $url = trim((string) $galleryImage);
+        if ($url === '') continue;
+        if (!filter_var($url, FILTER_VALIDATE_URL) && !str_starts_with($url, '/uploads/')) {
+            Http::json(['ok' => false, 'message' => 'Salah satu gambar slider tidak valid.'], 422);
+        }
+        if (!in_array($url, $galleryImages, true)) $galleryImages[] = $url;
+    }
+    if ($image !== '' && !in_array($image, $galleryImages, true)) {
+        array_unshift($galleryImages, $image);
+        $galleryImages = array_slice($galleryImages, 0, 3);
+    }
+    if ($image === '' && $galleryImages !== []) $image = $galleryImages[0];
     $wa = preg_replace('/\D+/', '', (string) ($body['whatsapp_number'] ?? ''));
     if ($wa !== '' && (strlen($wa) < 8 || strlen($wa) > 16)) {
         Http::json(['ok' => false, 'message' => 'Nomor WhatsApp tidak valid.'], 422);
@@ -215,6 +237,7 @@ function validatePayload(string $table, array $body): array
         'title' => $title,
         'slug' => $slug,
         'image' => $image,
+        'gallery_images' => json_encode($galleryImages, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
         'excerpt' => mb_substr(trim((string) ($body['excerpt'] ?? '')), 0, 1000),
         'content' => Sanitizer::richText((string) ($body['content'] ?? '')),
         'whatsapp_number' => $wa,

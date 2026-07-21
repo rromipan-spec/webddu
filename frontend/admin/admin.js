@@ -5,6 +5,45 @@ const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, char => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
 }[char]));
 
+function serializeEditorContent(editor) {
+    if (!editor) return '';
+    const clone = editor.cloneNode(true);
+    clone.querySelectorAll('.content-photo-remove').forEach(button => button.remove());
+    return clone.innerHTML;
+}
+
+function addGalleryRemoveButtons(editor) {
+    editor?.querySelectorAll('.content-photo-grid figure').forEach(figure => {
+        if (figure.querySelector('.content-photo-remove')) return;
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'content-photo-remove';
+        button.contentEditable = 'false';
+        button.setAttribute('aria-label', 'Hapus foto');
+        button.textContent = '×';
+        figure.appendChild(button);
+    });
+}
+
+function parseGalleryImages(value) {
+    if (Array.isArray(value)) return value.filter(Boolean).slice(0, 3);
+    try {
+        const parsed = JSON.parse(value || '[]');
+        return Array.isArray(parsed) ? parsed.filter(Boolean).slice(0, 3) : [];
+    } catch (error) {
+        return [];
+    }
+}
+
+function setSliderImages(prefix, previewId, images) {
+    const normalized = [...new Set(images.filter(Boolean))].slice(0, 3);
+    document.getElementById(`${prefix}-gallery-images`).value = JSON.stringify(normalized);
+    document.getElementById(`${prefix}-image-url`).value = normalized[0] || '';
+    const preview = document.getElementById(previewId);
+    if (!preview) return;
+    preview.innerHTML = normalized.length ? `<div class="admin-slider-preview">${normalized.map((url, index) => `<div class="admin-slider-preview__item"><img src="${escapeHtml(url)}" alt="Foto slider ${index + 1}"><span>Foto ${index + 1}${index === 0 ? ' · Utama' : ''}</span><button type="button" data-remove-slider-image data-prefix="${escapeHtml(prefix)}" data-preview-id="${escapeHtml(previewId)}" data-index="${index}" aria-label="Hapus foto ${index + 1}">×</button></div>`).join('')}</div>` : '';
+}
+
 async function api(resource, options = {}) {
     const headers = { ...(options.headers || {}) };
     if (!(options.body instanceof FormData)) headers['Content-Type'] = 'application/json';
@@ -40,7 +79,7 @@ function updatePreview() {
     if (!article && !program) return;
     const prefix = article ? 'post' : 'prog';
     const editor = document.getElementById(`${prefix}-content-editor`);
-    const content = editor?.innerHTML || '';
+    const content = serializeEditorContent(editor);
     const hidden = document.getElementById(`${prefix}-content`);
     if (hidden) hidden.value = content;
     const title = document.getElementById(`${prefix}-title`)?.value || 'Judul';
@@ -63,7 +102,9 @@ function setupDropZone(zoneId, inputId, urlId, previewId, prefix) {
     const zone = document.getElementById(zoneId);
     const input = document.getElementById(inputId);
     if (!zone || !input) return;
-    zone.addEventListener('click', () => input.click());
+    zone.addEventListener('click', event => {
+        if (!event.target.closest('[data-remove-slider-image]')) input.click();
+    });
     input.addEventListener('change', () => uploadMainAndGalleryImages(Array.from(input.files || []), input, urlId, previewId, prefix));
     zone.addEventListener('dragover', event => event.preventDefault());
     zone.addEventListener('drop', event => {
@@ -74,8 +115,24 @@ function setupDropZone(zoneId, inputId, urlId, previewId, prefix) {
 
 async function uploadMainAndGalleryImages(files, input, urlId, previewId, prefix) {
     if (!files.length) return;
-    await uploadImage(files[0], urlId, previewId);
-    if (files.length > 1) await uploadContentPhotos(prefix, files.slice(1));
+    const existing = parseGalleryImages(document.getElementById(`${prefix}-gallery-images`).value);
+    if (existing.length + files.length > 3) {
+        alert(`Slider utama maksimal 3 foto. Saat ini sudah ada ${existing.length} foto.`);
+        input.value = '';
+        return;
+    }
+    const uploaded = [];
+    for (let index = 0; index < files.length; index += 1) {
+        try {
+            uploaded.push(await uploadImageFileWithRetry(files[index]));
+        } catch (error) {
+            alert(`${files[index].name} gagal diunggah: ${error.message}`);
+        }
+    }
+    if (uploaded.length) {
+        setSliderImages(prefix, previewId, [...existing, ...uploaded]);
+        updatePreview();
+    }
     input.value = '';
 }
 
@@ -83,9 +140,8 @@ async function uploadImage(file, urlId, previewId) {
     if (!file) return;
     try {
         const url = await uploadImageFile(file);
-        document.getElementById(urlId).value = url;
-        const preview = document.getElementById(previewId);
-        if (preview) preview.innerHTML = `<img src="${escapeHtml(url)}" alt="Preview" style="max-height:100px;border-radius:8px">`;
+        const prefix = urlId.startsWith('prog-') ? 'prog' : 'post';
+        setSliderImages(prefix, previewId, [url]);
         updatePreview();
     } catch (error) {
         alert(error.message);
@@ -165,6 +221,7 @@ async function uploadContentPhotos(prefix, files) {
         const title = document.getElementById(`${prefix}-title`)?.value.trim() || 'Dokumentasi Dompet Dana Umat';
         const figures = uploaded.map((url, index) => `<figure><img src="${escapeHtml(url)}" alt="${escapeHtml(title)} - foto ${index + 1}" loading="lazy"></figure>`).join('');
         editor.insertAdjacentHTML('beforeend', `<div class="content-photo-grid">${figures}</div><p><br></p>`);
+        addGalleryRemoveButtons(editor);
         updatePreview();
     }
 
@@ -212,6 +269,7 @@ async function saveForm(event, resource) {
         title: document.getElementById(`${prefix}-title`).value.trim(),
         slug: document.getElementById(`${prefix}-slug`).value.trim().toLowerCase(),
         image: document.getElementById(`${prefix}-image-url`).value,
+        gallery_images: parseGalleryImages(document.getElementById(`${prefix}-gallery-images`).value),
         excerpt: document.getElementById(`${prefix}-excerpt`).value,
         content: document.getElementById(`${prefix}-content`).value,
         whatsapp_number: document.getElementById(`${prefix}-wa`).value,
@@ -295,8 +353,28 @@ function renderList(containerId, items, resource) {
 }
 
 document.addEventListener('click', event => {
+    const removeSliderImage = event.target.closest('[data-remove-slider-image]');
+    const removeContentPhoto = event.target.closest('.content-photo-remove');
     const edit = event.target.closest('[data-edit]');
     const remove = event.target.closest('[data-delete]');
+    if (removeSliderImage) {
+        const prefix = removeSliderImage.dataset.prefix;
+        const previewId = removeSliderImage.dataset.previewId;
+        const images = parseGalleryImages(document.getElementById(`${prefix}-gallery-images`).value);
+        images.splice(Number(removeSliderImage.dataset.index), 1);
+        setSliderImages(prefix, previewId, images);
+        updatePreview();
+    }
+    if (removeContentPhoto) {
+        const editor = removeContentPhoto.closest('.visual-editor');
+        const grid = removeContentPhoto.closest('.content-photo-grid');
+        removeContentPhoto.closest('figure')?.remove();
+        if (grid && !grid.querySelector('figure')) grid.remove();
+        updatePreview();
+        const prefix = editor?.id.startsWith('prog-') ? 'prog' : 'post';
+        const status = document.getElementById(`${prefix}-content-upload-status`);
+        if (status) status.textContent = 'Foto dihapus dari rancangan. Klik simpan agar perubahan diterapkan.';
+    }
     if (edit) editItem(edit.dataset.edit, edit.dataset.id);
     if (remove) deleteItem(remove.dataset.delete, remove.dataset.id);
     const disableAdmin = event.target.closest('[data-disable-admin]');
@@ -318,8 +396,13 @@ async function editItem(resource, id) {
         const prefix = resource === 'posts' ? 'post' : 'prog';
         window.switchTab(resource === 'posts' ? 'articles' : 'programs-admin');
         ['id', 'title', 'slug', 'excerpt'].forEach(field => { const el = document.getElementById(`${prefix}-${field}`); if (el) el.value = data[field] || ''; });
-        document.getElementById(`${prefix}-image-url`).value = data.image || '';
-        document.getElementById(`${prefix}-content-editor`).innerHTML = data.content || '';
+        const previewId = resource === 'posts' ? 'image-preview' : 'prog-image-preview';
+        const galleryImages = parseGalleryImages(data.gallery_images);
+        if (!galleryImages.length && data.image) galleryImages.push(data.image);
+        setSliderImages(prefix, previewId, galleryImages);
+        const editor = document.getElementById(`${prefix}-content-editor`);
+        editor.innerHTML = data.content || '';
+        addGalleryRemoveButtons(editor);
         document.getElementById(`${prefix}-content`).value = data.content || '';
         document.getElementById(`${prefix}-wa`).value = data.whatsapp_number || '';
         document.getElementById(`${prefix}-wa-message`).value = data.whatsapp_message || '';
