@@ -1,0 +1,61 @@
+/* Menjamin footer konsisten pada semua halaman publik. */
+.footer > .container {
+    width: 90%;
+    max-width: 1400px;
+    margin-right: auto;
+    margin-left: auto;
+    padding-right: 0;
+    padding-left: 0;
+}
+
+.footer .social-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 11px;
+}
+
+.footer .social-icon {
+    display: inline-flex;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, .14);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, .08);
+    box-shadow: none;
+}
+
+.footer .social-icon svg {
+    width: 19px;
+    height: 19px;
+    fill: currentColor;
+}
+
+@media (max-width: 768px) {
+    .footer > .container {
+        width: 90%;
+        padding-right: 20px;
+        padding-left: 20px;
+    }
+
+    .footer .footer-grid {
+        grid-template-columns: 1fr;
+        text-align: left;
+    }
+
+    .footer .footer-logo,
+    .footer .contact-info li,
+    .footer .social-links {
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 420px) {
+    .footer > .container {
+        padding-right: 17px;
+        padding-left: 17px;
+    }
+}
