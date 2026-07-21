@@ -1,3 +1,5 @@
+import { siteFooterHtml } from './site-footer.js';
+
 const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, char => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
 }[char]));
@@ -36,7 +38,7 @@ function renderProgram(container, program) {
     <section class="hero" style="background-image:url('${escapeHtml(program.image)}');background-size:cover;background-position:center;padding:220px 0 120px"><div class="hero-overlay" style="background:rgba(10,38,71,.8)"></div><div class="container hero-container" style="text-align:center"><div class="hero-content" style="max-width:100%;margin:0 auto"><h5 style="color:#64b5f6;letter-spacing:2px">LAYANAN DDU</h5><h1 style="color:white;margin-top:10px">${escapeHtml(program.hero_title || program.title)}</h1><p style="color:#cbd5e0">${escapeHtml(program.hero_subtitle)}</p></div></div></section>
     <section class="container fade-in" style="padding:80px 20px"><div style="max-width:850px;margin:0 auto;line-height:1.8" class="mock-content">${program.content || '<p>Konten belum tersedia.</p>'}</div></section>
     <section class="cta-minimal fade-in"><div class="container"><h5>LANGKAH KEBAIKAN</h5><h2>Ingin Berkontribusi untuk ${escapeHtml(program.title)}?</h2><p>${escapeHtml(actionText)}</p><a href="https://wa.me/${encodeURIComponent(wa)}?text=${encodeURIComponent(message)}" class="btn-whatsapp-minimal" target="_blank" rel="noopener noreferrer">${escapeHtml(actionLabel)}</a></div></section>
-    <footer class="footer"><div class="container"><div class="footer-grid"><div class="footer-col"><div class="footer-logo"><img src="https://lh3.googleusercontent.com/d/1G2xVlrBuc4IU6ynaGf8Xg_c9Y7jSg3Wm" alt="Logo DDU"><span>Dompet Dana Umat</span></div><p>Lembaga pengelola dana umat yang amanah dan profesional.</p></div><div class="footer-col"><h4>Contact Info</h4><ul class="contact-info"><li>Jl. Raya Puncak, Bogor</li><li>+62 851 2127 7046</li><li>info@dompetdanaumat.com</li></ul></div></div><div class="footer-bottom"><p>&copy; ${new Date().getFullYear()} Dompet Dana Umat. All Rights Reserved.</p></div></div></footer>
+    ${siteFooterHtml()}
     <a href="#" class="back-to-top">↑</a><a href="https://wa.me/${encodeURIComponent(wa)}" class="whatsapp-popup" target="_blank" rel="noopener noreferrer"><img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp"></a>`;
 }
 

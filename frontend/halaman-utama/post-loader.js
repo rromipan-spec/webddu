@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 function renderPost(container, post, related) {
     document.title = `${post.title} - Dompet Dana Umat`;
-    const wa = post.whatsapp_number || '6285797571549';
+    const wa = post.whatsapp_number || '6285121277046';
     const message = post.whatsapp_message || `Assalamualaikum, saya ingin bertanya terkait artikel: ${post.title}`;
     const relatedHtml = related.length ? `<div class="related-section"><h3>Artikel Terkait</h3><div class="related-grid">${related.map(item => `
         <div class="related-card"><a href="post.html?slug=${encodeURIComponent(item.slug)}" class="related-img-wrapper"><img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.title)}" loading="lazy"></a>
