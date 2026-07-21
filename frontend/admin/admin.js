@@ -71,21 +71,82 @@ function setupDropZone(zoneId, inputId, urlId, previewId) {
 
 async function uploadImage(file, urlId, previewId) {
     if (!file) return;
-    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) {
-        alert('Gunakan gambar JPG, PNG, atau WebP maksimal 5 MB.');
-        return;
-    }
-    const form = new FormData();
-    form.append('image', file);
     try {
-        const result = await api('upload', { method: 'POST', body: form });
-        document.getElementById(urlId).value = result.url;
+        const url = await uploadImageFile(file);
+        document.getElementById(urlId).value = url;
         const preview = document.getElementById(previewId);
-        if (preview) preview.innerHTML = `<img src="${escapeHtml(result.url)}" alt="Preview" style="max-height:100px;border-radius:8px">`;
+        if (preview) preview.innerHTML = `<img src="${escapeHtml(url)}" alt="Preview" style="max-height:100px;border-radius:8px">`;
         updatePreview();
     } catch (error) {
         alert(error.message);
     }
+}
+
+function validateImageFile(file) {
+    if (!file || !['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) {
+        throw new Error('Gunakan gambar JPG, PNG, atau WebP maksimal 5 MB per foto.');
+    }
+}
+
+async function uploadImageFile(file) {
+    validateImageFile(file);
+    const form = new FormData();
+    form.append('image', file);
+    const result = await api('upload', { method: 'POST', body: form });
+    return result.url;
+}
+
+function setupContentPhotoUpload(prefix) {
+    const button = document.getElementById(`${prefix}-add-content-photos`);
+    const input = document.getElementById(`${prefix}-content-image-files`);
+    if (!button || !input) return;
+    button.addEventListener('click', () => input.click());
+    input.addEventListener('change', () => uploadContentPhotos(prefix, Array.from(input.files || [])));
+}
+
+async function uploadContentPhotos(prefix, files) {
+    const input = document.getElementById(`${prefix}-content-image-files`);
+    const button = document.getElementById(`${prefix}-add-content-photos`);
+    const status = document.getElementById(`${prefix}-content-upload-status`);
+    const editor = document.getElementById(`${prefix}-content-editor`);
+    if (!editor || files.length === 0) return;
+    if (files.length > 10) {
+        alert('Maksimal 10 foto dalam satu kali upload.');
+        if (input) input.value = '';
+        return;
+    }
+
+    try {
+        files.forEach(validateImageFile);
+    } catch (error) {
+        alert(error.message);
+        if (input) input.value = '';
+        return;
+    }
+
+    if (button) button.disabled = true;
+    const uploaded = [];
+    const failed = [];
+    for (let index = 0; index < files.length; index += 1) {
+        if (status) status.textContent = `Mengunggah ${index + 1}/${files.length}...`;
+        try {
+            uploaded.push(await uploadImageFile(files[index]));
+        } catch (error) {
+            failed.push(files[index].name);
+        }
+    }
+
+    if (uploaded.length) {
+        const title = document.getElementById(`${prefix}-title`)?.value.trim() || 'Dokumentasi Dompet Dana Umat';
+        const figures = uploaded.map((url, index) => `<figure><img src="${escapeHtml(url)}" alt="${escapeHtml(title)} - foto ${index + 1}" loading="lazy"></figure>`).join('');
+        editor.insertAdjacentHTML('beforeend', `<div class="content-photo-grid">${figures}</div><p><br></p>`);
+        updatePreview();
+    }
+
+    if (status) status.textContent = uploaded.length ? `${uploaded.length} foto berhasil ditambahkan.` : '';
+    if (failed.length) alert(`${failed.length} foto gagal diunggah. Silakan coba kembali.`);
+    if (button) button.disabled = false;
+    if (input) input.value = '';
 }
 
 document.getElementById('login-form')?.addEventListener('submit', async event => {
@@ -256,6 +317,8 @@ async function deleteItem(resource, id) {
 async function init() {
     setupDropZone('article-drop-zone', 'post-image-file', 'post-image-url', 'image-preview');
     setupDropZone('prog-drop-zone', 'prog-image-file', 'prog-image-url', 'prog-image-preview');
+    setupContentPhotoUpload('post');
+    setupContentPhotoUpload('prog');
     try {
         const session = await api('session');
         if (session.authenticated) {

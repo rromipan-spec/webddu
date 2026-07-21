@@ -21,12 +21,16 @@
         .btn-delete { background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
         
         /* Toolbar & Visual Editor */
-        .toolbar { margin-bottom: 5px; display: flex; gap: 5px; }
+        .toolbar { margin-bottom: 8px; display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
         .toolbar button, .toolbar select { padding: 8px 12px; background: #f8fafc; border: 1px solid #cbd5e0; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
         .toolbar button:hover { background: #e2e8f0; }
         .toolbar button.active { background: #1e4b9c; color: white; border-color: #1e4b9c; }
         .visual-editor { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 20px; min-height: 450px; outline: none; line-height: 1.8; font-size: 1.1rem; }
         .visual-editor:focus { border-color: #1e4b9c; }
+        .visual-editor .content-photo-grid, .mock-content .content-photo-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 24px 0; }
+        .visual-editor .content-photo-grid figure, .mock-content .content-photo-grid figure { margin: 0; }
+        .visual-editor .content-photo-grid img, .mock-content .content-photo-grid img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 10px; }
+        .content-upload-status { color: #5a6e8a; font-size: 0.82rem; font-weight: 600; }
         .hidden-input { display: none; }
         .drop-zone { border: 2px dashed #cbd5e0; padding: 25px; text-align: center; border-radius: 12px; cursor: pointer; transition: 0.3s; margin-bottom: 15px; background: #f8fafc; }
         .drop-zone:hover { border-color: #1e4b9c; background: #f0f5ff; }
@@ -187,6 +191,9 @@
                             </select>
                             <button type="button" onclick="formatDoc('formatBlock', 'p')">Paragraf</button>
                             <button type="button" onclick="formatDoc('insertHorizontalRule')">Garis Pemisah</button>
+                            <button type="button" id="prog-add-content-photos">+ Tambah Foto</button>
+                            <input type="file" id="prog-content-image-files" hidden accept="image/jpeg,image/png,image/webp" multiple>
+                            <span id="prog-content-upload-status" class="content-upload-status" aria-live="polite"></span>
                         </div>
                         <div class="editor-area">
                             <div id="prog-content-editor" class="visual-editor" contenteditable="true"></div>
@@ -250,6 +257,9 @@
                             </select>
                             <button type="button" onclick="formatDoc('formatBlock', 'p')">Paragraf</button>
                             <button type="button" onclick="formatDoc('insertHorizontalRule')">Garis Pemisah</button>
+                            <button type="button" id="post-add-content-photos">+ Tambah Foto</button>
+                            <input type="file" id="post-content-image-files" hidden accept="image/jpeg,image/png,image/webp" multiple>
+                            <span id="post-content-upload-status" class="content-upload-status" aria-live="polite"></span>
                         </div>
                         <div class="editor-area">
                             <div id="post-content-editor" class="visual-editor" contenteditable="true" placeholder="Tulis artikel Anda di sini..."></div>
@@ -281,6 +291,6 @@
         </main>
     </div>
 
-    <script type="module" src="admin.js"></script>
+    <script type="module" src="admin.js?v=20260721-1"></script>
 </body>
 </html>
