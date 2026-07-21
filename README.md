@@ -20,6 +20,7 @@ websiteddu/
 Panduan pemasangan lengkap ada di [docs/DEPLOY-HOSTINGER.md](docs/DEPLOY-HOSTINGER.md).
 Panduan menambah dan mengubah akun admin ada di [docs/ADMIN-MYSQL.md](docs/ADMIN-MYSQL.md).
 Panduan deployment otomatis tersedia di [docs/GITHUB-HOSTINGER.md](docs/GITHUB-HOSTINGER.md).
+Panduan backup harian dan pemulihan tersedia di [docs/BACKUP-RESTORE.md](docs/BACKUP-RESTORE.md).
 
 Setelah GitHub Secrets selesai dikonfigurasi, deploy perubahan dari terminal VS Code dengan:
 
@@ -43,7 +44,7 @@ Script akan memeriksa file rahasia dan sintaks JavaScript, membuat commit, push 
 
 ## Menjalankan secara lokal
 
-Butuh PHP 8.1+ dengan ekstensi PDO MySQL, mbstring, DOM, dan fileinfo, serta MySQL/MariaDB.
+Butuh PHP 8.1+ dengan ekstensi PDO MySQL, mbstring, DOM, fileinfo, dan zip, serta MySQL/MariaDB.
 
 1. Salin `backend/config/.env.example` menjadi `backend/config/.env`.
 2. Isi kredensial MySQL dan hash password admin.

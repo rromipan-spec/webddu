@@ -1,6 +1,8 @@
 /backend/config/.env
 /backend/storage/logs/*.log
 /backend/storage/security/*.json
+/backend/storage/backups/*
+!/backend/storage/backups/.gitkeep
 /frontend/uploads/*
 !/frontend/uploads/.htaccess
 /debug.log

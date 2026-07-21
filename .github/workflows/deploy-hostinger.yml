@@ -76,7 +76,7 @@ jobs:
         run: |
           set -euo pipefail
           ssh -i ~/.ssh/hostinger_deploy -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
-            "test -d '$DOMAIN_ROOT/public_html' && mkdir -p '$DOMAIN_ROOT/backend/storage/logs' '$DOMAIN_ROOT/backend/storage/cache' '$DOMAIN_ROOT/backend/storage/security' && rm -f '$DOMAIN_ROOT/public_html/setup-admin.php'"
+            "test -d '$DOMAIN_ROOT/public_html' && mkdir -p '$DOMAIN_ROOT/backend/storage/logs' '$DOMAIN_ROOT/backend/storage/cache' '$DOMAIN_ROOT/backend/storage/security' '$DOMAIN_ROOT/backend/storage/backups' && rm -f '$DOMAIN_ROOT/public_html/setup-admin.php'"
 
       - name: Deploy public frontend
         shell: bash
@@ -107,6 +107,7 @@ jobs:
             --exclude='/storage/logs/***' \
             --exclude='/storage/cache/***' \
             --exclude='/storage/security/***' \
+            --exclude='/storage/backups/***' \
             -e "ssh -i ~/.ssh/hostinger_deploy -p $SSH_PORT" \
             backend/ "$SSH_USER@$SSH_HOST:$DOMAIN_ROOT/backend/"
 
