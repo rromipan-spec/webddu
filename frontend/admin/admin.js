@@ -96,6 +96,21 @@ async function uploadImageFile(file) {
     return result.url;
 }
 
+const wait = milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds));
+
+async function uploadImageFileWithRetry(file, attempts = 3) {
+    let lastError = new Error('Upload gagal.');
+    for (let attempt = 1; attempt <= attempts; attempt += 1) {
+        try {
+            return await uploadImageFile(file);
+        } catch (error) {
+            lastError = error;
+            if (attempt < attempts) await wait(attempt * 700);
+        }
+    }
+    throw lastError;
+}
+
 function setupContentPhotoUpload(prefix) {
     const button = document.getElementById(`${prefix}-add-content-photos`);
     const input = document.getElementById(`${prefix}-content-image-files`);
@@ -110,8 +125,8 @@ async function uploadContentPhotos(prefix, files) {
     const status = document.getElementById(`${prefix}-content-upload-status`);
     const editor = document.getElementById(`${prefix}-content-editor`);
     if (!editor || files.length === 0) return;
-    if (files.length > 10) {
-        alert('Maksimal 10 foto dalam satu kali upload.');
+    if (files.length > 20) {
+        alert('Maksimal 20 foto dalam satu kali upload.');
         if (input) input.value = '';
         return;
     }
@@ -130,9 +145,9 @@ async function uploadContentPhotos(prefix, files) {
     for (let index = 0; index < files.length; index += 1) {
         if (status) status.textContent = `Mengunggah ${index + 1}/${files.length}...`;
         try {
-            uploaded.push(await uploadImageFile(files[index]));
+            uploaded.push(await uploadImageFileWithRetry(files[index]));
         } catch (error) {
-            failed.push(files[index].name);
+            failed.push(`${files[index].name}: ${error.message || 'Upload gagal'}`);
         }
     }
 
@@ -143,8 +158,9 @@ async function uploadContentPhotos(prefix, files) {
         updatePreview();
     }
 
-    if (status) status.textContent = uploaded.length ? `${uploaded.length} foto berhasil ditambahkan.` : '';
-    if (failed.length) alert(`${failed.length} foto gagal diunggah. Silakan coba kembali.`);
+    const saveAction = prefix === 'prog' ? 'Simpan Program' : 'Publikasikan Artikel';
+    if (status) status.textContent = uploaded.length ? `${uploaded.length} foto berhasil ditambahkan. Klik ${saveAction} agar foto tersimpan.` : '';
+    if (failed.length) alert(`${failed.length} foto gagal diunggah:\n\n${failed.join('\n')}`);
     if (button) button.disabled = false;
     if (input) input.value = '';
 }
