@@ -24,6 +24,7 @@ Panduan backup harian dan pemulihan tersedia di [docs/BACKUP-RESTORE.md](docs/BA
 Panduan optimasi dan migrasi gambar tersedia di [docs/IMAGE-OPTIMIZATION.md](docs/IMAGE-OPTIMIZATION.md).
 Panduan SEO teknis dan Google Search Console tersedia di [docs/GOOGLE-SEARCH-CONSOLE.md](docs/GOOGLE-SEARCH-CONSOLE.md).
 Panduan draft, jadwal tayang, preview, kategori, dan riwayat admin tersedia di [docs/PUBLICATION-SYSTEM.md](docs/PUBLICATION-SYSTEM.md).
+Panduan legalitas, rekening resmi, transparansi, dan kebijakan privasi tersedia di [docs/CREDIBILITY-PROFILE.md](docs/CREDIBILITY-PROFILE.md).
 
 Setelah GitHub Secrets selesai dikonfigurasi, deploy perubahan dari terminal VS Code dengan:
 

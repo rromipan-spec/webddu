@@ -95,6 +95,25 @@ if ($resource === 'admins') {
     Http::json(['ok' => false, 'message' => 'Metode tidak diizinkan.'], 405);
 }
 
+if ($resource === 'institution') {
+    if ($method === 'GET') {
+        $rows = Database::connection()->query('SELECT profile_key, profile_value, updated_at FROM institution_profile ORDER BY profile_key')->fetchAll();
+        $profile = [];
+        $updatedAt = null;
+        foreach ($rows as $row) {
+            $profile[(string) $row['profile_key']] = (string) $row['profile_value'];
+            if ($updatedAt === null || (string) $row['updated_at'] > $updatedAt) $updatedAt = (string) $row['updated_at'];
+        }
+        Http::json(['ok' => true, 'data' => $profile, 'updated_at' => $updatedAt]);
+    }
+    if ($method === 'POST') {
+        Auth::requireAdmin();
+        Auth::verifyCsrf();
+        saveInstitutionProfile(Http::body());
+    }
+    Http::json(['ok' => false, 'message' => 'Metode tidak diizinkan.'], 405);
+}
+
 if ($resource === 'history') {
     Auth::requireAdmin();
     if ($method !== 'GET') {
@@ -421,6 +440,52 @@ function recordContentHistory(PDO $db, string $table, int $id, string $action, a
         'admin_email' => Auth::email(),
         'summary' => mb_substr($summary, 0, 500),
     ]);
+}
+
+function institutionProfileKeys(): array
+{
+    return [
+        'organization_name', 'parent_organization', 'legal_entity_name', 'deed_number',
+        'ministry_number', 'tax_number', 'official_address', 'official_phone', 'official_email',
+        'management_structure', 'donation_accounts', 'collection_reports',
+        'beneficiary_documentation', 'official_disclaimer', 'privacy_contact',
+    ];
+}
+
+function saveInstitutionProfile(array $body): never
+{
+    $keys = institutionProfileKeys();
+    $longFields = ['management_structure', 'donation_accounts', 'collection_reports', 'beneficiary_documentation', 'official_disclaimer'];
+    $values = [];
+    foreach ($keys as $key) {
+        $value = trim((string) ($body[$key] ?? ''));
+        $limit = in_array($key, $longFields, true) ? 10000 : 1000;
+        if (mb_strlen($value) > $limit) {
+            Http::json(['ok' => false, 'message' => "Kolom {$key} terlalu panjang."], 422);
+        }
+        if (in_array($key, ['official_email', 'privacy_contact'], true) && $value !== '' && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
+            Http::json(['ok' => false, 'message' => 'Alamat email lembaga tidak valid.'], 422);
+        }
+        $values[$key] = $value;
+    }
+
+    $db = Database::connection();
+    try {
+        $db->beginTransaction();
+        $statement = $db->prepare(
+            'INSERT INTO institution_profile (profile_key, profile_value, updated_by)
+             VALUES (:profile_key, :profile_value, :updated_by)
+             ON DUPLICATE KEY UPDATE profile_value = VALUES(profile_value), updated_by = VALUES(updated_by)'
+        );
+        foreach ($values as $key => $value) {
+            $statement->execute(['profile_key' => $key, 'profile_value' => $value, 'updated_by' => Auth::id()]);
+        }
+        $db->commit();
+        Http::json(['ok' => true, 'message' => 'Profil kredibilitas berhasil disimpan.']);
+    } catch (Throwable $error) {
+        if ($db->inTransaction()) $db->rollBack();
+        throw $error;
+    }
 }
 
 function handleUpload(): never

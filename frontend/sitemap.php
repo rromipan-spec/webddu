@@ -11,6 +11,8 @@ $escape = static fn(string $value): string => htmlspecialchars($value, ENT_XML1 
 $urls = [
     ['loc' => $baseUrl . '/', 'lastmod' => null],
     ['loc' => $baseUrl . '/about.html', 'lastmod' => null],
+    ['loc' => $baseUrl . '/transparansi.html', 'lastmod' => null],
+    ['loc' => $baseUrl . '/kebijakan-privasi.html', 'lastmod' => null],
 ];
 
 foreach (Database::connection()->query("SELECT slug, updated_at FROM posts WHERE status = 'published' AND (published_at IS NULL OR published_at <= UTC_TIMESTAMP()) ORDER BY updated_at DESC")->fetchAll() as $post) {

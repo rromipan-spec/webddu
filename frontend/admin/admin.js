@@ -4,6 +4,12 @@ let currentRole = '';
 const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, char => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
 }[char]));
+const institutionFields = [
+    'organization_name', 'parent_organization', 'legal_entity_name', 'deed_number',
+    'ministry_number', 'tax_number', 'official_address', 'official_phone', 'official_email',
+    'management_structure', 'donation_accounts', 'collection_reports',
+    'beneficiary_documentation', 'official_disclaimer', 'privacy_contact'
+];
 
 function managedImageVariant(url, variant) {
     return String(url || '').replace(
@@ -97,14 +103,17 @@ window.switchTab = tab => {
     document.getElementById('content-programs-admin')?.classList.toggle('hidden', tab !== 'programs-admin');
     document.getElementById('content-admins')?.classList.toggle('hidden', tab !== 'admins');
     document.getElementById('content-history')?.classList.toggle('hidden', tab !== 'history');
-    document.querySelector('.preview-group')?.classList.toggle('hidden', tab === 'dashboard' || tab === 'admins' || tab === 'history');
+    document.getElementById('content-institution')?.classList.toggle('hidden', tab !== 'institution');
+    document.querySelector('.preview-group')?.classList.toggle('hidden', tab === 'dashboard' || tab === 'admins' || tab === 'history' || tab === 'institution');
     document.getElementById('tab-dashboard')?.classList.toggle('active', tab === 'dashboard');
     document.getElementById('tab-articles')?.classList.toggle('active', tab === 'articles');
     document.getElementById('tab-programs-admin')?.classList.toggle('active', tab === 'programs-admin');
     document.getElementById('tab-admins')?.classList.toggle('active', tab === 'admins');
     document.getElementById('tab-history')?.classList.toggle('active', tab === 'history');
+    document.getElementById('tab-institution')?.classList.toggle('active', tab === 'institution');
     if (tab === 'dashboard') fetchStats();
     if (tab === 'history') loadHistory();
+    if (tab === 'institution') loadInstitutionProfile();
     updatePreview();
 };
 
@@ -377,6 +386,39 @@ document.getElementById('btn-logout')?.addEventListener('click', async () => {
 document.getElementById('post-form')?.addEventListener('submit', event => saveForm(event, 'posts'));
 document.getElementById('program-form')?.addEventListener('submit', event => saveForm(event, 'programs'));
 document.getElementById('admin-create-form')?.addEventListener('submit', createAdmin);
+document.getElementById('institution-form')?.addEventListener('submit', saveInstitutionProfile);
+
+function institutionElement(key) {
+    return document.getElementById(`inst-${key.replaceAll('_', '-')}`);
+}
+
+async function loadInstitutionProfile() {
+    try {
+        const result = await api('institution');
+        institutionFields.forEach(key => {
+            const element = institutionElement(key);
+            if (element) element.value = result.data?.[key] || '';
+        });
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
+async function saveInstitutionProfile(event) {
+    event.preventDefault();
+    const button = event.currentTarget.querySelector('button[type="submit"]');
+    const payload = {};
+    institutionFields.forEach(key => { payload[key] = institutionElement(key)?.value || ''; });
+    button.disabled = true;
+    try {
+        await api('institution', { method: 'POST', body: JSON.stringify(payload) });
+        alert('Profil kredibilitas berhasil disimpan.');
+    } catch (error) {
+        alert(error.message);
+    } finally {
+        button.disabled = false;
+    }
+}
 
 async function saveForm(event, resource) {
     event.preventDefault();

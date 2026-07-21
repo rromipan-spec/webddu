@@ -131,6 +131,7 @@
                     <button onclick="switchTab('dashboard')" id="tab-dashboard" class="active">📊 Dashboard</button>
                     <button onclick="switchTab('articles')" id="tab-articles">📰 Artikel</button>
                     <button onclick="switchTab('programs-admin')" id="tab-programs-admin">🚀 Program</button>
+                    <button onclick="switchTab('institution')" id="tab-institution">🏛️ Kredibilitas</button>
                     <button onclick="switchTab('history')" id="tab-history">🕘 Riwayat</button>
                     <button onclick="switchTab('admins')" id="tab-admins" class="hidden">👤 Admin</button>
                     <hr style="margin: 15px 0;">
@@ -392,9 +393,41 @@
                     <div id="admin-history-list"></div>
                 </div>
             </div>
+
+            <div id="content-institution" class="hidden">
+                <div class="card">
+                    <h2>Profil Kredibilitas Lembaga</h2>
+                    <p>Isi hanya informasi yang telah diverifikasi. Kolom legalitas dan rekening yang kosong tidak akan diklaim sebagai data resmi.</p>
+                    <form id="institution-form">
+                        <h3>Identitas dan Legalitas</h3>
+                        <div class="publication-grid">
+                            <div class="form-group"><label>Nama Organisasi</label><input id="inst-organization-name" maxlength="1000"></div>
+                            <div class="form-group"><label>Organisasi/Yayasan Induk</label><input id="inst-parent-organization" maxlength="1000"></div>
+                            <div class="form-group"><label>Nama Badan Hukum</label><input id="inst-legal-entity-name" maxlength="1000"></div>
+                            <div class="form-group"><label>Nomor Akta</label><input id="inst-deed-number" maxlength="1000"></div>
+                            <div class="form-group"><label>Nomor Pengesahan/Keputusan Kementerian</label><input id="inst-ministry-number" maxlength="1000"></div>
+                            <div class="form-group"><label>NPWP Lembaga</label><input id="inst-tax-number" maxlength="1000"></div>
+                        </div>
+                        <h3>Kontak Resmi</h3>
+                        <div class="form-group"><label>Alamat</label><textarea id="inst-official-address" rows="3"></textarea></div>
+                        <div class="publication-grid">
+                            <div class="form-group"><label>Telepon/WhatsApp</label><input id="inst-official-phone" maxlength="1000"></div>
+                            <div class="form-group"><label>Email</label><input type="email" id="inst-official-email" maxlength="1000"></div>
+                        </div>
+                        <h3>Transparansi</h3>
+                        <div class="form-group"><label>Struktur Pengurus</label><textarea id="inst-management-structure" rows="7" placeholder="Satu nama dan jabatan per baris"></textarea></div>
+                        <div class="form-group"><label>Rekening/QRIS Resmi</label><textarea id="inst-donation-accounts" rows="7" placeholder="Satu kanal per baris. Contoh: Bank — Nomor — Atas Nama"></textarea></div>
+                        <div class="form-group"><label>Laporan Penghimpunan dan Penyaluran</label><textarea id="inst-collection-reports" rows="7" placeholder="Tuliskan periode, ringkasan, dan tautan laporan jika tersedia"></textarea></div>
+                        <div class="form-group"><label>Dokumentasi Penerima Manfaat</label><textarea id="inst-beneficiary-documentation" rows="7" placeholder="Tuliskan ringkasan atau tautan dokumentasi publik"></textarea></div>
+                        <div class="form-group"><label>Disclaimer Kanal Resmi</label><textarea id="inst-official-disclaimer" rows="4"></textarea></div>
+                        <div class="form-group"><label>Email untuk Permintaan Privasi</label><input type="email" id="inst-privacy-contact" maxlength="1000"></div>
+                        <button type="submit" class="btn btn-primary">Simpan Profil Kredibilitas</button>
+                    </form>
+                </div>
+            </div>
         </main>
     </div>
 
-    <script type="module" src="admin.js?v=20260721-12"></script>
+    <script type="module" src="admin.js?v=20260721-13"></script>
 </body>
 </html>

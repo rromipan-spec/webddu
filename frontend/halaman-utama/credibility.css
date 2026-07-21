@@ -1,0 +1,33 @@
+:root { --cred-navy:#082b59; --cred-blue:#1e5fae; --cred-pale:#f2f6fd; --cred-text:#50647c; }
+.credibility-page { color: var(--cred-navy); background: var(--cred-pale); }
+.credibility-page .main-header { background: var(--cred-navy); }
+.credibility-hero { padding: 105px 20px 92px; color: #fff; text-align: center; background: linear-gradient(135deg,#06254d,#174f91); }
+.credibility-hero .eyebrow,.credibility-section .eyebrow { color:#78b8ff; font-size:.78rem; font-weight:850; letter-spacing:.16em; text-transform:uppercase; }
+.credibility-hero h1 { max-width:900px; margin:18px auto; color:#fff; font-size:clamp(2.3rem,6vw,4.8rem); line-height:1.08; }
+.credibility-hero p { max-width:760px; margin:auto; color:#d5e4f6; font-size:clamp(1rem,2vw,1.16rem); line-height:1.8; }
+.trust-warning { margin:-35px auto 0; position:relative; z-index:3; }
+.trust-warning__inner { padding:25px 28px; border-left:5px solid #f2b84b; border-radius:14px; color:#fff; background:#0d386d; box-shadow:0 18px 45px rgba(8,43,89,.18); }
+.trust-warning__inner strong { display:block; margin-bottom:7px; }
+.trust-warning__inner p { margin:0; color:#dce8f7; line-height:1.65; }
+.credibility-section { padding:90px 0; }
+.credibility-section--white { background:#fff; }
+.credibility-heading { max-width:760px; margin-bottom:38px; }
+.credibility-heading h2 { margin:12px 0; font-size:clamp(1.9rem,4vw,3rem); }
+.credibility-heading p { color:var(--cred-text); line-height:1.75; }
+.credibility-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; }
+.credibility-card { padding:28px; border:1px solid #dbe5f2; border-radius:16px; background:#fff; box-shadow:0 10px 30px rgba(14,54,98,.06); }
+.credibility-card h3 { margin:0 0 15px; font-size:1.25rem; }
+.credibility-card p,.credibility-card li { color:var(--cred-text); line-height:1.75; white-space:pre-line; }
+.credibility-card--wide { grid-column:1/-1; }
+.credibility-list { margin:0; padding-left:20px; }
+.credibility-list li { margin:9px 0; }
+.credibility-list a { margin-left:6px; color:var(--cred-blue); font-weight:750; }
+.empty-information { padding:16px; border-radius:10px; background:#f7f9fc; }
+.official-contact { display:flex; flex-wrap:wrap; gap:12px; margin-top:26px; }
+.official-contact a { display:inline-flex; min-height:48px; align-items:center; padding:11px 18px; border-radius:10px; color:#fff; font-weight:800; text-decoration:none; background:var(--cred-blue); }
+.profile-status { display:none; padding:13px; color:#92400e; background:#fef3c7; }.profile-status.visible{display:block}
+.policy-content { max-width:900px; margin:auto; padding:55px; border-radius:20px; background:#fff; box-shadow:0 15px 45px rgba(8,43,89,.08); }
+.policy-content h2 { margin-top:38px; font-size:1.55rem; }.policy-content h2:first-child{margin-top:0}
+.policy-content p,.policy-content li { color:var(--cred-text); line-height:1.8; }.policy-content a{color:var(--cred-blue)}
+.profile-updated { margin-top:30px; color:#718096; font-size:.9rem; }
+@media(max-width:768px){.credibility-hero{padding:72px 18px 75px}.credibility-section{padding:64px 0}.credibility-grid{grid-template-columns:1fr}.credibility-card--wide{grid-column:auto}.trust-warning{margin:-25px 15px 0}.policy-content{padding:30px 22px}.credibility-card{padding:23px}}

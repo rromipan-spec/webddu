@@ -37,6 +37,7 @@ export function siteFooterHtml() {
                 </div>
             </div>
             <div class="footer-bottom">
+                <nav class="footer-policy-links" aria-label="Informasi lembaga"><a href="/transparansi.html">Transparansi & Legalitas</a><a href="/kebijakan-privasi.html">Kebijakan Privasi</a></nav>
                 <p>&copy; ${new Date().getFullYear()} Dompet Dana Umat. All Rights Reserved.</p>
             </div>
         </div>
