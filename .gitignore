@@ -1,5 +1,6 @@
 /backend/config/.env
 /backend/storage/logs/*.log
+/backend/storage/security/*.json
 /frontend/uploads/*
 !/frontend/uploads/.htaccess
 /debug.log

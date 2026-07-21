@@ -5,6 +5,9 @@ final class Auth
 {
     public static function start(): void
     {
+        ini_set('session.use_strict_mode', '1');
+        ini_set('session.use_only_cookies', '1');
+        ini_set('session.use_trans_sid', '0');
         $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
             || strtolower((string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')) === 'https';
         session_name('ddu_admin');
@@ -37,13 +40,13 @@ final class Auth
 
     public static function login(string $email, string $password): bool
     {
-        $attempts = (int) ($_SESSION['login_attempts'] ?? 0);
-        $blockedUntil = (int) ($_SESSION['blocked_until'] ?? 0);
-        if ($blockedUntil > time()) {
+        $email = strtolower(trim($email));
+        $retryAfter = LoginThrottle::retryAfter($email);
+        if ($retryAfter > 0) {
+            header('Retry-After: ' . $retryAfter);
             Http::json(['ok' => false, 'message' => 'Terlalu banyak percobaan. Coba lagi beberapa menit.'], 429);
         }
 
-        $email = strtolower(trim($email));
         $stmt = Database::connection()->prepare(
             'SELECT id, email, password_hash, role, is_active FROM admins WHERE email = :email LIMIT 1'
         );
@@ -56,22 +59,17 @@ final class Auth
         $valid = is_array($admin) && (int) $admin['is_active'] === 1 && $passwordValid;
 
         if (!$valid) {
-            $_SESSION['login_attempts'] = ++$attempts;
-            if ($attempts >= 5) {
-                $_SESSION['blocked_until'] = time() + 900;
-                $_SESSION['login_attempts'] = 0;
-            }
+            LoginThrottle::recordFailure($email);
             return false;
         }
 
+        LoginThrottle::recordSuccess($email);
         session_regenerate_id(true);
         $_SESSION['admin_id'] = (int) $admin['id'];
         $_SESSION['admin_email'] = (string) $admin['email'];
         $_SESSION['admin_role'] = (string) $admin['role'];
         $_SESSION['last_activity'] = time();
         $_SESSION['csrf'] = bin2hex(random_bytes(32));
-        unset($_SESSION['login_attempts'], $_SESSION['blocked_until']);
-
         $update = Database::connection()->prepare('UPDATE admins SET last_login_at = NOW() WHERE id = :id');
         $update->execute(['id' => (int) $admin['id']]);
         return true;

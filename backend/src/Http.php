@@ -30,7 +30,10 @@ final class Http
         header('X-Frame-Options: SAMEORIGIN');
         header('Referrer-Policy: strict-origin-when-cross-origin');
         header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
+        header('Strict-Transport-Security: max-age=31536000');
+        header('Cross-Origin-Opener-Policy: same-origin');
+        header('X-Permitted-Cross-Domain-Policies: none');
+        header("Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self'; media-src 'self' https:; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://drive.google.com; upgrade-insecure-requests");
         header('Cache-Control: no-store');
     }
 }
-

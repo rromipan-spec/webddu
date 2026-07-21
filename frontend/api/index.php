@@ -20,7 +20,7 @@ if ($resource === 'login' && $method === 'POST') {
     $body = Http::body();
     $email = (string) ($body['email'] ?? '');
     $password = (string) ($body['password'] ?? '');
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL) || $password === '') {
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL) || $password === '' || strlen($password) > 1024) {
         Http::json(['ok' => false, 'message' => 'Email atau password tidak valid.'], 422);
     }
     if (!Auth::login($email, $password)) {
@@ -317,8 +317,8 @@ function saveAdmin(array $body): never
     if (mb_strlen($name) < 2 || mb_strlen($name) > 120) {
         Http::json(['ok' => false, 'message' => 'Nama admin harus berisi 2–120 karakter.'], 422);
     }
-    if (strlen($password) < 12) {
-        Http::json(['ok' => false, 'message' => 'Password admin minimal 12 karakter.'], 422);
+    if (strlen($password) < 15 || strlen($password) > 128) {
+        Http::json(['ok' => false, 'message' => 'Password admin harus berisi 15–128 karakter.'], 422);
     }
     if (!in_array($role, ['super_admin', 'admin'], true)) {
         Http::json(['ok' => false, 'message' => 'Role admin tidak valid.'], 422);

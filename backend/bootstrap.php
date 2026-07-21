@@ -4,6 +4,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/src/Config.php';
 require_once __DIR__ . '/src/Http.php';
 require_once __DIR__ . '/src/Database.php';
+require_once __DIR__ . '/src/LoginThrottle.php';
 require_once __DIR__ . '/src/Auth.php';
 require_once __DIR__ . '/src/Sanitizer.php';
 

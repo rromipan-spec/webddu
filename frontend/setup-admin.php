@@ -3,6 +3,12 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/backend/bootstrap.php';
 
+$setupEnabled = filter_var(Config::get('ADMIN_SETUP_ENABLED', 'false'), FILTER_VALIDATE_BOOLEAN);
+if (!$setupEnabled) {
+    http_response_code(404);
+    exit('Halaman tidak ditemukan.');
+}
+
 $db = Database::connection();
 
 $setupKey = Config::get('ADMIN_SETUP_KEY', '');
@@ -34,8 +40,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         $message = 'Email tidak valid.';
     } elseif (mb_strlen($name) < 2 || mb_strlen($name) > 120) {
         $message = 'Nama harus berisi 2–120 karakter.';
-    } elseif (strlen($password) < 12) {
-        $message = 'Password minimal 12 karakter.';
+    } elseif (strlen($password) < 15 || strlen($password) > 128) {
+        $message = 'Password harus berisi 15–128 karakter.';
     } elseif (!hash_equals($password, $passwordConfirmation)) {
         $message = 'Konfirmasi password tidak sama.';
     } else {
@@ -55,7 +61,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         $stmt->execute(['email' => $email, 'password_hash' => $hash, 'display_name' => $name]);
         unset($_SESSION['setup_csrf']);
         $success = true;
-        $message = 'Password untuk ' . $email . ' berhasil dibuat dan diverifikasi. Hapus setup-admin.php setelah login berhasil.';
+        $message = 'Password untuk ' . $email . ' berhasil dibuat dan diverifikasi. Matikan ADMIN_SETUP_ENABLED setelah login berhasil.';
     }
 }
 
@@ -83,9 +89,9 @@ function e(string $value): string
     <label for="setup_key">Kunci setup dari .env</label><input id="setup_key" name="setup_key" type="password" required>
     <label for="display_name">Nama admin</label><input id="display_name" name="display_name" maxlength="120" required>
     <label for="email">Email</label><input id="email" name="email" type="email" autocomplete="username" required>
-    <label for="password">Password</label><input id="password" name="password" type="password" minlength="12" autocomplete="new-password" required>
-    <label for="password_confirmation">Ulangi Password</label><input id="password_confirmation" name="password_confirmation" type="password" minlength="12" autocomplete="new-password" required>
+    <label for="password">Password</label><input id="password" name="password" type="password" minlength="15" maxlength="128" autocomplete="new-password" required>
+    <label for="password_confirmation">Ulangi Password</label><input id="password_confirmation" name="password_confirmation" type="password" minlength="15" maxlength="128" autocomplete="new-password" required>
     <button type="submit">Buat/Reset Super Admin</button>
-    <small>Password otomatis di-hash dan diverifikasi oleh PHP. Halaman ini dilindungi kunci setup, tetapi tetap harus dihapus setelah login berhasil.</small>
+    <small>Password otomatis di-hash dan diverifikasi oleh PHP. Setelah selesai, ubah ADMIN_SETUP_ENABLED menjadi false.</small>
 </form><?php endif; ?>
 </main></body></html>
