@@ -1,4 +1,4 @@
-import { detailSliderHtml, initDetailSliders, recordSliderImages } from './detail-slider.js?v=20260721-3';
+import { detailSliderHtml, initDetailSliders, recordSliderImages } from './detail-slider.js?v=20260721-4';
 
 const API = '../api/index.php';
 const SITE_NAME = 'Dompet Dana Umat';
@@ -72,7 +72,7 @@ function relatedArticlesHtml(related) {
         <div class="post-section-heading"><span>LANJUT MEMBACA</span><h2 id="related-title">Artikel Terkait</h2></div>
         <div class="related-grid">${related.map(item => `
             <article class="related-card">
-                <a href="/artikel/${encodeURIComponent(item.slug)}" class="related-img-wrapper"><img src="${escapeHtml(item.image || DEFAULT_IMAGE)}" alt="${escapeHtml(item.title)}" loading="lazy"></a>
+                <a href="/artikel/${encodeURIComponent(item.slug)}" class="related-img-wrapper"><img src="${escapeHtml(item.image || DEFAULT_IMAGE)}" alt="${escapeHtml(item.image_alt || item.title)}" loading="lazy"></a>
                 <div class="related-content">
                     <time class="related-date" datetime="${escapeHtml(String(item.created_at || '').slice(0, 10))}">${escapeHtml(dateText(item.created_at))}</time>
                     <h3><a href="/artikel/${encodeURIComponent(item.slug)}">${escapeHtml(item.title)}</a></h3>
@@ -109,7 +109,7 @@ function renderPost(container, post, related) {
     const summary = articleSummary(post);
     const summaryHtml = summary.length ? `<section class="post-summary" aria-labelledby="summary-title"><span>RINGKASAN ARTIKEL</span><h2 id="summary-title">Yang perlu Anda ketahui</h2><ul>${summary.map(point => `<li>${escapeHtml(point)}</li>`).join('')}</ul></section>` : '';
 
-    updateSeo(post, post.image || sliderImages[0] || heroImages[0] || DEFAULT_IMAGE, canonicalUrl, minutes);
+    updateSeo(post, post.social_image || post.image || sliderImages[0] || heroImages[0] || DEFAULT_IMAGE, canonicalUrl, minutes);
     container.innerHTML = `
         <section class="post-hero">
             ${heroImages.map((image, index) => `<img class="post-hero-background${index === 0 ? ' active' : ''}" src="${escapeHtml(image)}" alt="" width="1920" height="1080" decoding="async" aria-hidden="true"${index > 0 ? ' loading="lazy"' : ' fetchpriority="high"'}>`).join('')}
@@ -129,7 +129,7 @@ function renderPost(container, post, related) {
         <div class="container post-page-layout">
             <div class="post-reading-column">
                 <article class="post-full">
-                    ${detailSliderHtml(sliderImages, post.title)}
+                    ${detailSliderHtml(sliderImages, post.title, '', post.image_alt || post.title)}
                     ${summaryHtml}
                     <div class="post-full-content">${post.content}</div>
                     ${shareButtonsHtml(previewUrl, post.title, canonicalUrl)}
@@ -209,23 +209,26 @@ function setMeta(selector, attribute, value) {
 }
 
 function updateSeo(post, image, canonicalUrl, minutes) {
-    const description = String(post.excerpt || plainText(post.content).slice(0, 160)).trim().slice(0, 160);
+    const metaTitle = String(post.seo_title || post.title).trim();
+    const description = String(post.seo_description || post.excerpt || plainText(post.content).slice(0, 160)).trim().slice(0, 160);
+    const imageAlt = String(post.image_alt || post.title).trim();
     const absoluteImage = new URL(image, location.origin).href;
-    document.title = `${post.title} - ${SITE_NAME}`;
+    document.title = `${metaTitle} - ${SITE_NAME}`;
     setMeta('meta[name="description"]', 'content', description);
     setMeta('meta[name="author"]', 'content', SITE_NAME);
     setMeta('meta[property="og:type"]', 'content', 'article');
     setMeta('meta[property="og:site_name"]', 'content', SITE_NAME);
     setMeta('meta[property="og:locale"]', 'content', 'id_ID');
-    setMeta('meta[property="og:title"]', 'content', post.title);
+    setMeta('meta[property="og:title"]', 'content', metaTitle);
     setMeta('meta[property="og:description"]', 'content', description);
     setMeta('meta[property="og:url"]', 'content', canonicalUrl);
     setMeta('meta[property="og:image"]', 'content', absoluteImage);
+    setMeta('meta[property="og:image:alt"]', 'content', imageAlt);
     setMeta('meta[property="article:published_time"]', 'content', post.created_at || '');
     setMeta('meta[property="article:modified_time"]', 'content', post.updated_at || post.created_at || '');
     setMeta('meta[property="article:author"]', 'content', SITE_NAME);
     setMeta('meta[name="twitter:card"]', 'content', 'summary_large_image');
-    setMeta('meta[name="twitter:title"]', 'content', post.title);
+    setMeta('meta[name="twitter:title"]', 'content', metaTitle);
     setMeta('meta[name="twitter:description"]', 'content', description);
     setMeta('meta[name="twitter:image"]', 'content', absoluteImage);
 

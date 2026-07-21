@@ -131,3 +131,15 @@ jobs:
           headers="$(curl --fail --silent --show-error --head "${SITE_URL%/}/")"
           grep -qi '^strict-transport-security:' <<< "$headers"
           grep -qi '^content-security-policy:' <<< "$headers"
+
+          sitemap="$(curl --fail --silent --show-error \
+            --retry 3 --retry-delay 3 "${SITE_URL%/}/sitemap.xml")"
+          grep -q '<urlset' <<< "$sitemap"
+          grep -q "${SITE_URL%/}" <<< "$sitemap"
+
+          robots="$(curl --fail --silent --show-error "${SITE_URL%/}/robots.txt")"
+          grep -qi '^Sitemap:.*sitemap.xml' <<< "$robots"
+
+          not_found_status="$(curl --silent --output /dev/null --write-out '%{http_code}' \
+            "${SITE_URL%/}/halaman-tidak-ditemukan-seo")"
+          test "$not_found_status" = "404"

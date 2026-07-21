@@ -171,6 +171,42 @@ function setupHeroImageDropZone(zoneId, inputId) {
     });
 }
 
+function setSeoImage(prefix, url) {
+    const input = document.getElementById(`${prefix}-social-image`);
+    const preview = document.getElementById(`${prefix}-social-preview`);
+    if (input) input.value = url || '';
+    if (preview) {
+        preview.innerHTML = url
+            ? `<div class="admin-slider-preview__item"><img src="${escapeHtml(managedImageVariant(url, 'social'))}" alt="Preview gambar sosial"><button type="button" data-clear-seo-image="${escapeHtml(prefix)}" aria-label="Hapus gambar sosial">×</button></div>`
+            : '';
+    }
+}
+
+function setupSeoImageUpload(prefix) {
+    const zone = document.getElementById(`${prefix}-social-drop-zone`);
+    const input = document.getElementById(`${prefix}-social-file`);
+    if (!zone || !input) return;
+    const upload = async file => {
+        if (!file) return;
+        try {
+            setSeoImage(prefix, await uploadImageFileWithRetry(file, 3, 'social'));
+        } catch (error) {
+            alert(error.message);
+        } finally {
+            input.value = '';
+        }
+    };
+    zone.addEventListener('click', event => {
+        if (!event.target.closest('[data-clear-seo-image]')) input.click();
+    });
+    input.addEventListener('change', () => upload(input.files?.[0]));
+    zone.addEventListener('dragover', event => event.preventDefault());
+    zone.addEventListener('drop', event => {
+        event.preventDefault();
+        upload(event.dataTransfer?.files?.[0]);
+    });
+}
+
 async function uploadHeroImages(files, input) {
     if (!files.length) return;
     const existing = parseGalleryImages(document.getElementById('post-hero-images').value, 10);
@@ -353,7 +389,11 @@ async function saveForm(event, resource) {
         excerpt: document.getElementById(`${prefix}-excerpt`).value,
         content: document.getElementById(`${prefix}-content`).value,
         whatsapp_number: document.getElementById(`${prefix}-wa`).value,
-        whatsapp_message: document.getElementById(`${prefix}-wa-message`).value
+        whatsapp_message: document.getElementById(`${prefix}-wa-message`).value,
+        seo_title: document.getElementById(`${prefix}-seo-title`).value,
+        seo_description: document.getElementById(`${prefix}-seo-description`).value,
+        social_image: document.getElementById(`${prefix}-social-image`).value,
+        image_alt: document.getElementById(`${prefix}-image-alt`).value
     };
     if (resource === 'programs') {
         payload.hero_title = document.getElementById('prog-hero-title').value;
@@ -439,6 +479,7 @@ document.addEventListener('click', event => {
     const removeSliderImage = event.target.closest('[data-remove-slider-image]');
     const removeHeroImage = event.target.closest('[data-remove-hero-image]');
     const removeContentPhoto = event.target.closest('.content-photo-remove');
+    const clearSeoImage = event.target.closest('[data-clear-seo-image]');
     const edit = event.target.closest('[data-edit]');
     const remove = event.target.closest('[data-delete]');
     if (removeSliderImage) {
@@ -465,6 +506,9 @@ document.addEventListener('click', event => {
         const status = document.getElementById(`${prefix}-content-upload-status`);
         if (status) status.textContent = 'Foto dihapus dari rancangan. Klik simpan agar perubahan diterapkan.';
     }
+    if (clearSeoImage) {
+        setSeoImage(clearSeoImage.dataset.clearSeoImage, '');
+    }
     if (edit) editItem(edit.dataset.edit, edit.dataset.id);
     if (remove) deleteItem(remove.dataset.delete, remove.dataset.id);
     const disableAdmin = event.target.closest('[data-disable-admin]');
@@ -485,7 +529,12 @@ async function editItem(resource, id) {
         const data = result.data;
         const prefix = resource === 'posts' ? 'post' : 'prog';
         window.switchTab(resource === 'posts' ? 'articles' : 'programs-admin');
-        ['id', 'title', 'slug', 'excerpt'].forEach(field => { const el = document.getElementById(`${prefix}-${field}`); if (el) el.value = data[field] || ''; });
+        ['id', 'title', 'slug', 'excerpt', 'seo-title', 'seo-description', 'image-alt'].forEach(field => {
+            const databaseField = field.replaceAll('-', '_');
+            const el = document.getElementById(`${prefix}-${field}`);
+            if (el) el.value = data[databaseField] || '';
+        });
+        setSeoImage(prefix, data.social_image || '');
         const previewId = resource === 'posts' ? 'image-preview' : 'prog-image-preview';
         const galleryImages = parseGalleryImages(data.gallery_images);
         if (!galleryImages.length && data.image) galleryImages.push(data.image);
@@ -523,6 +572,8 @@ async function init() {
     setupDropZone('article-drop-zone', 'post-image-file', 'post-image-url', 'image-preview', 'post');
     setupDropZone('prog-drop-zone', 'prog-image-file', 'prog-image-url', 'prog-image-preview', 'prog');
     setupHeroImageDropZone('post-hero-drop-zone', 'post-hero-image-file');
+    setupSeoImageUpload('post');
+    setupSeoImageUpload('prog');
     setupContentPhotoUpload('post');
     setupContentPhotoUpload('prog');
     try {

@@ -22,6 +22,7 @@ Panduan menambah dan mengubah akun admin ada di [docs/ADMIN-MYSQL.md](docs/ADMIN
 Panduan deployment otomatis tersedia di [docs/GITHUB-HOSTINGER.md](docs/GITHUB-HOSTINGER.md).
 Panduan backup harian dan pemulihan tersedia di [docs/BACKUP-RESTORE.md](docs/BACKUP-RESTORE.md).
 Panduan optimasi dan migrasi gambar tersedia di [docs/IMAGE-OPTIMIZATION.md](docs/IMAGE-OPTIMIZATION.md).
+Panduan SEO teknis dan Google Search Console tersedia di [docs/GOOGLE-SEARCH-CONSOLE.md](docs/GOOGLE-SEARCH-CONSOLE.md).
 
 Setelah GitHub Secrets selesai dikonfigurasi, deploy perubahan dari terminal VS Code dengan:
 

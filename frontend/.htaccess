@@ -1,5 +1,6 @@
 Options -Indexes
 DirectoryIndex index.php index.html
+ErrorDocument 404 /404.html
 
 <FilesMatch "(^\.|\.env|\.ini|\.log|\.sql|\.md)$">
     Require all denied
@@ -40,6 +41,7 @@ DirectoryIndex index.php index.html
 
     # Website publik disimpan terpisah, tetapi tetap tampil dari root domain.
     RewriteRule ^$ halaman-utama/index.html [L]
+    RewriteRule ^sitemap\.xml$ sitemap.php [L]
     RewriteCond %{REQUEST_URI} !^/(admin|api|uploads|halaman-utama)(/|$) [NC]
     RewriteCond %{DOCUMENT_ROOT}/halaman-utama/$1 -f
     RewriteRule ^(.+)$ halaman-utama/$1 [L]
@@ -50,5 +52,5 @@ DirectoryIndex index.php index.html
 
     # Slug satu tingkat di root domain digunakan sebagai halaman detail program.
     RewriteCond %{REQUEST_URI} !^/(admin|api|uploads|halaman-utama)(/|$) [NC]
-    RewriteRule ^([a-z0-9]+(?:-[a-z0-9]+)*)/?$ halaman-utama/program.html?slug=$1 [L,QSA]
+    RewriteRule ^([a-z0-9]+(?:-[a-z0-9]+)*)/?$ halaman-utama/program.php?slug=$1 [L,QSA]
 </IfModule>

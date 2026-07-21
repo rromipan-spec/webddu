@@ -21,7 +21,8 @@ if ($template === false) {
 
 if (!$post) {
     http_response_code(404);
-    echo $template;
+    $notFound = file_get_contents(dirname(__DIR__) . '/404.html');
+    echo $notFound !== false ? $notFound : 'Halaman tidak ditemukan.';
     exit;
 }
 
@@ -29,13 +30,16 @@ $escape = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTE
 $siteName = 'Dompet Dana Umat';
 $appUrl = rtrim(Config::get('APP_URL', 'https://dompetdanaumat.com'), '/');
 $canonicalUrl = $appUrl . '/artikel/' . rawurlencode((string) $post['slug']);
-$description = trim((string) ($post['excerpt'] ?? ''));
+$metaTitle = trim((string) ($post['seo_title'] ?? '')) ?: (string) $post['title'];
+$description = trim((string) ($post['seo_description'] ?? ''));
+if ($description === '') $description = trim((string) ($post['excerpt'] ?? ''));
 if ($description === '') {
     $description = trim(preg_replace('/\s+/', ' ', strip_tags((string) ($post['content'] ?? ''))) ?? '');
 }
 $description = mb_substr($description, 0, 160);
 
-$socialImage = trim((string) ($post['image'] ?? ''));
+$socialImage = trim((string) ($post['social_image'] ?? ''));
+if ($socialImage === '') $socialImage = trim((string) ($post['image'] ?? ''));
 if ($socialImage === '') {
     $gallery = json_decode((string) ($post['gallery_images'] ?? '[]'), true);
     if (is_array($gallery)) $socialImage = trim((string) ($gallery[0] ?? ''));
@@ -80,7 +84,8 @@ $socialImageMeta = $socialImage . (str_contains($socialImage, '?') ? '&' : '?') 
 
 $publishedTime = date(DATE_ATOM, strtotime((string) ($post['created_at'] ?? 'now')) ?: time());
 $modifiedTime = date(DATE_ATOM, strtotime((string) ($post['updated_at'] ?? $post['created_at'] ?? 'now')) ?: time());
-$pageTitle = (string) $post['title'] . ' - ' . $siteName;
+$imageAlt = trim((string) ($post['image_alt'] ?? '')) ?: (string) $post['title'];
+$pageTitle = $metaTitle . ' - ' . $siteName;
 $structuredData = [
     '@context' => 'https://schema.org',
     '@type' => 'Article',
@@ -105,19 +110,19 @@ $socialMeta = '<title>' . $escape($pageTitle) . '</title>' . "\n"
     . '    <meta property="og:type" content="article">' . "\n"
     . '    <meta property="og:site_name" content="' . $escape($siteName) . '">' . "\n"
     . '    <meta property="og:locale" content="id_ID">' . "\n"
-    . '    <meta property="og:title" content="' . $escape((string) $post['title']) . '">' . "\n"
+    . '    <meta property="og:title" content="' . $escape($metaTitle) . '">' . "\n"
     . '    <meta property="og:description" content="' . $escape($description) . '">' . "\n"
     . '    <meta property="og:url" content="' . $escape($canonicalUrl) . '">' . "\n"
     . '    <meta property="og:image" content="' . $escape($socialImageMeta) . '">' . "\n"
     . '    <meta property="og:image:secure_url" content="' . $escape($socialImageMeta) . '">' . "\n"
-    . '    <meta property="og:image:alt" content="' . $escape((string) $post['title']) . '">' . "\n"
+    . '    <meta property="og:image:alt" content="' . $escape($imageAlt) . '">' . "\n"
     . ($imageWidth ? '    <meta property="og:image:width" content="' . $imageWidth . '">' . "\n" : '')
     . ($imageHeight ? '    <meta property="og:image:height" content="' . $imageHeight . '">' . "\n" : '')
     . ($imageMime ? '    <meta property="og:image:type" content="' . $escape($imageMime) . '">' . "\n" : '')
     . '    <meta property="article:published_time" content="' . $escape($publishedTime) . '">' . "\n"
     . '    <meta property="article:modified_time" content="' . $escape($modifiedTime) . '">' . "\n"
     . '    <meta name="twitter:card" content="summary_large_image">' . "\n"
-    . '    <meta name="twitter:title" content="' . $escape((string) $post['title']) . '">' . "\n"
+    . '    <meta name="twitter:title" content="' . $escape($metaTitle) . '">' . "\n"
     . '    <meta name="twitter:description" content="' . $escape($description) . '">' . "\n"
     . '    <meta name="twitter:image" content="' . $escape($socialImageMeta) . '">' . "\n"
     . '    <script id="article-structured-data" type="application/ld+json">'

@@ -22,7 +22,7 @@ export function recordSliderImages(record = {}) {
     return [...new Set(images)].slice(0, 3);
 }
 
-export function detailSliderHtml(images, title, extraClass = '') {
+export function detailSliderHtml(images, title, extraClass = '', imageAlt = '') {
     if (!images.length) return '';
     const controls = images.length > 1 ? `
         <button type="button" class="detail-slider-button detail-slider-prev" aria-label="Foto sebelumnya">&#10094;</button>
@@ -31,7 +31,7 @@ export function detailSliderHtml(images, title, extraClass = '') {
             ${images.map((image, index) => `<button type="button" class="detail-slider-dot${index === 0 ? ' active' : ''}" data-slide-index="${index}" aria-label="Tampilkan foto ${index + 1}"></button>`).join('')}
         </div>` : '';
     return `<figure class="detail-image-slider ${escapeHtml(extraClass)}" data-detail-slider>
-        ${images.map((image, index) => `<div class="detail-image-slide${index === 0 ? ' active' : ''}" aria-hidden="${index === 0 ? 'false' : 'true'}"><img src="${escapeHtml(managedImageVariant(image, 'content'))}" alt="${escapeHtml(title)} - foto ${index + 1}" decoding="async"${index > 0 ? ' loading="lazy"' : ' fetchpriority="high"'}></div>`).join('')}
+        ${images.map((image, index) => `<div class="detail-image-slide${index === 0 ? ' active' : ''}" aria-hidden="${index === 0 ? 'false' : 'true'}"><img src="${escapeHtml(managedImageVariant(image, 'content'))}" alt="${escapeHtml(imageAlt || title)} - foto ${index + 1}" decoding="async"${index > 0 ? ' loading="lazy"' : ' fetchpriority="high"'}></div>`).join('')}
         ${controls}
         <figcaption class="detail-slider-caption"><span>${escapeHtml(title)}</span><strong data-slider-count>${images.length > 1 ? `1 / ${images.length}` : '1 / 1'}</strong></figcaption>
     </figure>`;

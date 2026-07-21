@@ -31,8 +31,8 @@
         .visual-editor .content-photo-grid figure, .mock-content .content-photo-grid figure { margin: 0; }
         .visual-editor .content-photo-grid img, .mock-content .content-photo-grid img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 10px; }
         .visual-editor .content-photo-grid figure { position: relative; }
-        .content-photo-remove, [data-remove-slider-image], [data-remove-hero-image] { position: absolute; top: 8px; right: 8px; z-index: 3; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0; color: #fff; background: #dc2626; border: 2px solid #fff; border-radius: 50%; box-shadow: 0 3px 10px rgba(0,0,0,.25); cursor: pointer; font-size: 1.25rem; font-weight: 800; line-height: 1; }
-        .content-photo-remove:hover, [data-remove-slider-image]:hover, [data-remove-hero-image]:hover { background: #b91c1c; }
+        .content-photo-remove, [data-remove-slider-image], [data-remove-hero-image], [data-clear-seo-image] { position: absolute; top: 8px; right: 8px; z-index: 3; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0; color: #fff; background: #dc2626; border: 2px solid #fff; border-radius: 50%; box-shadow: 0 3px 10px rgba(0,0,0,.25); cursor: pointer; font-size: 1.25rem; font-weight: 800; line-height: 1; }
+        .content-photo-remove:hover, [data-remove-slider-image]:hover, [data-remove-hero-image]:hover, [data-clear-seo-image]:hover { background: #b91c1c; }
         .admin-slider-preview { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 14px; }
         .admin-slider-preview__item { position: relative; min-width: 0; text-align: left; }
         .admin-slider-preview__item img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 9px; }
@@ -40,7 +40,11 @@
         .content-upload-status { color: #5a6e8a; font-size: 0.82rem; font-weight: 600; }
         .hidden-input { display: none; }
         .drop-zone { border: 2px dashed #cbd5e0; padding: 25px; text-align: center; border-radius: 12px; cursor: pointer; transition: 0.3s; margin-bottom: 15px; background: #f8fafc; }
-        .drop-zone:hover { border-color: #1e4b9c; background: #f0f5ff; }
+         .drop-zone:hover { border-color: #1e4b9c; background: #f0f5ff; }
+         .seo-settings { margin: 24px 0; padding: 22px; border: 1px solid #dbe5f4; border-radius: 12px; background: #f8fbff; }
+         .seo-settings h3 { margin: 0 0 8px; color: #0a2b5e; }
+         .seo-settings-note { margin: 0 0 18px; color: #64748b; font-size: .9rem; }
+         .seo-social-preview img { width: min(100%, 360px); aspect-ratio: 1200 / 630; object-fit: cover; border-radius: 10px; }
         
         /* Live Preview Miniature (Super Mini Scale to see whole page at once) */
         .preview-group { flex-grow: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
@@ -198,6 +202,22 @@
                             <label>Pesan Awal WhatsApp (Opsional)</label>
                             <textarea id="prog-wa-message" rows="2" placeholder="Contoh: Assalamualaikum, saya ingin berkonsultasi mengenai program ini"></textarea>
                         </div>
+                        <section class="seo-settings" aria-labelledby="prog-seo-heading">
+                            <h3 id="prog-seo-heading">Pengaturan SEO</h3>
+                            <p class="seo-settings-note">Kosongkan judul/deskripsi jika ingin memakai nama dan ringkasan program secara otomatis.</p>
+                            <div class="form-group"><label>Judul SEO (Maksimal 70 Karakter)</label><input type="text" id="prog-seo-title" maxlength="70"></div>
+                            <div class="form-group"><label>Deskripsi SEO (Maksimal 170 Karakter)</label><textarea id="prog-seo-description" maxlength="170" rows="3"></textarea></div>
+                            <div class="form-group"><label>Alt Gambar Utama</label><input type="text" id="prog-image-alt" maxlength="180" placeholder="Jelaskan isi gambar secara singkat"></div>
+                            <div class="form-group">
+                                <label>Gambar Sosial (Opsional, Otomatis 1200×630)</label>
+                                <div class="drop-zone" id="prog-social-drop-zone">
+                                    <p>Klik atau jatuhkan foto khusus thumbnail WhatsApp/Facebook</p>
+                                    <input type="file" id="prog-social-file" hidden accept="image/jpeg,image/png,image/webp">
+                                    <input type="hidden" id="prog-social-image">
+                                    <div id="prog-social-preview" class="seo-social-preview"></div>
+                                </div>
+                            </div>
+                        </section>
                         <label>Isi Detail Program (Landing Page)</label>
                         <div class="toolbar">
                             <button type="button" id="prog-btn-bold" onclick="formatDoc('bold')"><b>B</b> (Tebal)</button>
@@ -272,6 +292,22 @@
                             <label>Pesan Awal WhatsApp (Opsional)</label>
                             <textarea id="post-wa-message" rows="2" placeholder="Contoh: Assalamualaikum, saya tertarik dengan artikel ini"></textarea>
                         </div>
+                        <section class="seo-settings" aria-labelledby="post-seo-heading">
+                            <h3 id="post-seo-heading">Pengaturan SEO</h3>
+                            <p class="seo-settings-note">Kosongkan judul/deskripsi jika ingin memakai judul dan ringkasan artikel secara otomatis.</p>
+                            <div class="form-group"><label>Judul SEO (Maksimal 70 Karakter)</label><input type="text" id="post-seo-title" maxlength="70"></div>
+                            <div class="form-group"><label>Deskripsi SEO (Maksimal 170 Karakter)</label><textarea id="post-seo-description" maxlength="170" rows="3"></textarea></div>
+                            <div class="form-group"><label>Alt Gambar Utama</label><input type="text" id="post-image-alt" maxlength="180" placeholder="Jelaskan isi gambar secara singkat"></div>
+                            <div class="form-group">
+                                <label>Gambar Sosial (Opsional, Otomatis 1200×630)</label>
+                                <div class="drop-zone" id="post-social-drop-zone">
+                                    <p>Klik atau jatuhkan foto khusus thumbnail WhatsApp/Facebook</p>
+                                    <input type="file" id="post-social-file" hidden accept="image/jpeg,image/png,image/webp">
+                                    <input type="hidden" id="post-social-image">
+                                    <div id="post-social-preview" class="seo-social-preview"></div>
+                                </div>
+                            </div>
+                        </section>
                         <label>Isi Konten (Ketik & Lihat Hasil)</label>
                         <div class="toolbar">
                             <button type="button" id="btn-bold" onclick="formatDoc('bold')"><b>B</b> (Tebal)</button>
@@ -320,6 +356,6 @@
         </main>
     </div>
 
-    <script type="module" src="admin.js?v=20260721-10"></script>
+    <script type="module" src="admin.js?v=20260721-11"></script>
 </body>
 </html>

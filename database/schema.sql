@@ -23,6 +23,10 @@ CREATE TABLE IF NOT EXISTS posts (
     content MEDIUMTEXT NOT NULL,
     whatsapp_number VARCHAR(20) NOT NULL DEFAULT '',
     whatsapp_message VARCHAR(500) NOT NULL DEFAULT '',
+    seo_title VARCHAR(70) NOT NULL DEFAULT '',
+    seo_description VARCHAR(170) NOT NULL DEFAULT '',
+    social_image VARCHAR(500) NOT NULL DEFAULT '',
+    image_alt VARCHAR(180) NOT NULL DEFAULT '',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_posts_created_at (created_at)
@@ -40,6 +44,10 @@ CREATE TABLE IF NOT EXISTS programs (
     content MEDIUMTEXT NOT NULL,
     whatsapp_number VARCHAR(20) NOT NULL DEFAULT '',
     whatsapp_message VARCHAR(500) NOT NULL DEFAULT '',
+    seo_title VARCHAR(70) NOT NULL DEFAULT '',
+    seo_description VARCHAR(170) NOT NULL DEFAULT '',
+    social_image VARCHAR(500) NOT NULL DEFAULT '',
+    image_alt VARCHAR(180) NOT NULL DEFAULT '',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_programs_created_at (created_at)

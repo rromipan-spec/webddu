@@ -232,6 +232,10 @@ function validatePayload(string $table, array $body): array
     if ($wa !== '' && (strlen($wa) < 8 || strlen($wa) > 16)) {
         Http::json(['ok' => false, 'message' => 'Nomor WhatsApp tidak valid.'], 422);
     }
+    $socialImage = trim((string) ($body['social_image'] ?? ''));
+    if ($socialImage !== '' && !filter_var($socialImage, FILTER_VALIDATE_URL) && !str_starts_with($socialImage, '/uploads/')) {
+        Http::json(['ok' => false, 'message' => 'Alamat gambar sosial tidak valid.'], 422);
+    }
 
     $payload = [
         'title' => $title,
@@ -242,6 +246,10 @@ function validatePayload(string $table, array $body): array
         'content' => Sanitizer::richText((string) ($body['content'] ?? '')),
         'whatsapp_number' => $wa,
         'whatsapp_message' => mb_substr(trim((string) ($body['whatsapp_message'] ?? '')), 0, 500),
+        'seo_title' => mb_substr(trim((string) ($body['seo_title'] ?? '')), 0, 70),
+        'seo_description' => mb_substr(trim((string) ($body['seo_description'] ?? '')), 0, 170),
+        'social_image' => $socialImage,
+        'image_alt' => mb_substr(trim((string) ($body['image_alt'] ?? '')), 0, 180),
     ];
 
     if ($table === 'posts') {

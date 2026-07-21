@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /halaman-utama/
+Disallow: /setup-admin.php
+
+Sitemap: https://dompetdanaumat.com/sitemap.xml
