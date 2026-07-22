@@ -38,6 +38,19 @@
 .footer .footer-policy-links a { color: #d7e4f4; font-size: .88rem; text-decoration: none; }
 .footer .footer-policy-links a:hover { color: #fff; text-decoration: underline; }
 
+.footer .footer-col > p,
+.footer .contact-info,
+.footer .footer-bottom p {
+    color: #d7e4f4;
+}
+
+.footer .footer-col > .footer-heading {
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 25px;
+}
+
 @media (max-width: 768px) {
     .footer > .container {
         width: 90%;

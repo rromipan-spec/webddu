@@ -14,6 +14,29 @@ $serveNotFound = static function () use ($frontendRoot): void {
     echo $page !== false ? $page : 'Halaman tidak ditemukan.';
 };
 
+$serveStaticFile = static function (string $file): void {
+    $contentTypes = [
+        'css' => 'text/css; charset=utf-8',
+        'js' => 'text/javascript; charset=utf-8',
+        'json' => 'application/json; charset=utf-8',
+        'xml' => 'application/xml; charset=utf-8',
+        'txt' => 'text/plain; charset=utf-8',
+        'svg' => 'image/svg+xml',
+        'png' => 'image/png',
+        'jpg' => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'webp' => 'image/webp',
+        'ico' => 'image/x-icon',
+        'woff' => 'font/woff',
+        'woff2' => 'font/woff2',
+    ];
+
+    $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+    header('Content-Type: ' . ($contentTypes[$extension] ?? 'application/octet-stream'));
+    header('X-Content-Type-Options: nosniff');
+    readfile($file);
+};
+
 // Tolak path yang mencoba keluar dari document root.
 if (str_contains($requestPath, "\0") || preg_match('#(?:^|/)\.\.(?:/|$)#', $requestPath)) {
     $serveNotFound();
@@ -39,7 +62,11 @@ if ($requestPath === '/sitemap.xml') {
 // File halaman utama dipublikasikan dari root domain oleh .htaccess.
 $publicPage = $frontendRoot . '/halaman-utama' . str_replace('/', DIRECTORY_SEPARATOR, $requestPath);
 if (is_file($publicPage)) {
-    require $publicPage;
+    if (strtolower(pathinfo($publicPage, PATHINFO_EXTENSION)) === 'php') {
+        require $publicPage;
+    } else {
+        $serveStaticFile($publicPage);
+    }
     return true;
 }
 

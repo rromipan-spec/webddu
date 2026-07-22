@@ -18,7 +18,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const preloader = document.querySelector('.preloader');
-    window.addEventListener('load', () => preloader?.classList.add('hidden'));
+    const hidePreloader = () => preloader?.classList.add('hidden');
+    window.addEventListener('load', hidePreloader, { once: true });
+    window.requestAnimationFrame(() => window.setTimeout(hidePreloader, 120));
+    window.setTimeout(hidePreloader, 800);
     const header = document.querySelector('.main-header');
     const backToTop = document.querySelector('.back-to-top');
     window.addEventListener('scroll', () => {

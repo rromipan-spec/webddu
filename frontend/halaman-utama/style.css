@@ -337,9 +337,36 @@ p {
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
-.hero-content h5 {
+.hero-content h5,
+.hero-content .section-kicker {
+    display: block;
     color: #64b5f6;
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    font-size: .83rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+}
+
+.about-content .section-kicker {
+    display: block;
+    color: #1f5cb8;
+    font-size: .82rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+}
+
+.cta-minimal .section-kicker {
+    display: block;
+    color: #1f5cb8;
+    font-size: .82rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    margin-bottom: 12px;
+    text-transform: uppercase;
 }
 
 .hero-content p {
@@ -1685,16 +1712,18 @@ p {
     display: flex;
     justify-content: center;
     align-items: center;
-    transition: opacity 0.5s ease 0.5s, visibility 0.5s ease 0.5s; /* Delay agar animasi sempat terlihat */
+    transition: opacity 0.25s ease, visibility 0.25s ease;
 }
 
 .preloader.hidden {
     opacity: 0;
     visibility: hidden;
+    pointer-events: none;
 }
 
 .preloader-logo {
     width: 80px;
+    height: auto;
     animation: pulseLogo 1.5s ease-in-out infinite;
 }
 

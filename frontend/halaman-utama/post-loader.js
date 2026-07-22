@@ -146,7 +146,7 @@ function renderPost(container, post, related) {
                 ${relatedArticlesHtml(related)}
             </div>
         </div>
-        <a href="${whatsappUrl}" class="whatsapp-popup" target="_blank" rel="noopener noreferrer" aria-label="Berdonasi melalui WhatsApp"><img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp"></a>`;
+        <a href="${whatsappUrl}" class="whatsapp-popup" target="_blank" rel="noopener noreferrer" aria-label="Berdonasi melalui WhatsApp"><img src="/asset/whatsapp-phone.svg" alt="" width="24" height="24"></a>`;
 
     initDetailSliders(container);
     initPostHeroSlider(container);
