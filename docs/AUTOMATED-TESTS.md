@@ -47,6 +47,8 @@ Semua artikel, program, akun admin, statistik, gambar, session, dan log yang dib
 
 Jika tes merah, buka langkah **Run HTTP integration tests**. Log menampilkan nomor tes dan respons terakhir yang menyebabkan kegagalan. Jangan menekan deploy ulang berkali-kali tanpa membaca penyebabnya.
 
+Setelah deployment berhasil, job **Mobile Lighthouse audit** mengukur performa, aksesibilitas, praktik terbaik, dan SEO pada website produksi. Panduan membaca laporannya tersedia di `docs/LIGHTHOUSE.md`.
+
 ## Menjalankan secara lokal
 
 Tes dirancang untuk Linux/GitHub Actions dan membutuhkan PHP 8.1+, ekstensi aplikasi, MySQL, Bash, curl, serta jq. Gunakan database lokal khusus yang namanya mengandung `test`; jangan pernah menunjuk `.env` lokal ke database produksi.

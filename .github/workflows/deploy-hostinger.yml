@@ -247,3 +247,33 @@ jobs:
           not_found_status="$(curl --silent --output /dev/null --write-out '%{http_code}' \
             "${SITE_URL%/}/halaman-tidak-ditemukan-seo")"
           test "$not_found_status" = "404"
+
+  lighthouse:
+    name: Mobile Lighthouse audit
+    needs: deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Audit production website
+        continue-on-error: true
+        env:
+          SITE_URL: ${{ secrets.SITE_URL }}
+        run: npx --yes @lhci/cli@0.15.1 autorun --config=./lighthouserc.cjs
+
+      - name: Store Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-mobile-${{ github.run_number }}
+          path: lighthouse-reports/
+          if-no-files-found: warn
+          retention-days: 14

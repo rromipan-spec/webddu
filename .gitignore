@@ -6,4 +6,6 @@
 !/backend/storage/backups/.gitkeep
 /frontend/uploads/*
 !/frontend/uploads/.htaccess
+/.lighthouseci/
+/lighthouse-reports/
 /debug.log
