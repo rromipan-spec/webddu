@@ -117,6 +117,11 @@ jobs:
           SITE_URL: ${{ secrets.SITE_URL }}
         run: |
           set -euo pipefail
+          health="$(curl --fail --silent --show-error \
+            --retry 3 --retry-delay 3 \
+            "${SITE_URL%/}/health.php")"
+          grep -q '"status":"healthy"' <<< "$health"
+
           curl --fail --silent --show-error \
             --retry 3 --retry-delay 3 \
             "${SITE_URL%/}/api/index.php?resource=session"

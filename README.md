@@ -25,6 +25,7 @@ Panduan optimasi dan migrasi gambar tersedia di [docs/IMAGE-OPTIMIZATION.md](doc
 Panduan SEO teknis dan Google Search Console tersedia di [docs/GOOGLE-SEARCH-CONSOLE.md](docs/GOOGLE-SEARCH-CONSOLE.md).
 Panduan draft, jadwal tayang, preview, kategori, dan riwayat admin tersedia di [docs/PUBLICATION-SYSTEM.md](docs/PUBLICATION-SYSTEM.md).
 Panduan legalitas, rekening resmi, transparansi, dan kebijakan privasi tersedia di [docs/CREDIBILITY-PROFILE.md](docs/CREDIBILITY-PROFILE.md).
+Panduan error log privat dan pemeriksaan kesehatan website tersedia di [docs/MONITORING.md](docs/MONITORING.md).
 
 Setelah GitHub Secrets selesai dikonfigurasi, deploy perubahan dari terminal VS Code dengan:
 
@@ -44,6 +45,8 @@ Script akan memeriksa file rahasia dan sintaks JavaScript, membuat commit, push 
 - HTML artikel disaring dengan allowlist di server untuk mengurangi XSS.
 - Upload hanya JPG/PNG/WebP maksimal 5 MB dengan nama acak; eksekusi PHP di folder upload diblokir.
 - Pesan error produksi tidak membocorkan detail server; detail masuk ke log privat.
+- Warning, exception, dan fatal error dicatat dengan kode kejadian; log lama diputar otomatis.
+- Endpoint `/health.php` memeriksa PHP, database, tabel penting, uploads, dan penyimpanan log tanpa membocorkan detail internal.
 - File `.env`, log, SQL, directory listing, dan akses langsung ke backend diblokir.
 
 ## Menjalankan secara lokal

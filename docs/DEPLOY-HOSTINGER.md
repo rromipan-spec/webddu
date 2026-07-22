@@ -54,6 +54,7 @@ Permission yang disarankan:
 3. Buka `/admin/`, coba login, tambah satu artikel, upload gambar, edit, lalu hapus.
 4. Pastikan URL `/backend/`, `/.env`, dan `/uploads/contoh.php` tidak dapat diakses.
 5. Periksa `backend/storage/logs/app.log` bila API menghasilkan status 500. Jangan mempublikasikan isi log.
+6. Buka `/health.php`; hasil normal adalah JSON dengan `"status":"healthy"`.
 
 ## 6. Checklist sebelum tayang
 

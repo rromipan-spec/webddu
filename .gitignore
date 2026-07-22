@@ -1,5 +1,6 @@
 /backend/config/.env
-/backend/storage/logs/*.log
+/backend/storage/logs/*
+!/backend/storage/logs/.gitkeep
 /backend/storage/security/*.json
 /backend/storage/backups/*
 !/backend/storage/backups/.gitkeep
