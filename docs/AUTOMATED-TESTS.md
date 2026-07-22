@@ -47,7 +47,7 @@ Semua artikel, program, akun admin, statistik, gambar, session, dan log yang dib
 
 Jika tes merah, buka langkah **Run HTTP integration tests**. Log menampilkan nomor tes dan respons terakhir yang menyebabkan kegagalan. Jangan menekan deploy ulang berkali-kali tanpa membaca penyebabnya.
 
-Setelah deployment berhasil, job **Mobile Lighthouse audit** mengukur performa, aksesibilitas, praktik terbaik, dan SEO pada website produksi. Panduan membaca laporannya tersedia di `docs/LIGHTHOUSE.md`.
+Setelah pengujian HTTP berhasil, langkah **Run mobile Lighthouse audit locally** mengukur performa, aksesibilitas, praktik terbaik, dan SEO pada server tes sementara. Pemeriksaan ini tidak melemahkan perlindungan bot Hostinger dan hasilnya disimpan sebagai artifact. Panduan membaca laporannya tersedia di `docs/LIGHTHOUSE.md`.
 
 ## Menjalankan secara lokal
 

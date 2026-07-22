@@ -1,6 +1,6 @@
 # Audit Lighthouse mobile
 
-Setelah integration test dan deployment Hostinger berhasil, GitHub Actions menjalankan job **Mobile Lighthouse audit** terhadap:
+Setelah integration test berhasil, GitHub Actions menjalankan langkah **Run mobile Lighthouse audit locally** terhadap server pengujian sementara:
 
 1. halaman utama;
 2. halaman About.
@@ -14,12 +14,14 @@ Audit mengukur performa, aksesibilitas, praktik terbaik, dan SEO dengan simulasi
 
 Nilai di bawah batas belum membatalkan deployment. Tujuannya adalah mendapatkan nilai awal yang stabil terlebih dahulu sebelum pemeriksaan dijadikan lebih ketat.
 
+Audit tidak dijalankan langsung ke domain produksi karena perlindungan otomatis Hostinger dapat menolak browser HeadlessChrome dengan HTTP 403. Menjalankan audit pada server tes menjaga perlindungan Hostinger tetap aktif. Koneksi database, header keamanan, sitemap, robots.txt, dan status 404 pada produksi tetap diperiksa oleh langkah **Verify production API**.
+
 ## Membuka laporan
 
 1. Buka repository GitHub lalu pilih **Actions**.
 2. Buka workflow **Deploy to Hostinger** terbaru.
-3. Pilih job **Mobile Lighthouse audit**.
-4. Pada bagian **Artifacts**, unduh file bernama `lighthouse-mobile-...`.
+3. Buka hasil job **Automated integration tests** dan pastikan langkah audit selesai.
+4. Pada halaman ringkasan workflow, cari bagian **Artifacts** lalu unduh file bernama `lighthouse-mobile-...`.
 5. Ekstrak ZIP lalu buka laporan HTML menggunakan browser.
 
 Artifact disimpan selama 14 hari dan tidak diunggah ke penyimpanan laporan publik.

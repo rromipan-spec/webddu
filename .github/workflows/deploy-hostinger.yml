@@ -48,6 +48,11 @@ jobs:
         env:
           fail-fast: true
 
+      - name: Setup Node.js audit runtime
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
       - name: Validate source files
         shell: bash
         run: |
@@ -107,6 +112,49 @@ jobs:
             cat "$server_log"
             exit 1
           fi
+
+      - name: Run mobile Lighthouse audit locally
+        continue-on-error: true
+        shell: bash
+        env:
+          SITE_URL: http://127.0.0.1:8080
+        run: |
+          set -euo pipefail
+          server_log="$RUNNER_TEMP/ddu-lighthouse-server.log"
+          php -S 127.0.0.1:8080 -t frontend tests/router.php > "$server_log" 2>&1 &
+          server_pid=$!
+          cleanup() {
+            kill "$server_pid" 2>/dev/null || true
+            wait "$server_pid" 2>/dev/null || true
+          }
+          trap cleanup EXIT
+
+          ready=false
+          for attempt in {1..20}; do
+            if curl --fail --silent --show-error "$SITE_URL/health.php" > /dev/null; then
+              ready=true
+              break
+            fi
+            sleep 1
+          done
+          if [ "$ready" != true ]; then
+            cat "$server_log"
+            exit 1
+          fi
+
+          if ! npx --yes @lhci/cli@0.15.1 autorun --config=./lighthouserc.cjs; then
+            cat "$server_log"
+            exit 1
+          fi
+
+      - name: Store Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-mobile-${{ github.run_number }}
+          path: lighthouse-reports/
+          if-no-files-found: warn
+          retention-days: 14
 
   deploy:
     name: Deploy production
@@ -247,33 +295,3 @@ jobs:
           not_found_status="$(curl --silent --output /dev/null --write-out '%{http_code}' \
             "${SITE_URL%/}/halaman-tidak-ditemukan-seo")"
           test "$not_found_status" = "404"
-
-  lighthouse:
-    name: Mobile Lighthouse audit
-    needs: deploy
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-
-      - name: Audit production website
-        continue-on-error: true
-        env:
-          SITE_URL: ${{ secrets.SITE_URL }}
-        run: npx --yes @lhci/cli@0.15.1 autorun --config=./lighthouserc.cjs
-
-      - name: Store Lighthouse reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: lighthouse-mobile-${{ github.run_number }}
-          path: lighthouse-reports/
-          if-no-files-found: warn
-          retention-days: 14
