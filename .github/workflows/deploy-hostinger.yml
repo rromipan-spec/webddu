@@ -82,7 +82,7 @@ jobs:
         run: |
           set -euo pipefail
           server_log="$RUNNER_TEMP/ddu-test-server.log"
-          php -S 127.0.0.1:8080 -t frontend > "$server_log" 2>&1 &
+          php -S 127.0.0.1:8080 -t frontend tests/router.php > "$server_log" 2>&1 &
           server_pid=$!
           cleanup() {
             kill "$server_pid" 2>/dev/null || true
