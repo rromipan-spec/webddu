@@ -49,6 +49,8 @@ Permission yang disarankan:
 
 ## 5. Uji setelah upload
 
+Sebelum deployment dimulai, GitHub Actions menjalankan integration test dengan database MySQL sementara. Database Hostinger tidak dipakai oleh tes. Deployment hanya dilanjutkan jika job **Automated integration tests** berhasil.
+
 1. Buka halaman utama dan pastikan tidak ada error di Console browser.
 2. Buka `/api/index.php?resource=posts`; hasil normal berupa JSON dengan `"ok": true`.
 3. Buka `/admin/`, coba login, tambah satu artikel, upload gambar, edit, lalu hapus.

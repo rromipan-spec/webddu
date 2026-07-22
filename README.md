@@ -26,6 +26,7 @@ Panduan SEO teknis dan Google Search Console tersedia di [docs/GOOGLE-SEARCH-CON
 Panduan draft, jadwal tayang, preview, kategori, dan riwayat admin tersedia di [docs/PUBLICATION-SYSTEM.md](docs/PUBLICATION-SYSTEM.md).
 Panduan legalitas, rekening resmi, transparansi, dan kebijakan privasi tersedia di [docs/CREDIBILITY-PROFILE.md](docs/CREDIBILITY-PROFILE.md).
 Panduan error log privat dan pemeriksaan kesehatan website tersedia di [docs/MONITORING.md](docs/MONITORING.md).
+Panduan integration test dengan database MySQL sementara tersedia di [docs/AUTOMATED-TESTS.md](docs/AUTOMATED-TESTS.md).
 
 Setelah GitHub Secrets selesai dikonfigurasi, deploy perubahan dari terminal VS Code dengan:
 
