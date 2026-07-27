@@ -231,6 +231,12 @@ function renderPost(container, post, related) {
                     <p>Salurkan donasi terbaik Anda melalui kanal resmi Dompet Dana Umat.</p>
                     <div class="post-donation-trust"><span>✓ Amanah</span><span>✓ Mudah</span><span>✓ Terarah</span></div>
                     <div class="donation-methods${qrImage ? ' has-qr' : ''}">
+                        ${qrImage ? `<div class="donation-method donation-method--qr">
+                            <span class="donation-method-label">Scan Donasi</span>
+                            <h3>QR/Barcode Resmi</h3>
+                            <a href="${escapeHtml(qrImage)}" target="_blank" rel="noopener noreferrer" aria-label="Buka QR/barcode donasi ukuran penuh"><img src="${escapeHtml(qrImage)}" alt="QR atau barcode donasi ${escapeHtml(post.title)}" width="600" height="600" loading="lazy"></a>
+                            <small>Ketuk gambar untuk memperbesar. Pastikan tujuan pembayaran sesuai informasi resmi DDU.</small>
+                        </div>` : ''}
                         <div class="donation-method donation-method--whatsapp">
                             <span class="donation-method-label">WhatsApp Resmi</span>
                             <h3>Konsultasi Donasi</h3>
@@ -238,12 +244,6 @@ function renderPost(container, post, related) {
                             <strong class="donation-whatsapp-number">${escapeHtml(whatsappDisplay(wa))}</strong>
                             <a href="${whatsappUrl}" class="btn-whatsapp-minimal" target="_blank" rel="noopener noreferrer">Berdonasi via WhatsApp <span aria-hidden="true">→</span></a>
                         </div>
-                        ${qrImage ? `<div class="donation-method donation-method--qr">
-                            <span class="donation-method-label">Scan Donasi</span>
-                            <h3>QR/Barcode Resmi</h3>
-                            <a href="${escapeHtml(qrImage)}" target="_blank" rel="noopener noreferrer" aria-label="Buka QR/barcode donasi ukuran penuh"><img src="${escapeHtml(qrImage)}" alt="QR atau barcode donasi ${escapeHtml(post.title)}" width="600" height="600" loading="lazy"></a>
-                            <small>Ketuk gambar untuk memperbesar. Pastikan tujuan pembayaran sesuai informasi resmi DDU.</small>
-                        </div>` : ''}
                     </div>
                 </section>
                 ${relatedArticlesHtml(related)}

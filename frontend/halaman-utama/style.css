@@ -1841,7 +1841,7 @@ p {
 .donation-methods {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: 22px;
+    gap: 48px;
     max-width: 920px;
     margin: 38px auto 0;
 }
@@ -1854,13 +1854,14 @@ p {
     display: flex;
     min-width: 0;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 34px;
-    border: 1px solid #dce6f2;
-    border-radius: 20px;
-    background: #f7faff;
-    box-shadow: 0 12px 30px rgba(10, 38, 71, .08);
+    align-items: stretch;
+    justify-content: flex-start;
+    padding: 10px 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    text-align: left;
 }
 
 .donation-method-label {
@@ -1879,7 +1880,7 @@ p {
 
 .cta-minimal .donation-method p,
 .donation-method p {
-    margin: 0 auto 20px;
+    margin: 0 0 20px;
     color: #5a6e8a;
     font-size: .95rem;
     line-height: 1.65;
@@ -1902,7 +1903,7 @@ p {
 .donation-method--qr a {
     display: block;
     width: min(100%, 245px);
-    margin: 4px auto 12px;
+    margin: 4px 0 12px;
 }
 
 .donation-method--qr img {
@@ -1918,15 +1919,18 @@ p {
 }
 
 .donation-method--qr small {
+    display: block;
     max-width: 310px;
     color: #667b94;
     font-size: .78rem;
     line-height: 1.55;
+    text-align: left;
 }
 
 @media (max-width: 768px) {
     .donation-methods.has-qr { grid-template-columns: minmax(0, 1fr); }
-    .donation-method { padding: 26px 20px; }
+    .donation-methods { gap: 34px; }
+    .donation-method { padding: 6px 0; }
     .donation-method--qr a { width: min(100%, 260px); }
 }
 
