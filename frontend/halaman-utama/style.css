@@ -1868,14 +1868,16 @@ p {
     color: #1f5cb8;
     font-size: .75rem;
     font-weight: 800;
+    line-height: 1.2;
     letter-spacing: .12em;
     text-transform: uppercase;
 }
 
 .donation-method h3 {
-    margin: 8px 0 10px;
+    margin: 4px 0 10px;
     color: #092a52;
     font-size: 1.35rem;
+    line-height: 1.25;
 }
 
 .cta-minimal .donation-method p,
