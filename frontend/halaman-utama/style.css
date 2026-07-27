@@ -2228,6 +2228,19 @@ select {
     border-top: 1px solid #dce6f2;
 }
 
+.text-align-left { text-align: left !important; }
+.text-align-center { text-align: center !important; }
+.text-align-right { text-align: right !important; }
+.text-align-justify {
+    text-align: justify !important;
+    text-justify: inter-word;
+}
+
+.text-spacing-1 { line-height: 1 !important; }
+.text-spacing-115 { line-height: 1.15 !important; }
+.text-spacing-15 { line-height: 1.5 !important; }
+.text-spacing-2 { line-height: 2 !important; }
+
 .footer { font-size: var(--font-sm); }
 .footer-logo { font-size: var(--font-h4); }
 .footer-bottom { font-size: var(--font-sm); }

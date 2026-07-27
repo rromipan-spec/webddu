@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - DDU</title>
-    <link rel="stylesheet" href="../halaman-utama/style.css?v=20260728-2">
+    <link rel="stylesheet" href="../halaman-utama/style.css?v=20260728-3">
     <style>
         .admin-container { padding: 120px 20px; max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 400px 1fr; gap: 30px; }
         .admin-sidebar { display: flex; flex-direction: column; gap: 20px; position: sticky; top: 100px; height: calc(100vh - 120px); }
@@ -366,6 +366,18 @@
                                 <option value="p">Paragraf Normal</option>
                             </select>
                             <button type="button" onclick="formatDoc('formatBlock', 'p')">Paragraf</button>
+                            <select aria-label="Atur jarak baris" onchange="applyBlockFormatting('spacing', this.value); this.selectedIndex=0;">
+                                <option value="" selected disabled>Jarak Baris</option>
+                                <option value="1">1,0</option>
+                                <option value="1.15">1,15</option>
+                                <option value="1.5">1,5</option>
+                                <option value="2">2,0</option>
+                                <option value="default">Standar Website</option>
+                            </select>
+                            <button type="button" onclick="applyBlockFormatting('align', 'left')" title="Rata kiri" aria-label="Rata kiri">≡ Kiri</button>
+                            <button type="button" onclick="applyBlockFormatting('align', 'center')" title="Rata tengah" aria-label="Rata tengah">≡ Tengah</button>
+                            <button type="button" onclick="applyBlockFormatting('align', 'right')" title="Rata kanan" aria-label="Rata kanan">≡ Kanan</button>
+                            <button type="button" onclick="applyBlockFormatting('align', 'justify')" title="Rata kiri dan kanan" aria-label="Rata kiri dan kanan">☰ Justify</button>
                             <button type="button" onclick="formatDoc('insertUnorderedList')">• Daftar Poin</button>
                             <button type="button" onclick="formatDoc('insertOrderedList')">1. Daftar Nomor</button>
                             <button type="button" onclick="formatDoc('formatBlock', 'blockquote')">❝ Kutipan</button>
@@ -550,6 +562,18 @@
                                 <option value="p">Paragraf Normal</option>
                             </select>
                             <button type="button" onclick="formatDoc('formatBlock', 'p')">Paragraf</button>
+                            <select aria-label="Atur jarak baris" onchange="applyBlockFormatting('spacing', this.value); this.selectedIndex=0;">
+                                <option value="" selected disabled>Jarak Baris</option>
+                                <option value="1">1,0</option>
+                                <option value="1.15">1,15</option>
+                                <option value="1.5">1,5</option>
+                                <option value="2">2,0</option>
+                                <option value="default">Standar Website</option>
+                            </select>
+                            <button type="button" onclick="applyBlockFormatting('align', 'left')" title="Rata kiri" aria-label="Rata kiri">≡ Kiri</button>
+                            <button type="button" onclick="applyBlockFormatting('align', 'center')" title="Rata tengah" aria-label="Rata tengah">≡ Tengah</button>
+                            <button type="button" onclick="applyBlockFormatting('align', 'right')" title="Rata kanan" aria-label="Rata kanan">≡ Kanan</button>
+                            <button type="button" onclick="applyBlockFormatting('align', 'justify')" title="Rata kiri dan kanan" aria-label="Rata kiri dan kanan">☰ Justify</button>
                             <button type="button" onclick="formatDoc('insertUnorderedList')">• Daftar Poin</button>
                             <button type="button" onclick="formatDoc('insertOrderedList')">1. Daftar Nomor</button>
                             <button type="button" onclick="formatDoc('formatBlock', 'blockquote')">❝ Kutipan</button>
@@ -687,6 +711,6 @@
         </form>
     </dialog>
 
-    <script type="module" src="admin.js?v=20260728-1"></script>
+    <script type="module" src="admin.js?v=20260728-2"></script>
 </body>
 </html>

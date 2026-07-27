@@ -270,8 +270,87 @@ window.switchTab = tab => {
     updatePreview();
 };
 
+const editorSelectionRanges = { post: null, prog: null };
+const blockFormatClasses = {
+    align: ['text-align-left', 'text-align-center', 'text-align-right', 'text-align-justify'],
+    spacing: ['text-spacing-1', 'text-spacing-115', 'text-spacing-15', 'text-spacing-2']
+};
+
+function activeEditorPrefix() {
+    if (!document.getElementById('content-articles')?.classList.contains('hidden')) return 'post';
+    if (!document.getElementById('content-programs-admin')?.classList.contains('hidden')) return 'prog';
+    return '';
+}
+
+function restoreEditorSelection(prefix) {
+    const range = editorSelectionRanges[prefix];
+    const editor = document.getElementById(`${prefix}-content-editor`);
+    if (!range || !editor) return editor;
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+    return editor;
+}
+
+document.addEventListener('selectionchange', () => {
+    const selection = window.getSelection();
+    if (!selection?.rangeCount) return;
+    ['post', 'prog'].forEach(prefix => {
+        const editor = document.getElementById(`${prefix}-content-editor`);
+        if (editor && editor.contains(selection.anchorNode)) {
+            editorSelectionRanges[prefix] = selection.getRangeAt(0).cloneRange();
+        }
+    });
+});
+
 window.formatDoc = (command, value = null) => {
+    const prefix = activeEditorPrefix();
+    if (prefix) restoreEditorSelection(prefix)?.focus();
     document.execCommand(command, false, value);
+    updatePreview();
+};
+
+window.applyBlockFormatting = (type, value) => {
+    const prefix = activeEditorPrefix();
+    const editor = restoreEditorSelection(prefix);
+    if (!editor || !blockFormatClasses[type]) return;
+    editor.focus();
+    const selection = window.getSelection();
+    if (!selection?.rangeCount) return;
+    const range = selection.getRangeAt(0);
+    const blockSelector = 'p,h1,h2,h3,h4,blockquote,li';
+    let blocks = Array.from(editor.querySelectorAll(blockSelector)).filter(block => {
+        try {
+            return range.intersectsNode(block);
+        } catch (error) {
+            return false;
+        }
+    });
+    if (!blocks.length) {
+        const start = range.startContainer.nodeType === Node.ELEMENT_NODE
+            ? range.startContainer
+            : range.startContainer.parentElement;
+        const current = start?.closest(blockSelector);
+        if (current && editor.contains(current)) blocks = [current];
+    }
+    if (!blocks.length) {
+        document.execCommand('formatBlock', false, 'p');
+        const current = window.getSelection()?.anchorNode?.parentElement?.closest('p');
+        if (current && editor.contains(current)) blocks = [current];
+    }
+
+    const className = type === 'align'
+        ? `text-align-${value}`
+        : ({
+            '1': 'text-spacing-1',
+            '1.15': 'text-spacing-115',
+            '1.5': 'text-spacing-15',
+            '2': 'text-spacing-2'
+        })[value] || '';
+    blocks.forEach(block => {
+        block.classList.remove(...blockFormatClasses[type]);
+        if (className) block.classList.add(className);
+    });
     updatePreview();
 };
 

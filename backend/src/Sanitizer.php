@@ -4,6 +4,11 @@ declare(strict_types=1);
 final class Sanitizer
 {
     private const ALLOWED_TAGS = ['p', 'br', 'hr', 'h1', 'h2', 'h3', 'h4', 'strong', 'b', 'em', 'i', 'u', 'ul', 'ol', 'li', 'blockquote', 'a', 'div', 'figure', 'figcaption', 'img'];
+    private const FORMAT_CLASS_TAGS = ['p', 'h1', 'h2', 'h3', 'h4', 'blockquote', 'li'];
+    private const ALLOWED_FORMAT_CLASSES = [
+        'text-align-left', 'text-align-center', 'text-align-right', 'text-align-justify',
+        'text-spacing-1', 'text-spacing-115', 'text-spacing-15', 'text-spacing-2',
+    ];
 
     public static function richText(string $html): string
     {
@@ -57,9 +62,19 @@ final class Sanitizer
                     $name = strtolower($attribute->name);
                     $allowedAttribute = ($tag === 'a' && in_array($name, ['href', 'title'], true))
                         || ($tag === 'img' && in_array($name, ['src', 'alt', 'loading'], true))
-                        || ($tag === 'div' && $name === 'class');
+                        || ($tag === 'div' && $name === 'class')
+                        || ($name === 'class' && in_array($tag, self::FORMAT_CLASS_TAGS, true));
                     if (!$allowedAttribute) {
                         $node->removeAttribute($attribute->name);
+                    }
+                }
+                if (in_array($tag, self::FORMAT_CLASS_TAGS, true)) {
+                    $classes = preg_split('/\s+/', trim($node->getAttribute('class'))) ?: [];
+                    $classes = array_values(array_unique(array_intersect($classes, self::ALLOWED_FORMAT_CLASSES)));
+                    if ($classes === []) {
+                        $node->removeAttribute('class');
+                    } else {
+                        $node->setAttribute('class', implode(' ', $classes));
                     }
                 }
                 if ($tag === 'a') {
