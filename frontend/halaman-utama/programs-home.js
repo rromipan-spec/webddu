@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!response.ok) throw new Error(result.message);
         const programs = result.data || [];
         grid.innerHTML = programs.length ? programs.map(program => `
-            <a class="gallery-item program-card" href="/${encodeURIComponent(program.slug)}">
+            <a class="gallery-item program-card" href="/${encodeURIComponent(program.slug)}" target="_blank" rel="noopener noreferrer">
                 <div class="program-card-media">
                     <img src="${escapeHtml(program.image)}" alt="${escapeHtml(program.image_alt || program.title)}" width="800" height="520" loading="lazy" decoding="async">
                 </div>
