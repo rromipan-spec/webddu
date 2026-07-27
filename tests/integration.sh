@@ -129,35 +129,42 @@ request 200 "$BASE_URL/api/index.php?resource=programs&slug=$PROGRAM_SLUG"
 assert_json '.data.title == "Program Integration Diperbarui" and .data.featured_order == 2 and .data.status == "published"'
 
 echo '[9/14] Upload gambar valid'
-php -r '$image=imagecreatetruecolor(32,32); $blue=imagecolorallocate($image,20,80,160); imagefill($image,0,0,$blue); imagepng($image,$argv[1]); imagedestroy($image);' "$WORK_DIR/test.png"
+php -r '$image=imagecreatetruecolor(320,320); $white=imagecolorallocate($image,255,255,255); $blue=imagecolorallocate($image,20,80,160); imagefill($image,0,0,$white); imagefilledrectangle($image,40,40,280,280,$blue); imagepng($image,$argv[1]); imagedestroy($image);' "$WORK_DIR/test.png"
 request 201 -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" \
   -F "image=@$WORK_DIR/test.png;type=image/png" "$BASE_URL/api/index.php?resource=upload"
 assert_json '.ok == true and (.url | startswith("/uploads/"))'
+
+request 201 -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" \
+  -F "qr=@$WORK_DIR/test.png;type=image/png" "$BASE_URL/api/index.php?resource=qr_upload"
+assert_json '.ok == true and (.url | test("^/uploads/qrcodes/[a-f0-9]{32}\\.png$"))'
+QR_URL="$(jq -r '.url' "$RESPONSE")"
 
 printf '\x00\x00\x00\x18ftypisom\x00\x00\x02\x00isomiso2' > "$WORK_DIR/test.mp4"
 request 201 -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" \
   -F "video=@$WORK_DIR/test.mp4;type=video/mp4" "$BASE_URL/api/index.php?resource=video_upload"
 assert_json '.ok == true and (.url | test("^/uploads/videos/[a-f0-9]{32}\\.mp4$"))'
 VIDEO_URL="$(jq -r '.url' "$RESPONSE")"
-PROGRAM_WITH_VIDEO="$(jq --arg url "$VIDEO_URL" '. + {hero_media_type:"video",hero_video_url:$url}' <<< "$PROGRAM_UPDATED")"
+PROGRAM_WITH_VIDEO="$(jq --arg video "$VIDEO_URL" --arg qr "$QR_URL" '. + {hero_media_type:"video",hero_video_url:$video,donation_qr_image:$qr,whatsapp_number:"6285121277046"}' <<< "$PROGRAM_UPDATED")"
 request 200 -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" -H 'Content-Type: application/json' \
   --data "$PROGRAM_WITH_VIDEO" "$BASE_URL/api/index.php?resource=programs"
 request 200 "$BASE_URL/api/index.php?resource=programs&slug=$PROGRAM_SLUG"
-jq -e --arg url "$VIDEO_URL" \
-  '.data.hero_media_type == "video" and .data.hero_video_url == $url' \
+jq -e --arg video "$VIDEO_URL" --arg qr "$QR_URL" \
+  '.data.hero_media_type == "video" and .data.hero_video_url == $video and .data.donation_qr_image == $qr and .data.whatsapp_number == "6285121277046"' \
   "$RESPONSE" >/dev/null || fail 'Media hero video lokal program tidak tersimpan.'
-ARTICLE_WITH_VIDEO="$(jq --arg url "$VIDEO_URL" '. + {hero_media_type:"video",hero_video_url:$url}' <<< "$ARTICLE_PUBLISHED")"
+ARTICLE_WITH_VIDEO="$(jq --arg video "$VIDEO_URL" --arg qr "$QR_URL" '. + {hero_media_type:"video",hero_video_url:$video,donation_qr_image:$qr,whatsapp_number:"6285121277046"}' <<< "$ARTICLE_PUBLISHED")"
 request 200 -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" -H 'Content-Type: application/json' \
   --data "$ARTICLE_WITH_VIDEO" "$BASE_URL/api/index.php?resource=posts"
 request 200 "$BASE_URL/api/index.php?resource=posts&slug=$ARTICLE_SLUG"
-jq -e --arg url "$VIDEO_URL" \
-  '.data.hero_media_type == "video" and .data.hero_video_url == $url' \
+jq -e --arg video "$VIDEO_URL" --arg qr "$QR_URL" \
+  '.data.hero_media_type == "video" and .data.hero_video_url == $video and .data.donation_qr_image == $qr and .data.whatsapp_number == "6285121277046"' \
   "$RESPONSE" >/dev/null || fail 'Media hero video lokal artikel tidak tersimpan.'
 
 echo '[10/14] Tolak upload berbahaya'
 printf '%s' '<?php echo "tidak boleh"; ?>' > "$WORK_DIR/malicious.php"
 request 422 -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" \
   -F "image=@$WORK_DIR/malicious.php;type=image/png" "$BASE_URL/api/index.php?resource=upload"
+request 422 -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" \
+  -F "qr=@$WORK_DIR/malicious.php;type=image/png" "$BASE_URL/api/index.php?resource=qr_upload"
 
 echo '[11/14] Statistik dan riwayat perubahan'
 request 201 -b "$COOKIE_JAR" -H 'Content-Type: application/json' \

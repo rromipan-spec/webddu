@@ -36,14 +36,19 @@ function renderProgram(container, program) {
     const actionText = isWakaf
         ? 'Salurkan wakaf terbaik Anda dan jadilah bagian dari perjuangan para santri.'
         : 'Konsultasikan donasi Anda secara amanah bersama tim layanan kami.';
+    const whatsappUrl = `https://wa.me/${encodeURIComponent(wa)}?text=${encodeURIComponent(message)}`;
+    const qrImage = donationQrUrl(program.donation_qr_image);
     const heroMedia = programHeroMediaHtml(program, sliderImages);
     container.innerHTML = `
     <header class="main-header"><div class="container"><nav class="navbar"><div class="logo"><img src="/asset/logo-dompet-dana-umat-256.png" alt="Logo DDU" width="256" height="258"><span>Dompet Dana Umat</span></div><div class="menu-toggle"><span class="bar"></span><span class="bar"></span><span class="bar"></span></div><div class="nav-links"><div class="close-menu-btn">&times;</div><a href="index.html">Home</a><a href="about.html">About</a><a href="index.html#programs" class="active">Program</a><a href="index.html#blog">Artikel</a><a href="index.html#contact">Contact</a></div></nav></div></header>
     <section class="hero detail-program-hero" style="padding:220px 0 120px">${heroMedia}<div class="hero-overlay" style="background:rgba(10,38,71,.8)"></div><div class="container hero-container" style="text-align:center"><div class="hero-content" style="max-width:100%;margin:0 auto"><span class="section-kicker">${escapeHtml(program.category || 'LAYANAN DDU')}</span><h1 style="color:white;margin-top:10px">${escapeHtml(program.hero_title || program.title)}</h1><p style="color:#cbd5e0">${escapeHtml(program.hero_subtitle)}</p></div></div></section>
     <section class="container fade-in" style="padding:80px 20px"><div style="max-width:850px;margin:0 auto;line-height:1.8" class="mock-content">${program.content || '<p>Konten belum tersedia.</p>'}</div></section>
-    <section class="cta-minimal fade-in"><div class="container"><span class="section-kicker">Langkah Kebaikan</span><h2>Ingin Berkontribusi untuk ${escapeHtml(program.title)}?</h2><p>${escapeHtml(actionText)}</p><a href="https://wa.me/${encodeURIComponent(wa)}?text=${encodeURIComponent(message)}" class="btn-whatsapp-minimal" target="_blank" rel="noopener noreferrer">${escapeHtml(actionLabel)}</a></div></section>
+    <section class="cta-minimal program-donation-cta fade-in"><div class="container"><span class="section-kicker">Langkah Kebaikan</span><h2>Ingin Berkontribusi untuk ${escapeHtml(program.title)}?</h2><p>${escapeHtml(actionText)}</p><div class="donation-methods${qrImage ? ' has-qr' : ''}">
+        <div class="donation-method donation-method--whatsapp"><span class="donation-method-label">WhatsApp Resmi</span><h3>Konsultasi Donasi</h3><p>Hubungi admin untuk memperoleh panduan penyaluran dan konfirmasi donasi.</p><strong class="donation-whatsapp-number">${escapeHtml(whatsappDisplay(wa))}</strong><a href="${whatsappUrl}" class="btn-whatsapp-minimal" target="_blank" rel="noopener noreferrer">${escapeHtml(actionLabel)}</a></div>
+        ${qrImage ? `<div class="donation-method donation-method--qr"><span class="donation-method-label">Scan Donasi</span><h3>QR/Barcode Resmi</h3><a href="${escapeHtml(qrImage)}" target="_blank" rel="noopener noreferrer" aria-label="Buka QR/barcode donasi ukuran penuh"><img src="${escapeHtml(qrImage)}" alt="QR atau barcode donasi ${escapeHtml(program.title)}" width="600" height="600" loading="lazy"></a><small>Ketuk gambar untuk memperbesar. Pastikan tujuan pembayaran sesuai informasi resmi DDU.</small></div>` : ''}
+    </div></div></section>
     ${siteFooterHtml()}
-    <a href="#" class="back-to-top">↑</a><a href="https://wa.me/${encodeURIComponent(wa)}" class="whatsapp-popup" target="_blank" rel="noopener noreferrer" aria-label="Hubungi WhatsApp"><img src="/asset/whatsapp-phone.svg" alt="" width="24" height="24"></a>`;
+    <a href="#" class="back-to-top">↑</a><a href="${whatsappUrl}" class="whatsapp-popup" target="_blank" rel="noopener noreferrer" aria-label="Hubungi WhatsApp"><img src="/asset/whatsapp-phone.svg" alt="" width="24" height="24"></a>`;
     initDetailSliders(container);
     initProgramHeroVideo(container);
 }
@@ -112,6 +117,16 @@ function driveVideoId(url) {
     } catch (error) {
         return '';
     }
+}
+
+function donationQrUrl(value) {
+    const url = String(value || '');
+    return /^\/uploads\/qrcodes\/[a-f0-9]{32}\.png$/i.test(url) ? url : '';
+}
+
+function whatsappDisplay(value) {
+    const number = String(value || '').replace(/\D+/g, '');
+    return number ? `+${number}` : '';
 }
 
 function initProgramHeroVideo(container) {

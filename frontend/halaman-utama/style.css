@@ -1838,6 +1838,98 @@ p {
     box-shadow: 0 10px 25px rgba(37, 211, 102, 0.3);
 }
 
+.donation-methods {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 22px;
+    max-width: 920px;
+    margin: 38px auto 0;
+}
+
+.donation-methods.has-qr {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.donation-method {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 34px;
+    border: 1px solid #dce6f2;
+    border-radius: 20px;
+    background: #f7faff;
+    box-shadow: 0 12px 30px rgba(10, 38, 71, .08);
+}
+
+.donation-method-label {
+    color: #1f5cb8;
+    font-size: .75rem;
+    font-weight: 800;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+.donation-method h3 {
+    margin: 8px 0 10px;
+    color: #092a52;
+    font-size: 1.35rem;
+}
+
+.cta-minimal .donation-method p,
+.donation-method p {
+    margin: 0 auto 20px;
+    color: #5a6e8a;
+    font-size: .95rem;
+    line-height: 1.65;
+}
+
+.donation-whatsapp-number {
+    display: block;
+    margin-bottom: 20px;
+    color: #0d4f2a;
+    font-size: 1.12rem;
+    letter-spacing: .03em;
+}
+
+.donation-method .btn-whatsapp-minimal {
+    width: 100%;
+    max-width: 330px;
+    padding: 15px 24px;
+}
+
+.donation-method--qr a {
+    display: block;
+    width: min(100%, 245px);
+    margin: 4px auto 12px;
+}
+
+.donation-method--qr img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    object-fit: contain;
+    padding: 10px;
+    border: 1px solid #dce6f2;
+    border-radius: 14px;
+    background: #fff;
+}
+
+.donation-method--qr small {
+    max-width: 310px;
+    color: #667b94;
+    font-size: .78rem;
+    line-height: 1.55;
+}
+
+@media (max-width: 768px) {
+    .donation-methods.has-qr { grid-template-columns: minmax(0, 1fr); }
+    .donation-method { padding: 26px 20px; }
+    .donation-method--qr a { width: min(100%, 260px); }
+}
+
 /* BLOG SECTION */
 .blog {
     padding: 60px 0;

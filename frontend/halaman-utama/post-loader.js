@@ -144,6 +144,16 @@ function driveVideoId(url) {
     }
 }
 
+function donationQrUrl(value) {
+    const url = String(value || '');
+    return /^\/uploads\/qrcodes\/[a-f0-9]{32}\.png$/i.test(url) ? url : '';
+}
+
+function whatsappDisplay(value) {
+    const number = String(value || '').replace(/\D+/g, '');
+    return number ? `+${number}` : '';
+}
+
 function relatedArticlesHtml(related) {
     if (!related.length) return '';
     return `<section class="related-section" aria-labelledby="related-title">
@@ -178,6 +188,7 @@ function renderPost(container, post, related) {
     const wa = post.whatsapp_number || '6285121277046';
     const message = post.whatsapp_message || `Assalamualaikum, saya ingin berdonasi setelah membaca artikel: ${post.title}.`;
     const whatsappUrl = `https://wa.me/${encodeURIComponent(wa)}?text=${encodeURIComponent(message)}`;
+    const qrImage = donationQrUrl(post.donation_qr_image);
     const sliderImages = recordSliderImages(post);
     const heroImages = articleHeroImages(post);
     const minutes = readingTime(post.content);
@@ -217,9 +228,23 @@ function renderPost(container, post, related) {
                     <div class="post-donation-icon" aria-hidden="true">♥</div>
                     <span>LANGKAH KEBAIKAN</span>
                     <h2 id="donation-title">Mari Lanjutkan Kebaikan dengan Berdonasi</h2>
-                    <p>Salurkan donasi terbaik Anda melalui layanan resmi Dompet Dana Umat. Tim kami siap membantu proses donasi melalui WhatsApp.</p>
+                    <p>Salurkan donasi terbaik Anda melalui kanal resmi Dompet Dana Umat.</p>
                     <div class="post-donation-trust"><span>✓ Amanah</span><span>✓ Mudah</span><span>✓ Terarah</span></div>
-                    <a href="${whatsappUrl}" class="btn-whatsapp-minimal" target="_blank" rel="noopener noreferrer">Berdonasi via WhatsApp <span aria-hidden="true">→</span></a>
+                    <div class="donation-methods${qrImage ? ' has-qr' : ''}">
+                        <div class="donation-method donation-method--whatsapp">
+                            <span class="donation-method-label">WhatsApp Resmi</span>
+                            <h3>Konsultasi Donasi</h3>
+                            <p>Hubungi admin untuk memperoleh panduan penyaluran dan konfirmasi donasi.</p>
+                            <strong class="donation-whatsapp-number">${escapeHtml(whatsappDisplay(wa))}</strong>
+                            <a href="${whatsappUrl}" class="btn-whatsapp-minimal" target="_blank" rel="noopener noreferrer">Berdonasi via WhatsApp <span aria-hidden="true">→</span></a>
+                        </div>
+                        ${qrImage ? `<div class="donation-method donation-method--qr">
+                            <span class="donation-method-label">Scan Donasi</span>
+                            <h3>QR/Barcode Resmi</h3>
+                            <a href="${escapeHtml(qrImage)}" target="_blank" rel="noopener noreferrer" aria-label="Buka QR/barcode donasi ukuran penuh"><img src="${escapeHtml(qrImage)}" alt="QR atau barcode donasi ${escapeHtml(post.title)}" width="600" height="600" loading="lazy"></a>
+                            <small>Ketuk gambar untuk memperbesar. Pastikan tujuan pembayaran sesuai informasi resmi DDU.</small>
+                        </div>` : ''}
+                    </div>
                 </section>
                 ${relatedArticlesHtml(related)}
             </div>

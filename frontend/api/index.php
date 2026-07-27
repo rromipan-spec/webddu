@@ -64,6 +64,12 @@ if ($resource === 'upload' && $method === 'POST') {
     handleUpload();
 }
 
+if ($resource === 'qr_upload' && $method === 'POST') {
+    Auth::requireAdmin();
+    Auth::verifyCsrf();
+    handleQrUpload();
+}
+
 if ($resource === 'video_upload' && $method === 'POST') {
     Auth::requireAdmin();
     Auth::verifyCsrf();
@@ -437,6 +443,10 @@ function validatePayload(string $table, array $body): array
     if ($socialImage !== '' && !filter_var($socialImage, FILTER_VALIDATE_URL) && !str_starts_with($socialImage, '/uploads/')) {
         Http::json(['ok' => false, 'message' => 'Alamat gambar sosial tidak valid.'], 422);
     }
+    $donationQrImage = trim((string) ($body['donation_qr_image'] ?? ''));
+    if ($donationQrImage !== '' && !preg_match('#^/uploads/qrcodes/[a-f0-9]{32}\.png$#', $donationQrImage)) {
+        Http::json(['ok' => false, 'message' => 'Gambar QR/barcode donasi tidak valid. Upload ulang melalui panel admin.'], 422);
+    }
 
     $payload = [
         'title' => $title,
@@ -447,6 +457,7 @@ function validatePayload(string $table, array $body): array
         'content' => Sanitizer::richText((string) ($body['content'] ?? '')),
         'whatsapp_number' => $wa,
         'whatsapp_message' => mb_substr(trim((string) ($body['whatsapp_message'] ?? '')), 0, 500),
+        'donation_qr_image' => $donationQrImage,
         'seo_title' => mb_substr(trim((string) ($body['seo_title'] ?? '')), 0, 70),
         'seo_description' => mb_substr(trim((string) ($body['seo_description'] ?? '')), 0, 170),
         'social_image' => $socialImage,
@@ -695,6 +706,51 @@ function handleUpload(): never
         Http::json(['ok' => false, 'message' => $error->getMessage()], 422);
     }
     Http::json(['ok' => true] + $result, 201);
+}
+
+function handleQrUpload(): never
+{
+    if (!extension_loaded('gd') || !function_exists('imagecreatefrompng')) {
+        Http::json(['ok' => false, 'message' => 'Pemrosesan PNG belum aktif di server.'], 503);
+    }
+    if (!isset($_FILES['qr']) || !is_uploaded_file((string) ($_FILES['qr']['tmp_name'] ?? ''))) {
+        Http::json(['ok' => false, 'message' => 'File QR/barcode tidak ditemukan.'], 422);
+    }
+    $file = $_FILES['qr'];
+    if ((int) ($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK || (int) ($file['size'] ?? 0) > 2 * 1024 * 1024) {
+        Http::json(['ok' => false, 'message' => 'Upload QR gagal atau ukuran melebihi 2 MB.'], 422);
+    }
+    $info = @getimagesize((string) $file['tmp_name']);
+    $width = (int) ($info[0] ?? 0);
+    $height = (int) ($info[1] ?? 0);
+    if (($info['mime'] ?? '') !== 'image/png' || $width < 150 || $height < 150 || $width > 3000 || $height > 3000) {
+        Http::json(['ok' => false, 'message' => 'QR harus berupa PNG dengan resolusi 150 sampai 3000 piksel.'], 422);
+    }
+    $image = @imagecreatefrompng((string) $file['tmp_name']);
+    if ($image === false) {
+        Http::json(['ok' => false, 'message' => 'Isi file PNG QR rusak atau tidak valid.'], 422);
+    }
+    imagealphablending($image, false);
+    imagesavealpha($image, true);
+    $targetDirectory = dirname(__DIR__) . '/uploads/qrcodes';
+    if (!is_dir($targetDirectory) && !mkdir($targetDirectory, 0755, true) && !is_dir($targetDirectory)) {
+        imagedestroy($image);
+        Http::json(['ok' => false, 'message' => 'Folder QR tidak dapat dibuat.'], 500);
+    }
+    $filename = bin2hex(random_bytes(16)) . '.png';
+    $destination = $targetDirectory . '/' . $filename;
+    $saved = imagepng($image, $destination, 6);
+    imagedestroy($image);
+    if (!$saved) {
+        Http::json(['ok' => false, 'message' => 'QR gagal disimpan di server.'], 500);
+    }
+    @chmod($destination, 0644);
+    Http::json([
+        'ok' => true,
+        'url' => '/uploads/qrcodes/' . $filename,
+        'width' => $width,
+        'height' => $height,
+    ], 201);
 }
 
 function handleVideoUpload(): never

@@ -462,6 +462,43 @@ body.admin-page {
     cursor: pointer;
 }
 
+.admin-page .donation-qr-drop-zone {
+    cursor: pointer;
+}
+
+.admin-page .donation-qr-preview {
+    position: relative;
+    width: min(100%, 280px);
+    margin: 18px auto 0;
+}
+
+.admin-page .donation-qr-preview img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: contain;
+    padding: 10px;
+    border: 1px solid var(--admin-line);
+    border-radius: 14px;
+    background: #fff;
+}
+
+.admin-page [data-clear-donation-qr] {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    color: #fff;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background: var(--admin-danger);
+    font-size: 1.2rem;
+    font-weight: 800;
+    cursor: pointer;
+}
+
 .admin-page .admin-slider-preview {
     gap: 14px;
     margin-top: 20px;

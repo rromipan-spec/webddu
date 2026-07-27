@@ -180,6 +180,56 @@ function formatFileSize(bytes) {
     return `${(size / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+function setDonationQrImage(prefix, url) {
+    const input = document.getElementById(`${prefix}-donation-qr-image`);
+    const preview = document.getElementById(`${prefix}-qr-preview`);
+    if (input) input.value = url || '';
+    if (!preview) return;
+    preview.innerHTML = url
+        ? `<img src="${escapeHtml(url)}" alt="Preview QR/barcode donasi"><button type="button" data-clear-donation-qr="${escapeHtml(prefix)}" aria-label="Hapus QR/barcode">×</button>`
+        : '';
+}
+
+function setupDonationQrUpload(prefix) {
+    const zone = document.getElementById(`${prefix}-qr-drop-zone`);
+    const input = document.getElementById(`${prefix}-qr-file`);
+    if (!zone || !input) return;
+    const upload = async file => {
+        if (!file) return;
+        if (file.type !== 'image/png' && !/\.png$/i.test(file.name)) {
+            alert('QR/barcode harus berupa file PNG.');
+            return;
+        }
+        if (file.size > 2 * 1024 * 1024) {
+            alert('Ukuran QR/barcode maksimal 2 MB.');
+            return;
+        }
+        const status = document.getElementById(`${prefix}-qr-upload-status`);
+        if (status) status.textContent = 'Mengunggah QR/barcode...';
+        const form = new FormData();
+        form.append('qr', file);
+        try {
+            const result = await api('qr_upload', { method: 'POST', body: form });
+            setDonationQrImage(prefix, result.url);
+            if (status) status.textContent = 'QR/barcode tersimpan. Simpan konten untuk menerapkan perubahan.';
+        } catch (error) {
+            if (status) status.textContent = '';
+            alert(error.message);
+        } finally {
+            input.value = '';
+        }
+    };
+    zone.addEventListener('click', event => {
+        if (!event.target.closest('[data-clear-donation-qr]')) input.click();
+    });
+    input.addEventListener('change', () => upload(input.files?.[0]));
+    zone.addEventListener('dragover', event => event.preventDefault());
+    zone.addEventListener('drop', event => {
+        event.preventDefault();
+        upload(event.dataTransfer?.files?.[0]);
+    });
+}
+
 async function api(resource, options = {}) {
     const headers = { ...(options.headers || {}) };
     if (!(options.body instanceof FormData)) headers['Content-Type'] = 'application/json';
@@ -541,6 +591,7 @@ async function saveForm(event, resource) {
         content: document.getElementById(`${prefix}-content`).value,
         whatsapp_number: document.getElementById(`${prefix}-wa`).value,
         whatsapp_message: document.getElementById(`${prefix}-wa-message`).value,
+        donation_qr_image: document.getElementById(`${prefix}-donation-qr-image`).value,
         seo_title: document.getElementById(`${prefix}-seo-title`).value,
         seo_description: document.getElementById(`${prefix}-seo-description`).value,
         social_image: document.getElementById(`${prefix}-social-image`).value,
@@ -911,6 +962,7 @@ document.addEventListener('click', event => {
     const removeContentPhoto = event.target.closest('.content-photo-remove');
     const clearSeoImage = event.target.closest('[data-clear-seo-image]');
     const clearHeroVideo = event.target.closest('[data-clear-hero-video]');
+    const clearDonationQr = event.target.closest('[data-clear-donation-qr]');
     const previewButton = event.target.closest('[data-preview-url]');
     const edit = event.target.closest('[data-edit]');
     const remove = event.target.closest('[data-delete]');
@@ -948,6 +1000,13 @@ document.addEventListener('click', event => {
         const status = document.getElementById(`${prefix}-video-upload-status`);
         const contentLabel = prefix === 'post' ? 'artikel' : 'program';
         if (status) status.textContent = `Video dihapus dari rancangan. Simpan ${contentLabel} untuk menerapkan perubahan.`;
+    }
+    if (clearDonationQr) {
+        event.stopPropagation();
+        const prefix = clearDonationQr.dataset.clearDonationQr;
+        setDonationQrImage(prefix, '');
+        const status = document.getElementById(`${prefix}-qr-upload-status`);
+        if (status) status.textContent = 'QR/barcode dihapus dari rancangan. Simpan konten untuk menerapkan perubahan.';
     }
     if (previewButton) window.open(previewButton.dataset.previewUrl, '_blank', 'noopener,noreferrer');
     if (edit) editItem(edit.dataset.edit, edit.dataset.id);
@@ -1027,6 +1086,7 @@ async function editItem(resource, id) {
         document.getElementById(`${prefix}-content`).value = data.content || '';
         document.getElementById(`${prefix}-wa`).value = data.whatsapp_number || '';
         document.getElementById(`${prefix}-wa-message`).value = data.whatsapp_message || '';
+        setDonationQrImage(prefix, data.donation_qr_image || '');
         if (resource === 'programs') {
             document.getElementById('prog-hero-title').value = data.hero_title || '';
             document.getElementById('prog-hero-subtitle').value = data.hero_subtitle || '';
@@ -1077,6 +1137,8 @@ async function init() {
     setupHeroImageDropZone('post-hero-drop-zone', 'post-hero-image-file');
     setupHeroMedia('post');
     setupHeroMedia('prog');
+    setupDonationQrUpload('post');
+    setupDonationQrUpload('prog');
     setupSeoImageUpload('post');
     setupSeoImageUpload('prog');
     setupContentPhotoUpload('post');

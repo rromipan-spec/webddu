@@ -309,6 +309,27 @@ video.post-hero-video.is-playing {
 }
 .post-donation-trust { display: flex; justify-content: center; flex-wrap: wrap; gap: 18px; margin-bottom: 28px; color: #dce9f8; font-size: .88rem; font-weight: 700; }
 
+.post-donation-cta .donation-methods {
+    margin-top: 32px;
+}
+
+.post-donation-cta .donation-method {
+    border-color: rgba(255, 255, 255, .16);
+    background: rgba(255, 255, 255, .08);
+    box-shadow: none;
+}
+
+.post-donation-cta .donation-method-label { color: #77bdff; }
+.post-donation-cta .donation-method h3 { color: #fff; }
+.post-donation-cta .donation-method p {
+    margin: 0 auto 20px;
+    color: #cbd9eb;
+    font-size: .92rem;
+}
+.post-donation-cta .donation-whatsapp-number { color: #8df2b6; }
+.post-donation-cta .donation-method--qr small { color: #cbd9eb; }
+.post-donation-cta .donation-method--qr img { border-color: rgba(255, 255, 255, .32); }
+
 .post-section-heading { margin-bottom: 28px; }
 .post-section-heading > span { color: #2869b5; }
 .post-section-heading h2 { margin-top: 6px; font-size: 2rem; }

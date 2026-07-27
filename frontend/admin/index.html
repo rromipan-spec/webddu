@@ -102,7 +102,7 @@
             .toolbar button, .toolbar select { flex: 1 1 auto; }
         }
     </style>
-    <link rel="stylesheet" href="admin.css?v=20260727-6">
+    <link rel="stylesheet" href="admin.css?v=20260727-7">
 </head>
 <body class="admin-page">
     <!-- Login Section tetap berada di tengah -->
@@ -309,14 +309,28 @@
                             <label>Sub-Judul Hero</label>
                             <input type="text" id="prog-hero-subtitle">
                         </div>
-                        <div class="form-group">
-                            <label>Nomor WhatsApp khusus (Opsional)</label>
-                            <input type="text" id="prog-wa" placeholder="Contoh: 628123456789">
-                        </div>
-                        <div class="form-group">
-                            <label>Pesan Awal WhatsApp (Opsional)</label>
-                            <textarea id="prog-wa-message" rows="2" placeholder="Contoh: Assalamualaikum, saya ingin berkonsultasi mengenai program ini"></textarea>
-                        </div>
+                        <section class="publication-settings donation-admin-settings" aria-labelledby="prog-donation-heading">
+                            <h3 id="prog-donation-heading">CTA Donasi: WhatsApp &amp; QR/Barcode</h3>
+                            <p class="seo-settings-note">Nomor WhatsApp dan QR ini hanya berlaku untuk program ini. Jika QR dikosongkan, CTA hanya menampilkan WhatsApp.</p>
+                            <div class="form-group">
+                                <label for="prog-wa">Nomor WhatsApp khusus (Opsional)</label>
+                                <input type="text" id="prog-wa" inputmode="numeric" maxlength="16" placeholder="Contoh: 628123456789">
+                            </div>
+                            <div class="form-group">
+                                <label for="prog-wa-message">Pesan Awal WhatsApp (Opsional)</label>
+                                <textarea id="prog-wa-message" rows="2" maxlength="500" placeholder="Contoh: Assalamualaikum, saya ingin berkonsultasi mengenai program ini"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Foto PNG QR/Barcode Donasi (Opsional)</label>
+                                <div class="drop-zone donation-qr-drop-zone" id="prog-qr-drop-zone">
+                                    <p>Klik atau jatuhkan PNG QR/barcode, maksimal 2 MB</p>
+                                    <input type="file" id="prog-qr-file" hidden accept="image/png">
+                                    <input type="hidden" id="prog-donation-qr-image">
+                                    <div id="prog-qr-preview" class="donation-qr-preview"></div>
+                                </div>
+                                <p id="prog-qr-upload-status" class="content-upload-status" aria-live="polite"></p>
+                            </div>
+                        </section>
                         <section class="seo-settings" aria-labelledby="prog-seo-heading">
                             <h3 id="prog-seo-heading">Pengaturan SEO</h3>
                             <p class="seo-settings-note">Kosongkan judul/deskripsi jika ingin memakai nama dan ringkasan program secara otomatis.</p>
@@ -466,14 +480,28 @@
                             <label>Ringkasan</label>
                             <textarea id="post-excerpt" rows="2"></textarea>
                         </div>
-                        <div class="form-group">
-                            <label>Nomor WhatsApp khusus (Opsional)</label>
-                            <input type="text" id="post-wa" placeholder="Contoh: 628123456789">
-                        </div>
-                        <div class="form-group">
-                            <label>Pesan Awal WhatsApp (Opsional)</label>
-                            <textarea id="post-wa-message" rows="2" placeholder="Contoh: Assalamualaikum, saya tertarik dengan artikel ini"></textarea>
-                        </div>
+                        <section class="publication-settings donation-admin-settings" aria-labelledby="post-donation-heading">
+                            <h3 id="post-donation-heading">CTA Donasi: WhatsApp &amp; QR/Barcode</h3>
+                            <p class="seo-settings-note">Nomor WhatsApp dan QR ini hanya berlaku untuk artikel ini. Jika QR dikosongkan, CTA hanya menampilkan WhatsApp.</p>
+                            <div class="form-group">
+                                <label for="post-wa">Nomor WhatsApp khusus (Opsional)</label>
+                                <input type="text" id="post-wa" inputmode="numeric" maxlength="16" placeholder="Contoh: 628123456789">
+                            </div>
+                            <div class="form-group">
+                                <label for="post-wa-message">Pesan Awal WhatsApp (Opsional)</label>
+                                <textarea id="post-wa-message" rows="2" maxlength="500" placeholder="Contoh: Assalamualaikum, saya tertarik dengan artikel ini"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Foto PNG QR/Barcode Donasi (Opsional)</label>
+                                <div class="drop-zone donation-qr-drop-zone" id="post-qr-drop-zone">
+                                    <p>Klik atau jatuhkan PNG QR/barcode, maksimal 2 MB</p>
+                                    <input type="file" id="post-qr-file" hidden accept="image/png">
+                                    <input type="hidden" id="post-donation-qr-image">
+                                    <div id="post-qr-preview" class="donation-qr-preview"></div>
+                                </div>
+                                <p id="post-qr-upload-status" class="content-upload-status" aria-live="polite"></p>
+                            </div>
+                        </section>
                         <section class="seo-settings" aria-labelledby="post-seo-heading">
                             <h3 id="post-seo-heading">Pengaturan SEO</h3>
                             <p class="seo-settings-note">Kosongkan judul/deskripsi jika ingin memakai judul dan ringkasan artikel secara otomatis.</p>
@@ -633,6 +661,6 @@
         </form>
     </dialog>
 
-    <script type="module" src="admin.js?v=20260727-5"></script>
+    <script type="module" src="admin.js?v=20260727-6"></script>
 </body>
 </html>
