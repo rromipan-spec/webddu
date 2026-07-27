@@ -275,6 +275,78 @@ window.formatDoc = (command, value = null) => {
     updatePreview();
 };
 
+const contentTemplates = {
+    'program-wakaf': `
+        <h2>Bangun Rumah Perjuangan Para Santri Penjaga Al-Qur’an</h2>
+        <p>Setiap hari, para santri yatim dan dhuafa di Pesantren Daarul Uluum Bogor belajar, beribadah, serta menghafal Al-Qur’an dengan penuh kesungguhan. Di tengah semangat itu, mereka masih membutuhkan tempat tinggal yang lebih layak, aman, dan nyaman untuk mendukung proses pendidikan serta pembinaan.</p>
+        <blockquote>Asrama bukan sekadar tempat beristirahat. Di sanalah para santri menata disiplin, memperkuat persaudaraan, menjaga hafalan, dan mempersiapkan diri menjadi generasi yang bermanfaat bagi umat.</blockquote>
+        <h2>Mengapa Program Ini Penting?</h2>
+        <ul>
+            <li>Menyediakan ruang tinggal yang aman dan layak bagi para santri.</li>
+            <li>Mendukung kegiatan belajar, ibadah, dan menghafal Al-Qur’an.</li>
+            <li>Menciptakan lingkungan pembinaan yang tertib, sehat, dan nyaman.</li>
+            <li>Menjadi sarana amal jariyah yang manfaatnya terus dirasakan.</li>
+        </ul>
+        <h2>Wakaf Anda Menjadi Manfaat Berkelanjutan</h2>
+        <p>Melalui Program Wakaf Asrama Santri, Dompet Dana Umat Daarul Uluum mengajak Ayah, Bunda, Kakak, dan seluruh Sahabat Kebaikan untuk ikut membangun serta merenovasi rumah perjuangan para santri. Setiap dukungan akan diarahkan untuk kebutuhan pembangunan sesuai tahapan program dan dilaporkan melalui kanal resmi lembaga.</p>
+        <h2>Mari Ambil Bagian</h2>
+        <p>Tidak harus menunggu mampu memberi dalam jumlah besar. Setiap wakaf yang ditunaikan dengan ikhlas akan menyempurnakan ikhtiar bersama dalam menghadirkan tempat terbaik bagi para penjaga Al-Qur’an.</p>
+        <p><strong>Klik “Wakaf Sekarang” untuk memperoleh informasi penyaluran melalui WhatsApp resmi Dompet Dana Umat.</strong></p>`,
+    'program-sosial': `
+        <h2>Latar Belakang Program</h2>
+        <p>Jelaskan kondisi penerima manfaat, masalah yang dihadapi, serta alasan program ini perlu dilaksanakan.</p>
+        <h2>Tujuan Program</h2>
+        <ul><li>Tujuan utama program.</li><li>Perubahan yang ingin diwujudkan.</li><li>Manfaat jangka panjang.</li></ul>
+        <h2>Sasaran Penerima Manfaat</h2>
+        <p>Jelaskan siapa penerima manfaat, lokasi, dan kriteria penerima secara singkat.</p>
+        <h2>Rencana Penyaluran</h2>
+        <ol><li>Pengumpulan dukungan.</li><li>Verifikasi kebutuhan.</li><li>Pelaksanaan dan dokumentasi.</li><li>Pelaporan hasil program.</li></ol>
+        <h2>Mari Berkontribusi</h2>
+        <p>Tutup dengan ajakan yang jelas, jujur, dan sesuai tujuan program.</p>`,
+    'program-umum': `
+        <h2>Tentang Program</h2><p>Jelaskan latar belakang dan kebutuhan yang ingin dijawab melalui program ini.</p>
+        <h2>Tujuan dan Manfaat</h2><ul><li>Tujuan pertama.</li><li>Manfaat bagi penerima.</li><li>Dampak yang diharapkan.</li></ul>
+        <h2>Cara Program Dilaksanakan</h2><ol><li>Tahap persiapan.</li><li>Tahap pelaksanaan.</li><li>Dokumentasi dan pelaporan.</li></ol>
+        <h2>Ambil Bagian dalam Kebaikan</h2><p>Tambahkan ajakan berkontribusi dan arahkan pengunjung ke kanal resmi.</p>`,
+    'article-activity': `
+        <h2>Rangkaian Kegiatan</h2><p>Ceritakan waktu, lokasi, peserta, dan jalannya kegiatan dengan urutan yang mudah diikuti.</p>
+        <h2>Manfaat yang Dirasakan</h2><p>Jelaskan hasil kegiatan serta perubahan yang dirasakan penerima manfaat.</p>
+        <blockquote>Tambahkan pernyataan singkat dari penerima manfaat, relawan, atau penanggung jawab kegiatan.</blockquote>
+        <h2>Terima Kasih Sahabat Kebaikan</h2><p>Sampaikan apresiasi dan ajakan mengikuti program berikutnya.</p>`,
+    'article-education': `
+        <h2>Pengantar</h2><p>Kenalkan topik dan alasan pembaca perlu memahaminya.</p>
+        <h2>Hal Penting yang Perlu Diketahui</h2><ul><li>Poin utama pertama.</li><li>Poin utama kedua.</li><li>Poin utama ketiga.</li></ul>
+        <h2>Penjelasan dan Contoh</h2><p>Berikan uraian praktis, contoh, dan sumber yang dapat dipercaya.</p>
+        <h2>Kesimpulan</h2><p>Ringkas pesan utama dan berikan langkah yang dapat dilakukan pembaca.</p>`,
+    'article-distribution': `
+        <h2>Ringkasan Penyaluran</h2><p>Jelaskan jenis bantuan, waktu, lokasi, dan tujuan penyaluran.</p>
+        <h2>Penerima Manfaat</h2><ul><li>Jumlah penerima manfaat.</li><li>Kriteria atau wilayah penerima.</li><li>Bentuk bantuan yang diterima.</li></ul>
+        <h2>Proses Pelaksanaan</h2><ol><li>Verifikasi penerima.</li><li>Persiapan bantuan.</li><li>Penyaluran dan dokumentasi.</li></ol>
+        <h2>Dampak dan Tindak Lanjut</h2><p>Jelaskan manfaat yang dirasakan serta rencana tindak lanjut program.</p>`
+};
+
+window.applyContentTemplate = (prefix, templateKey) => {
+    const editor = document.getElementById(`${prefix}-content-editor`);
+    const template = contentTemplates[templateKey];
+    if (!editor || !template) return;
+    if (editor.textContent.trim() && !confirm('Isi detail saat ini akan diganti dengan template. Lanjutkan?')) return;
+    editor.innerHTML = template.trim();
+    updatePreview();
+    editor.focus();
+};
+
+window.insertEditorLink = () => {
+    const href = prompt('Masukkan tautan lengkap (https://...), alamat internal (/halaman), atau bagian halaman (#bagian):');
+    if (href === null || href.trim() === '') return;
+    const normalized = href.trim();
+    if (!/^(https?:\/\/|\/|#)/i.test(normalized)) {
+        alert('Tautan harus diawali https://, /, atau #.');
+        return;
+    }
+    document.execCommand('createLink', false, normalized);
+    updatePreview();
+};
+
 function updatePreview() {
     const article = !document.getElementById('content-articles')?.classList.contains('hidden');
     const program = !document.getElementById('content-programs-admin')?.classList.contains('hidden');
