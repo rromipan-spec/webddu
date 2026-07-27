@@ -102,7 +102,7 @@
             .toolbar button, .toolbar select { flex: 1 1 auto; }
         }
     </style>
-    <link rel="stylesheet" href="admin.css?v=20260727-2">
+    <link rel="stylesheet" href="admin.css?v=20260727-3">
 </head>
 <body class="admin-page">
     <!-- Login Section tetap berada di tengah -->
@@ -151,6 +151,7 @@
                     <button type="button" onclick="switchTab('institution')" id="tab-institution"><span class="nav-symbol" aria-hidden="true">K</span><span>Kredibilitas</span></button>
                     <button type="button" onclick="switchTab('history')" id="tab-history"><span class="nav-symbol" aria-hidden="true">R</span><span>Riwayat</span></button>
                     <button type="button" onclick="switchTab('admins')" id="tab-admins" class="hidden"><span class="nav-symbol" aria-hidden="true">U</span><span>Admin</span></button>
+                    <button type="button" onclick="switchTab('profile')" id="tab-profile"><span class="nav-symbol" aria-hidden="true">S</span><span>Profil Saya</span></button>
                 </nav>
                 <div class="sidebar-actions">
                     <a href="/" target="_blank" rel="noopener noreferrer">Lihat website <span aria-hidden="true">↗</span></a>
@@ -179,6 +180,7 @@
         <main class="admin-content">
             <!-- Tab Dashboard -->
             <div id="content-dashboard">
+                <div id="dashboard-security-alert" class="security-alert hidden" role="alert"></div>
                 <div class="card">
                     <h2>Statistik Website</h2>
                     <p>Pantau performa website Dompet Dana Umat secara real-time.</p>
@@ -191,6 +193,48 @@
                             <h4>Klik WhatsApp</h4>
                             <div id="count-wa" class="number">0</div>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="content-profile" class="hidden">
+                <div id="profile-security-alert" class="security-alert hidden" role="alert"></div>
+                <div class="card">
+                    <div class="section-heading">
+                        <div>
+                            <p class="section-kicker">Keamanan akun</p>
+                            <h2>Profil Saya</h2>
+                            <p>Kelola identitas akun dan lihat aktivitas login terakhir.</p>
+                        </div>
+                    </div>
+                    <div class="account-summary-grid">
+                        <div class="account-summary-item"><span>Hak akses</span><strong id="profile-role">-</strong></div>
+                        <div class="account-summary-item"><span>Login terakhir</span><strong id="profile-last-login">-</strong></div>
+                        <div class="account-summary-item"><span>Akun dibuat</span><strong id="profile-created-at">-</strong></div>
+                    </div>
+                </div>
+
+                <div class="account-settings-grid">
+                    <div class="card">
+                        <h3>Ubah Nama dan Email</h3>
+                        <p>Masukkan kata sandi saat ini untuk mengonfirmasi perubahan.</p>
+                        <form id="profile-form" autocomplete="on">
+                            <div class="form-group"><label for="profile-name">Nama</label><input type="text" id="profile-name" minlength="2" maxlength="120" autocomplete="name" required></div>
+                            <div class="form-group"><label for="profile-email">Email</label><input type="email" id="profile-email" maxlength="190" autocomplete="email" required></div>
+                            <div class="form-group"><label for="profile-current-password">Kata sandi saat ini</label><input type="password" id="profile-current-password" maxlength="128" autocomplete="current-password" required></div>
+                            <button type="submit" class="btn btn-primary">Simpan Profil</button>
+                        </form>
+                    </div>
+
+                    <div class="card">
+                        <h3>Ganti Kata Sandi</h3>
+                        <p>Minimal 15 karakter. Setelah diganti, sesi akun di perangkat lain akan dihentikan.</p>
+                        <form id="password-form" autocomplete="off">
+                            <div class="form-group"><label for="password-current">Kata sandi saat ini</label><input type="password" id="password-current" maxlength="128" autocomplete="current-password" required></div>
+                            <div class="form-group"><label for="password-new">Kata sandi baru</label><input type="password" id="password-new" minlength="15" maxlength="128" autocomplete="new-password" required></div>
+                            <div class="form-group"><label for="password-confirmation">Ulangi kata sandi baru</label><input type="password" id="password-confirmation" minlength="15" maxlength="128" autocomplete="new-password" required></div>
+                            <button type="submit" class="btn btn-primary">Ganti Kata Sandi</button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -402,7 +446,11 @@
                         <button type="submit" class="btn btn-primary">Tambah Admin</button>
                     </form>
                 </div>
-                <div class="card" style="margin-top:20px"><h3>Daftar Admin</h3><div id="admin-account-list"></div></div>
+                <div class="card" style="margin-top:20px">
+                    <h3>Daftar Admin</h3>
+                    <p>Super admin dapat mereset kata sandi dan menghentikan seluruh sesi lama akun lain.</p>
+                    <div id="admin-account-list"></div>
+                </div>
             </div>
 
             <div id="content-history" class="hidden">
@@ -447,6 +495,26 @@
         </main>
     </div>
 
-    <script type="module" src="admin.js?v=20260727-1"></script>
+    <dialog id="admin-password-dialog" class="admin-dialog" aria-labelledby="admin-password-dialog-title">
+        <form id="admin-password-reset-form" class="admin-dialog-card">
+            <input type="hidden" id="reset-admin-id">
+            <div class="admin-dialog-heading">
+                <div>
+                    <p class="section-kicker">Super admin</p>
+                    <h2 id="admin-password-dialog-title">Reset Kata Sandi</h2>
+                    <p id="reset-admin-description">Buat kata sandi baru untuk admin.</p>
+                </div>
+                <button type="button" class="dialog-close" data-close-password-dialog aria-label="Tutup">×</button>
+            </div>
+            <div class="form-group"><label for="reset-admin-password">Kata sandi baru</label><input type="password" id="reset-admin-password" minlength="15" maxlength="128" autocomplete="new-password" required></div>
+            <div class="form-group"><label for="reset-admin-password-confirmation">Ulangi kata sandi baru</label><input type="password" id="reset-admin-password-confirmation" minlength="15" maxlength="128" autocomplete="new-password" required></div>
+            <div class="admin-dialog-actions">
+                <button type="button" class="btn-secondary" data-close-password-dialog>Batal</button>
+                <button type="submit" class="btn btn-primary">Reset Kata Sandi</button>
+            </div>
+        </form>
+    </dialog>
+
+    <script type="module" src="admin.js?v=20260727-2"></script>
 </body>
 </html>

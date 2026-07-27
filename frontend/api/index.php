@@ -37,6 +37,27 @@ if ($resource === 'logout' && $method === 'POST') {
     Http::json(['ok' => true]);
 }
 
+if ($resource === 'profile') {
+    Auth::requireAdmin();
+    if ($method === 'GET') {
+        serveOwnProfile();
+    }
+    if ($method === 'POST') {
+        Auth::verifyCsrf();
+        updateOwnAccount(Http::body());
+    }
+    Http::json(['ok' => false, 'message' => 'Metode tidak diizinkan.'], 405);
+}
+
+if ($resource === 'admin_password_reset') {
+    Auth::requireSuperAdmin();
+    if ($method !== 'POST') {
+        Http::json(['ok' => false, 'message' => 'Metode tidak diizinkan.'], 405);
+    }
+    Auth::verifyCsrf();
+    resetAdminPassword(Http::body());
+}
+
 if ($resource === 'upload' && $method === 'POST') {
     Auth::requireAdmin();
     Auth::verifyCsrf();
@@ -80,7 +101,8 @@ if ($resource === 'admins') {
     Auth::requireSuperAdmin();
     if ($method === 'GET') {
         $rows = Database::connection()->query(
-            'SELECT id, email, display_name, role, is_active, last_login_at, created_at FROM admins ORDER BY created_at DESC'
+            'SELECT id, email, display_name, role, is_active, last_login_at, created_at, updated_at
+             FROM admins ORDER BY created_at DESC'
         )->fetchAll();
         Http::json(['ok' => true, 'data' => $rows]);
     }
@@ -516,6 +538,264 @@ function handleUpload(): never
     Http::json(['ok' => true] + $result, 201);
 }
 
+function serveOwnProfile(): never
+{
+    $profile = findAdminProfile(Auth::id());
+    if (!$profile) {
+        Auth::logout();
+        Http::json(['ok' => false, 'message' => 'Akun admin tidak ditemukan. Silakan masuk kembali.'], 401);
+    }
+
+    Http::json([
+        'ok' => true,
+        'data' => publicAdminProfile($profile),
+        'security' => accountSecuritySummary((int) $profile['id'], (string) $profile['email']),
+    ]);
+}
+
+function updateOwnAccount(array $body): never
+{
+    $action = (string) ($body['action'] ?? '');
+    if (!in_array($action, ['update_profile', 'change_password'], true)) {
+        Http::json(['ok' => false, 'message' => 'Tindakan akun tidak valid.'], 422);
+    }
+
+    $profile = findAdminProfile(Auth::id(), true);
+    if (!$profile) {
+        Http::json(['ok' => false, 'message' => 'Akun admin tidak ditemukan.'], 404);
+    }
+
+    $currentPassword = (string) ($body['current_password'] ?? '');
+    if ($currentPassword === '' || !password_verify($currentPassword, (string) $profile['password_hash'])) {
+        Http::json(['ok' => false, 'message' => 'Kata sandi saat ini tidak benar.'], 422);
+    }
+
+    if ($action === 'update_profile') {
+        updateOwnProfile($profile, $body);
+    }
+    changeOwnPassword($profile, $body);
+}
+
+function updateOwnProfile(array $profile, array $body): never
+{
+    $name = trim((string) ($body['display_name'] ?? ''));
+    $email = strtolower(trim((string) ($body['email'] ?? '')));
+    if (mb_strlen($name) < 2 || mb_strlen($name) > 120) {
+        Http::json(['ok' => false, 'message' => 'Nama harus berisi 2–120 karakter.'], 422);
+    }
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL) || mb_strlen($email) > 190) {
+        Http::json(['ok' => false, 'message' => 'Email tidak valid.'], 422);
+    }
+
+    $duplicate = Database::connection()->prepare(
+        'SELECT id FROM admins WHERE email = :email AND id <> :id LIMIT 1'
+    );
+    $duplicate->execute(['email' => $email, 'id' => (int) $profile['id']]);
+    if ($duplicate->fetch()) {
+        Http::json(['ok' => false, 'message' => 'Email tersebut sudah digunakan admin lain.'], 409);
+    }
+
+    try {
+        $statement = Database::connection()->prepare(
+            'UPDATE admins
+             SET display_name = :display_name, email = :email, session_version = session_version + 1
+             WHERE id = :id'
+        );
+        $statement->execute([
+            'display_name' => $name,
+            'email' => $email,
+            'id' => (int) $profile['id'],
+        ]);
+    } catch (Throwable $error) {
+        accountMigrationError($error);
+    }
+
+    $updated = findAdminProfile((int) $profile['id']);
+    Auth::refreshSession(
+        (int) $updated['id'],
+        (string) $updated['email'],
+        (string) $updated['role'],
+        (int) $updated['session_version']
+    );
+    Auth::recordSecurityEvent('profile_updated', (string) $updated['email'], (int) $updated['id']);
+    Http::json([
+        'ok' => true,
+        'message' => 'Nama dan email berhasil diperbarui.',
+        'csrf' => Auth::csrf(),
+        'data' => publicAdminProfile($updated),
+    ]);
+}
+
+function changeOwnPassword(array $profile, array $body): never
+{
+    $password = (string) ($body['new_password'] ?? '');
+    $confirmation = (string) ($body['new_password_confirmation'] ?? '');
+    validateNewPassword($password, $confirmation);
+    if (password_verify($password, (string) $profile['password_hash'])) {
+        Http::json(['ok' => false, 'message' => 'Kata sandi baru harus berbeda dari kata sandi saat ini.'], 422);
+    }
+
+    try {
+        $statement = Database::connection()->prepare(
+            'UPDATE admins
+             SET password_hash = :password_hash, session_version = session_version + 1
+             WHERE id = :id'
+        );
+        $statement->execute([
+            'password_hash' => password_hash($password, PASSWORD_DEFAULT),
+            'id' => (int) $profile['id'],
+        ]);
+    } catch (Throwable $error) {
+        accountMigrationError($error);
+    }
+
+    $updated = findAdminProfile((int) $profile['id']);
+    session_regenerate_id(true);
+    Auth::refreshSession(
+        (int) $updated['id'],
+        (string) $updated['email'],
+        (string) $updated['role'],
+        (int) $updated['session_version']
+    );
+    Auth::recordSecurityEvent('password_changed', (string) $updated['email'], (int) $updated['id']);
+    Http::json([
+        'ok' => true,
+        'message' => 'Kata sandi berhasil diganti. Sesi akun di perangkat lain telah dihentikan.',
+        'csrf' => Auth::csrf(),
+    ]);
+}
+
+function resetAdminPassword(array $body): never
+{
+    $adminId = filter_var($body['admin_id'] ?? null, FILTER_VALIDATE_INT);
+    if (!$adminId) {
+        Http::json(['ok' => false, 'message' => 'Admin tujuan tidak valid.'], 422);
+    }
+    if ((int) $adminId === Auth::id()) {
+        Http::json(['ok' => false, 'message' => 'Gunakan menu Profil Saya untuk mengganti kata sandi sendiri.'], 422);
+    }
+
+    $password = (string) ($body['new_password'] ?? '');
+    $confirmation = (string) ($body['new_password_confirmation'] ?? '');
+    validateNewPassword($password, $confirmation);
+    $target = findAdminProfile((int) $adminId);
+    if (!$target) {
+        Http::json(['ok' => false, 'message' => 'Akun admin tidak ditemukan.'], 404);
+    }
+
+    try {
+        $statement = Database::connection()->prepare(
+            'UPDATE admins
+             SET password_hash = :password_hash, session_version = session_version + 1
+             WHERE id = :id'
+        );
+        $statement->execute([
+            'password_hash' => password_hash($password, PASSWORD_DEFAULT),
+            'id' => (int) $adminId,
+        ]);
+    } catch (Throwable $error) {
+        accountMigrationError($error);
+    }
+
+    Auth::recordSecurityEvent('password_reset', (string) $target['email'], (int) $target['id']);
+    Http::json([
+        'ok' => true,
+        'message' => 'Kata sandi admin berhasil direset. Semua sesi lama akun tersebut telah dihentikan.',
+    ]);
+}
+
+function findAdminProfile(int $id, bool $withPassword = false): array|false
+{
+    $passwordColumn = $withPassword ? ', password_hash' : '';
+    try {
+        $statement = Database::connection()->prepare(
+            "SELECT id, email, display_name, role, is_active, session_version,
+                    last_login_at, created_at, updated_at{$passwordColumn}
+             FROM admins WHERE id = :id LIMIT 1"
+        );
+        $statement->execute(['id' => $id]);
+        return $statement->fetch();
+    } catch (Throwable $error) {
+        if ($withPassword) {
+            accountMigrationError($error);
+        }
+        $statement = Database::connection()->prepare(
+            'SELECT id, email, display_name, role, is_active, 1 AS session_version,
+                    last_login_at, created_at, updated_at
+             FROM admins WHERE id = :id LIMIT 1'
+        );
+        $statement->execute(['id' => $id]);
+        return $statement->fetch();
+    }
+}
+
+function publicAdminProfile(array $profile): array
+{
+    return [
+        'id' => (int) $profile['id'],
+        'email' => (string) $profile['email'],
+        'display_name' => (string) $profile['display_name'],
+        'role' => (string) $profile['role'],
+        'is_active' => (int) $profile['is_active'],
+        'last_login_at' => $profile['last_login_at'],
+        'created_at' => $profile['created_at'],
+        'updated_at' => $profile['updated_at'],
+    ];
+}
+
+function accountSecuritySummary(int $adminId, string $email): array
+{
+    try {
+        $statement = Database::connection()->prepare(
+            "SELECT
+                SUM(CASE WHEN event_type = 'failure' THEN 1 ELSE 0 END) AS failed_attempts,
+                SUM(CASE WHEN event_type = 'blocked' THEN 1 ELSE 0 END) AS blocked_attempts,
+                MAX(CASE WHEN event_type IN ('failure', 'blocked') THEN created_at END) AS last_suspicious_at
+             FROM login_security_events
+             WHERE (admin_id = :admin_id OR (admin_id IS NULL AND email = :email))
+               AND created_at >= UTC_TIMESTAMP() - INTERVAL 24 HOUR"
+        );
+        $statement->execute(['admin_id' => $adminId, 'email' => strtolower($email)]);
+        $row = $statement->fetch() ?: [];
+        $failures = (int) ($row['failed_attempts'] ?? 0);
+        $blocked = (int) ($row['blocked_attempts'] ?? 0);
+        return [
+            'enabled' => true,
+            'warning' => $failures >= 3 || $blocked > 0,
+            'failed_attempts_24h' => $failures,
+            'blocked_attempts_24h' => $blocked,
+            'last_suspicious_at' => $row['last_suspicious_at'] ?? null,
+        ];
+    } catch (Throwable) {
+        return [
+            'enabled' => false,
+            'warning' => false,
+            'failed_attempts_24h' => 0,
+            'blocked_attempts_24h' => 0,
+            'last_suspicious_at' => null,
+        ];
+    }
+}
+
+function validateNewPassword(string $password, string $confirmation): void
+{
+    if (strlen($password) < 15 || strlen($password) > 128) {
+        Http::json(['ok' => false, 'message' => 'Kata sandi baru harus berisi 15–128 karakter.'], 422);
+    }
+    if (!hash_equals($password, $confirmation)) {
+        Http::json(['ok' => false, 'message' => 'Konfirmasi kata sandi baru tidak sama.'], 422);
+    }
+}
+
+function accountMigrationError(Throwable $error): never
+{
+    error_log('[AdminAccount] ' . $error->getMessage());
+    Http::json([
+        'ok' => false,
+        'message' => 'Fitur keamanan akun belum diaktifkan. Jalankan database/add_admin_security.sql melalui phpMyAdmin.',
+    ], 503);
+}
+
 function saveAdmin(array $body): never
 {
     $email = strtolower(trim((string) ($body['email'] ?? '')));
@@ -536,14 +816,18 @@ function saveAdmin(array $body): never
         Http::json(['ok' => false, 'message' => 'Role admin tidak valid.'], 422);
     }
 
+    $existing = Database::connection()->prepare('SELECT id FROM admins WHERE email = :email LIMIT 1');
+    $existing->execute(['email' => $email]);
+    if ($existing->fetch()) {
+        Http::json([
+            'ok' => false,
+            'message' => 'Email sudah terdaftar. Gunakan tombol Reset Password pada daftar admin.',
+        ], 409);
+    }
+
     $stmt = Database::connection()->prepare(
         'INSERT INTO admins (email, password_hash, display_name, role, is_active)
-         VALUES (:email, :password_hash, :display_name, :role, 1)
-         ON DUPLICATE KEY UPDATE
-            password_hash = VALUES(password_hash),
-            display_name = VALUES(display_name),
-            role = VALUES(role),
-            is_active = 1'
+         VALUES (:email, :password_hash, :display_name, :role, 1)'
     );
     $stmt->execute([
         'email' => $email,
@@ -551,7 +835,7 @@ function saveAdmin(array $body): never
         'display_name' => $name,
         'role' => $role,
     ]);
-    Http::json(['ok' => true, 'message' => 'Admin berhasil ditambahkan atau diperbarui.'], 201);
+    Http::json(['ok' => true, 'message' => 'Admin berhasil ditambahkan.'], 201);
 }
 
 function deactivateAdmin(): never

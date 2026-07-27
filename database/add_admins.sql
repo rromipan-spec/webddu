@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS admins (
     display_name VARCHAR(120) NOT NULL DEFAULT '',
     role ENUM('super_admin', 'admin') NOT NULL DEFAULT 'admin',
     is_active TINYINT(1) NOT NULL DEFAULT 1,
+    session_version INT UNSIGNED NOT NULL DEFAULT 1,
     last_login_at DATETIME NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -15,4 +16,3 @@ CREATE TABLE IF NOT EXISTS admins (
 -- Contoh tambah admin (buat hash bcrypt terlebih dahulu, lalu ganti semua nilai contoh):
 -- INSERT INTO admins (email, password_hash, display_name, role)
 -- VALUES ('admin@domainanda.com', '$2y$10$GANTI_DENGAN_HASH_BCRYPT', 'Administrator Utama', 'super_admin');
-

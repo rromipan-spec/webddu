@@ -5,10 +5,24 @@ CREATE TABLE IF NOT EXISTS admins (
     display_name VARCHAR(120) NOT NULL DEFAULT '',
     role ENUM('super_admin', 'admin') NOT NULL DEFAULT 'admin',
     is_active TINYINT(1) NOT NULL DEFAULT 1,
+    session_version INT UNSIGNED NOT NULL DEFAULT 1,
     last_login_at DATETIME NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_admins_active (is_active)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS login_security_events (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    admin_id BIGINT UNSIGNED NULL,
+    email VARCHAR(190) NOT NULL DEFAULT '',
+    event_type ENUM('success', 'failure', 'blocked', 'password_changed', 'password_reset', 'profile_updated') NOT NULL,
+    ip_hash CHAR(64) NOT NULL DEFAULT '',
+    user_agent VARCHAR(255) NOT NULL DEFAULT '',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_login_security_admin (admin_id, created_at),
+    INDEX idx_login_security_email (email, created_at),
+    INDEX idx_login_security_type (event_type, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS posts (

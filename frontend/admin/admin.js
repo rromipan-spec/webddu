@@ -102,13 +102,15 @@ window.switchTab = tab => {
     document.getElementById('content-articles')?.classList.toggle('hidden', tab !== 'articles');
     document.getElementById('content-programs-admin')?.classList.toggle('hidden', tab !== 'programs-admin');
     document.getElementById('content-admins')?.classList.toggle('hidden', tab !== 'admins');
+    document.getElementById('content-profile')?.classList.toggle('hidden', tab !== 'profile');
     document.getElementById('content-history')?.classList.toggle('hidden', tab !== 'history');
     document.getElementById('content-institution')?.classList.toggle('hidden', tab !== 'institution');
-    document.querySelector('.preview-group')?.classList.toggle('hidden', tab === 'dashboard' || tab === 'admins' || tab === 'history' || tab === 'institution');
+    document.querySelector('.preview-group')?.classList.toggle('hidden', tab === 'dashboard' || tab === 'admins' || tab === 'profile' || tab === 'history' || tab === 'institution');
     document.getElementById('tab-dashboard')?.classList.toggle('active', tab === 'dashboard');
     document.getElementById('tab-articles')?.classList.toggle('active', tab === 'articles');
     document.getElementById('tab-programs-admin')?.classList.toggle('active', tab === 'programs-admin');
     document.getElementById('tab-admins')?.classList.toggle('active', tab === 'admins');
+    document.getElementById('tab-profile')?.classList.toggle('active', tab === 'profile');
     document.getElementById('tab-history')?.classList.toggle('active', tab === 'history');
     document.getElementById('tab-institution')?.classList.toggle('active', tab === 'institution');
     document.querySelectorAll('.sidebar-nav button').forEach(button => {
@@ -119,6 +121,7 @@ window.switchTab = tab => {
         }
     });
     if (tab === 'dashboard') fetchStats();
+    if (tab === 'profile') loadProfile();
     if (tab === 'history') loadHistory();
     if (tab === 'institution') loadInstitutionProfile();
     updatePreview();
@@ -393,6 +396,9 @@ document.getElementById('btn-logout')?.addEventListener('click', async () => {
 document.getElementById('post-form')?.addEventListener('submit', event => saveForm(event, 'posts'));
 document.getElementById('program-form')?.addEventListener('submit', event => saveForm(event, 'programs'));
 document.getElementById('admin-create-form')?.addEventListener('submit', createAdmin);
+document.getElementById('profile-form')?.addEventListener('submit', saveOwnProfile);
+document.getElementById('password-form')?.addEventListener('submit', changeOwnPassword);
+document.getElementById('admin-password-reset-form')?.addEventListener('submit', submitAdminPasswordReset);
 document.getElementById('institution-form')?.addEventListener('submit', saveInstitutionProfile);
 
 function institutionElement(key) {
@@ -479,6 +485,7 @@ async function showDashboard() {
     document.getElementById('login-section')?.classList.add('hidden');
     document.getElementById('dashboard-section')?.classList.remove('hidden');
     document.querySelector('.preview-group')?.classList.add('hidden');
+    await loadProfile();
     await Promise.all([fetchStats(), loadLists()]);
 }
 
@@ -489,6 +496,101 @@ async function loadLists() {
         renderList('admin-program-list', programs.data || [], 'programs');
         if (currentRole === 'super_admin') await loadAdminAccounts();
     } catch (error) { console.error(error); }
+}
+
+async function loadProfile() {
+    try {
+        const result = await api('profile');
+        const profile = result.data || {};
+        const name = document.getElementById('profile-name');
+        const email = document.getElementById('profile-email');
+        if (name && document.activeElement !== name) name.value = profile.display_name || '';
+        if (email && document.activeElement !== email) email.value = profile.email || '';
+        document.getElementById('profile-role').textContent = profile.role === 'super_admin' ? 'Super Admin' : 'Admin';
+        document.getElementById('profile-last-login').textContent = formatAccountDate(profile.last_login_at);
+        document.getElementById('profile-created-at').textContent = formatAccountDate(profile.created_at);
+        document.getElementById('reset-admin-id').dataset.currentAdminId = String(profile.id || '');
+        currentRole = profile.role || currentRole;
+        document.getElementById('tab-admins')?.classList.toggle('hidden', currentRole !== 'super_admin');
+        updateSecurityAlerts(result.security || {});
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+function formatAccountDate(value) {
+    const date = utcDate(value);
+    return date ? date.toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }) : 'Belum tersedia';
+}
+
+function updateSecurityAlerts(security) {
+    const alerts = [
+        document.getElementById('dashboard-security-alert'),
+        document.getElementById('profile-security-alert')
+    ].filter(Boolean);
+    let message = '';
+    if (!security.enabled) {
+        message = '<strong>Pencatatan keamanan belum aktif</strong>Jalankan file database/add_admin_security.sql melalui phpMyAdmin.';
+    } else if (security.warning) {
+        const failed = Number(security.failed_attempts_24h || 0);
+        const blocked = Number(security.blocked_attempts_24h || 0);
+        const last = security.last_suspicious_at ? ` Terakhir: ${escapeHtml(formatAccountDate(security.last_suspicious_at))}.` : '';
+        message = `<strong>Peringatan aktivitas login</strong>Terdapat ${failed} percobaan gagal dan ${blocked} pemblokiran dalam 24 jam terakhir.${last} Ganti kata sandi jika aktivitas ini bukan milik Anda.`;
+    }
+    alerts.forEach(alert => {
+        alert.innerHTML = message;
+        alert.classList.toggle('hidden', !message);
+    });
+}
+
+async function saveOwnProfile(event) {
+    event.preventDefault();
+    const button = event.currentTarget.querySelector('button[type="submit"]');
+    button.disabled = true;
+    try {
+        const result = await api('profile', {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'update_profile',
+                display_name: document.getElementById('profile-name').value,
+                email: document.getElementById('profile-email').value,
+                current_password: document.getElementById('profile-current-password').value
+            })
+        });
+        if (result.csrf) csrfToken = result.csrf;
+        document.getElementById('profile-current-password').value = '';
+        await loadProfile();
+        alert(result.message);
+    } catch (error) {
+        alert(error.message);
+    } finally {
+        button.disabled = false;
+    }
+}
+
+async function changeOwnPassword(event) {
+    event.preventDefault();
+    const button = event.currentTarget.querySelector('button[type="submit"]');
+    button.disabled = true;
+    try {
+        const result = await api('profile', {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'change_password',
+                current_password: document.getElementById('password-current').value,
+                new_password: document.getElementById('password-new').value,
+                new_password_confirmation: document.getElementById('password-confirmation').value
+            })
+        });
+        if (result.csrf) csrfToken = result.csrf;
+        event.currentTarget.reset();
+        await loadProfile();
+        alert(result.message);
+    } catch (error) {
+        alert(error.message);
+    } finally {
+        button.disabled = false;
+    }
 }
 
 async function createAdmin(event) {
@@ -504,7 +606,7 @@ async function createAdmin(event) {
         }) });
         event.currentTarget.reset();
         await loadAdminAccounts();
-        alert('Admin berhasil ditambahkan atau diperbarui.');
+        alert('Admin berhasil ditambahkan.');
     } catch (error) {
         alert(error.message);
     } finally {
@@ -517,9 +619,13 @@ async function loadAdminAccounts() {
     const container = document.getElementById('admin-account-list');
     if (!container) return;
     const admins = result.data || [];
+    const currentAdminId = Number(document.getElementById('reset-admin-id')?.dataset.currentAdminId || 0);
     container.innerHTML = admins.length ? admins.map(admin => `<div class="post-list-item">
-        <span><strong>${escapeHtml(admin.display_name || admin.email)}</strong><br><small>${escapeHtml(admin.email)} · ${escapeHtml(admin.role)} · ${Number(admin.is_active) ? 'Aktif' : 'Nonaktif'}</small></span>
-        <div class="post-list-actions">${Number(admin.is_active) ? `<button type="button" class="btn-delete" data-disable-admin="${Number(admin.id)}">Nonaktifkan</button>` : ''}</div>
+        <span><strong>${escapeHtml(admin.display_name || admin.email)}</strong><small class="admin-account-meta">${escapeHtml(admin.email)} · ${escapeHtml(admin.role)} · ${Number(admin.is_active) ? 'Aktif' : 'Nonaktif'}<br>Login terakhir: ${escapeHtml(formatAccountDate(admin.last_login_at))}</small></span>
+        <div class="post-list-actions">
+            ${Number(admin.id) !== currentAdminId ? `<button type="button" class="btn-secondary" data-reset-admin="${Number(admin.id)}" data-admin-email="${escapeHtml(admin.email)}">Reset Password</button>` : ''}
+            ${Number(admin.is_active) && Number(admin.id) !== currentAdminId ? `<button type="button" class="btn-delete" data-disable-admin="${Number(admin.id)}">Nonaktifkan</button>` : ''}
+        </div>
     </div>`).join('') : '<p class="admin-empty-state">Belum ada akun admin untuk ditampilkan.</p>';
 }
 
@@ -620,7 +726,47 @@ document.addEventListener('click', event => {
     if (remove) deleteItem(remove.dataset.delete, remove.dataset.id);
     const disableAdmin = event.target.closest('[data-disable-admin]');
     if (disableAdmin) deactivateAdminAccount(disableAdmin.dataset.disableAdmin);
+    const resetAdmin = event.target.closest('[data-reset-admin]');
+    if (resetAdmin) openAdminPasswordDialog(resetAdmin.dataset.resetAdmin, resetAdmin.dataset.adminEmail);
+    if (event.target.closest('[data-close-password-dialog]')) closeAdminPasswordDialog();
 });
+
+function openAdminPasswordDialog(id, email) {
+    const dialog = document.getElementById('admin-password-dialog');
+    document.getElementById('reset-admin-id').value = id;
+    document.getElementById('reset-admin-description').textContent = `Buat kata sandi baru untuk ${email}.`;
+    document.getElementById('admin-password-reset-form').reset();
+    document.getElementById('reset-admin-id').value = id;
+    dialog?.showModal();
+}
+
+function closeAdminPasswordDialog() {
+    const dialog = document.getElementById('admin-password-dialog');
+    if (dialog?.open) dialog.close();
+}
+
+async function submitAdminPasswordReset(event) {
+    event.preventDefault();
+    const button = event.currentTarget.querySelector('button[type="submit"]');
+    button.disabled = true;
+    try {
+        const result = await api('admin_password_reset', {
+            method: 'POST',
+            body: JSON.stringify({
+                admin_id: document.getElementById('reset-admin-id').value,
+                new_password: document.getElementById('reset-admin-password').value,
+                new_password_confirmation: document.getElementById('reset-admin-password-confirmation').value
+            })
+        });
+        closeAdminPasswordDialog();
+        event.currentTarget.reset();
+        alert(result.message);
+    } catch (error) {
+        alert(error.message);
+    } finally {
+        button.disabled = false;
+    }
+}
 
 async function deactivateAdminAccount(id) {
     if (!confirm('Nonaktifkan akun admin ini?')) return;
