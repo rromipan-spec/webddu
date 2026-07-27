@@ -102,23 +102,36 @@
             .toolbar button, .toolbar select { flex: 1 1 auto; }
         }
     </style>
+    <link rel="stylesheet" href="admin.css?v=20260727-2">
 </head>
-<body>
+<body class="admin-page">
     <!-- Login Section tetap berada di tengah -->
-    <div id="login-section" style="max-width: 400px; margin: 150px auto;">
-        <div class="card">
-            <h2>Admin Login</h2>
+    <div id="login-section">
+        <div class="card login-card">
+            <div class="login-brand">
+                <img src="../halaman-utama/asset/logo-dompet-dana-umat-256.png" alt="" width="64" height="65">
+                <div>
+                    <span>Dompet Dana Umat</span>
+                    <strong>Panel Administrasi</strong>
+                </div>
+            </div>
+            <div class="login-heading">
+                <p class="admin-eyebrow">Akses pengelola</p>
+                <h1>Selamat datang kembali</h1>
+                <p>Masuk menggunakan akun admin yang telah terdaftar.</p>
+            </div>
             <form id="login-form">
                 <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="admin-email" autocomplete="username" required>
+                    <label for="admin-email">Alamat email</label>
+                    <input type="email" id="admin-email" autocomplete="username" placeholder="admin@dompetdanaumat.com" required>
                 </div>
                 <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="admin-password" autocomplete="current-password" minlength="12" required>
+                    <label for="admin-password">Kata sandi</label>
+                    <input type="password" id="admin-password" autocomplete="current-password" placeholder="Masukkan kata sandi" minlength="12" required>
                 </div>
-                <button type="submit" class="btn btn-primary">Login</button>
+                <button type="submit" class="btn btn-primary login-submit">Masuk ke panel</button>
             </form>
+            <p class="login-security-note">Akses ini khusus pengelola resmi Dompet Dana Umat.</p>
         </div>
     </div>
 
@@ -126,17 +139,23 @@
     <div id="dashboard-section" class="admin-container hidden">
         <aside class="admin-sidebar">
             <div class="sidebar-card">
-                <h3>DDU Panel</h3>
-                <nav class="sidebar-nav">
-                    <button onclick="switchTab('dashboard')" id="tab-dashboard" class="active">📊 Dashboard</button>
-                    <button onclick="switchTab('articles')" id="tab-articles">📰 Artikel</button>
-                    <button onclick="switchTab('programs-admin')" id="tab-programs-admin">🚀 Program</button>
-                    <button onclick="switchTab('institution')" id="tab-institution">🏛️ Kredibilitas</button>
-                    <button onclick="switchTab('history')" id="tab-history">🕘 Riwayat</button>
-                    <button onclick="switchTab('admins')" id="tab-admins" class="hidden">👤 Admin</button>
-                    <hr style="margin: 15px 0;">
-                    <button id="btn-logout" style="color: #e74c3c;">Logout</button>
+                <a class="admin-brand" href="/" target="_blank" rel="noopener noreferrer" aria-label="Buka website Dompet Dana Umat">
+                    <img src="../halaman-utama/asset/logo-dompet-dana-umat-256.png" alt="" width="48" height="49">
+                    <span><strong>DDU Panel</strong><small>Kelola website</small></span>
+                </a>
+                <p class="sidebar-label">Menu utama</p>
+                <nav class="sidebar-nav" aria-label="Navigasi panel admin">
+                    <button type="button" onclick="switchTab('dashboard')" id="tab-dashboard" class="active" aria-current="page"><span class="nav-symbol" aria-hidden="true">D</span><span>Dashboard</span></button>
+                    <button type="button" onclick="switchTab('articles')" id="tab-articles"><span class="nav-symbol" aria-hidden="true">A</span><span>Artikel</span></button>
+                    <button type="button" onclick="switchTab('programs-admin')" id="tab-programs-admin"><span class="nav-symbol" aria-hidden="true">P</span><span>Program</span></button>
+                    <button type="button" onclick="switchTab('institution')" id="tab-institution"><span class="nav-symbol" aria-hidden="true">K</span><span>Kredibilitas</span></button>
+                    <button type="button" onclick="switchTab('history')" id="tab-history"><span class="nav-symbol" aria-hidden="true">R</span><span>Riwayat</span></button>
+                    <button type="button" onclick="switchTab('admins')" id="tab-admins" class="hidden"><span class="nav-symbol" aria-hidden="true">U</span><span>Admin</span></button>
                 </nav>
+                <div class="sidebar-actions">
+                    <a href="/" target="_blank" rel="noopener noreferrer">Lihat website <span aria-hidden="true">↗</span></a>
+                    <button type="button" id="btn-logout">Keluar</button>
+                </div>
             </div>
             
             <div class="preview-group">
@@ -428,6 +447,6 @@
         </main>
     </div>
 
-    <script type="module" src="admin.js?v=20260721-13"></script>
+    <script type="module" src="admin.js?v=20260727-1"></script>
 </body>
 </html>

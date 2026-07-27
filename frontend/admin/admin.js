@@ -111,6 +111,13 @@ window.switchTab = tab => {
     document.getElementById('tab-admins')?.classList.toggle('active', tab === 'admins');
     document.getElementById('tab-history')?.classList.toggle('active', tab === 'history');
     document.getElementById('tab-institution')?.classList.toggle('active', tab === 'institution');
+    document.querySelectorAll('.sidebar-nav button').forEach(button => {
+        if (button.classList.contains('active')) {
+            button.setAttribute('aria-current', 'page');
+        } else {
+            button.removeAttribute('aria-current');
+        }
+    });
     if (tab === 'dashboard') fetchStats();
     if (tab === 'history') loadHistory();
     if (tab === 'institution') loadInstitutionProfile();
@@ -509,23 +516,29 @@ async function loadAdminAccounts() {
     const result = await api('admins');
     const container = document.getElementById('admin-account-list');
     if (!container) return;
-    container.innerHTML = (result.data || []).map(admin => `<div class="post-list-item">
+    const admins = result.data || [];
+    container.innerHTML = admins.length ? admins.map(admin => `<div class="post-list-item">
         <span><strong>${escapeHtml(admin.display_name || admin.email)}</strong><br><small>${escapeHtml(admin.email)} · ${escapeHtml(admin.role)} · ${Number(admin.is_active) ? 'Aktif' : 'Nonaktif'}</small></span>
-        ${Number(admin.is_active) ? `<button type="button" class="btn-delete" data-disable-admin="${Number(admin.id)}">Nonaktifkan</button>` : ''}
-    </div>`).join('');
+        <div class="post-list-actions">${Number(admin.is_active) ? `<button type="button" class="btn-delete" data-disable-admin="${Number(admin.id)}">Nonaktifkan</button>` : ''}</div>
+    </div>`).join('') : '<p class="admin-empty-state">Belum ada akun admin untuk ditampilkan.</p>';
 }
 
 function renderList(containerId, items, resource) {
     const container = document.getElementById(containerId);
     if (!container) return;
+    if (!items.length) {
+        const label = resource === 'posts' ? 'artikel' : 'program';
+        container.innerHTML = `<p class="admin-empty-state">Belum ada ${label}. Data baru yang disimpan akan tampil di sini.</p>`;
+        return;
+    }
     container.innerHTML = items.map(item => {
         const publication = publicationLabel(item);
         const previewUrl = resource === 'posts'
             ? `/artikel/${encodeURIComponent(item.slug)}?preview=1`
             : `/${encodeURIComponent(item.slug)}?preview=1`;
-        return `<div class="post-list-item"><span><strong>${escapeHtml(item.title)}</strong><br><small>${escapeHtml(item.category || 'Umum')}</small><br><span class="status-badge ${publication.className}">${publication.label}</span></span><div>
-        <button type="button" class="btn-secondary" data-preview-url="${escapeHtml(previewUrl)}" style="padding:5px 10px;font-size:.8rem">Preview</button>
-        <button type="button" class="btn-secondary" data-edit="${resource}" data-id="${Number(item.id)}" style="padding:5px 10px;font-size:.8rem">Edit</button>
+        return `<div class="post-list-item"><span><strong>${escapeHtml(item.title)}</strong><br><small>${escapeHtml(item.category || 'Umum')}</small><br><span class="status-badge ${publication.className}">${publication.label}</span></span><div class="post-list-actions">
+        <button type="button" class="btn-secondary" data-preview-url="${escapeHtml(previewUrl)}">Preview</button>
+        <button type="button" class="btn-secondary" data-edit="${resource}" data-id="${Number(item.id)}">Edit</button>
         <button type="button" class="btn-delete" data-delete="${resource}" data-id="${Number(item.id)}">Hapus</button>
     </div></div>`;
     }).join('');
