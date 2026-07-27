@@ -133,7 +133,9 @@ p {
 }
 
 .logo img {
+    width: auto;
     height: 35px;
+    object-fit: contain;
 }
 
 /* Animasi Logo saat Scroll */
@@ -922,6 +924,7 @@ p {
 
 .about-img-1 {
     width: 85%;
+    height: auto;
     border-radius: 20px;
     box-shadow: 0 20px 40px rgba(0,0,0,0.1);
     display: block;
@@ -933,6 +936,7 @@ p {
     bottom: 0;
     right: 0;
     width: 55%;
+    height: auto;
     border-radius: 15px;
     border: 8px solid white;
     box-shadow: 0 20px 40px rgba(0,0,0,0.15);
@@ -1589,7 +1593,9 @@ p {
 }
 
 .footer-logo img {
+    width: auto;
     height: 35px;
+    object-fit: contain;
 }
 
 .footer-col h4 {
