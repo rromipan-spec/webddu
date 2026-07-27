@@ -110,6 +110,11 @@ request 201 -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" -H 'Content-Type: applicat
   --data "$SCHEDULED_PAYLOAD" "$BASE_URL/api/index.php?resource=posts"
 SCHEDULED_ID="$(jq -r '.id' "$RESPONSE")"
 request 404 "$BASE_URL/api/index.php?resource=posts&slug=$SCHEDULED_SLUG"
+request 200 -b "$COOKIE_JAR" \
+  "$BASE_URL/api/index.php?resource=posts&admin=1&status=scheduled&category=Pengujian&search=Artikel&sort=created_desc&page=1&per_page=5"
+jq -e --arg slug "$SCHEDULED_SLUG" \
+  '.meta.page == 1 and .meta.total >= 1 and (.meta.categories | index("Pengujian")) != null and ([.data[].slug] | index($slug)) != null' \
+  "$RESPONSE" >/dev/null || fail 'Filter dan metadata pagination artikel tidak sesuai.'
 
 echo '[8/14] CRUD program'
 PROGRAM_PAYLOAD="$(jq -nc --arg slug "$PROGRAM_SLUG" \

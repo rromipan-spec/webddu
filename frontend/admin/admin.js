@@ -1,6 +1,10 @@
 const API = '../api/index.php';
 let csrfToken = '';
 let currentRole = '';
+const contentListState = {
+    posts: { prefix: 'post', page: 1, perPage: 10, searchTimer: null, requestId: 0 },
+    programs: { prefix: 'program', page: 1, perPage: 10, searchTimer: null, requestId: 0 }
+};
 const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, char => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
 }[char]));
@@ -491,11 +495,122 @@ async function showDashboard() {
 
 async function loadLists() {
     try {
-        const [posts, programs] = await Promise.all([api('posts&admin=1'), api('programs&admin=1')]);
-        renderList('admin-post-list', posts.data || [], 'posts');
-        renderList('admin-program-list', programs.data || [], 'programs');
-        if (currentRole === 'super_admin') await loadAdminAccounts();
+        const requests = [loadContentList('posts'), loadContentList('programs')];
+        if (currentRole === 'super_admin') requests.push(loadAdminAccounts());
+        await Promise.all(requests);
     } catch (error) { console.error(error); }
+}
+
+function setupContentListFilters(resource) {
+    const state = contentListState[resource];
+    const prefix = state.prefix;
+    const search = document.getElementById(`${prefix}-list-search`);
+    const status = document.getElementById(`${prefix}-list-status`);
+    const category = document.getElementById(`${prefix}-list-category`);
+    const sort = document.getElementById(`${prefix}-list-sort`);
+    search?.addEventListener('input', () => {
+        clearTimeout(state.searchTimer);
+        state.searchTimer = setTimeout(() => {
+            state.page = 1;
+            loadContentList(resource);
+        }, 350);
+    });
+    [status, category, sort].forEach(control => control?.addEventListener('change', () => {
+        state.page = 1;
+        loadContentList(resource);
+    }));
+}
+
+async function loadContentList(resource) {
+    const state = contentListState[resource];
+    const requestId = ++state.requestId;
+    const prefix = state.prefix;
+    const summary = document.getElementById(`${prefix}-list-summary`);
+    if (summary) summary.textContent = 'Memuat daftar...';
+    try {
+        const parameters = new URLSearchParams({
+            admin: '1',
+            page: String(state.page),
+            per_page: String(state.perPage),
+            search: document.getElementById(`${prefix}-list-search`)?.value.trim() || '',
+            status: document.getElementById(`${prefix}-list-status`)?.value || 'all',
+            category: document.getElementById(`${prefix}-list-category`)?.value || '',
+            sort: document.getElementById(`${prefix}-list-sort`)?.value || 'created_desc'
+        });
+        const result = await api(`${resource}&${parameters.toString()}`);
+        if (requestId !== state.requestId) return;
+        const meta = result.meta || { page: 1, total: 0, total_pages: 1, categories: [] };
+        state.page = Number(meta.page || 1);
+        renderCategoryFilter(prefix, meta.categories || []);
+        renderList(resource === 'posts' ? 'admin-post-list' : 'admin-program-list', result.data || [], resource);
+        renderContentPagination(prefix, resource, meta);
+        if (summary) {
+            const label = resource === 'posts' ? 'artikel' : 'program';
+            summary.textContent = Number(meta.total)
+                ? `Menampilkan ${result.data.length} dari ${Number(meta.total)} ${label} · Halaman ${Number(meta.page)} dari ${Number(meta.total_pages)}`
+                : `Tidak ada ${label} yang cocok dengan filter.`;
+        }
+    } catch (error) {
+        if (requestId !== state.requestId) return;
+        if (summary) summary.textContent = error.message;
+        console.error(error);
+    }
+}
+
+function renderCategoryFilter(prefix, categories) {
+    const select = document.getElementById(`${prefix}-list-category`);
+    if (!select) return;
+    const selected = select.value;
+    select.replaceChildren(new Option('Semua kategori', ''));
+    categories.forEach(category => select.add(new Option(category, category)));
+    if ([...select.options].some(option => option.value === selected)) select.value = selected;
+}
+
+function renderContentPagination(prefix, resource, meta) {
+    const container = document.getElementById(`${prefix}-list-pagination`);
+    if (!container) return;
+    const current = Number(meta.page || 1);
+    const totalPages = Number(meta.total_pages || 1);
+    if (totalPages <= 1) {
+        container.replaceChildren();
+        return;
+    }
+
+    const pages = new Set([1, totalPages]);
+    for (let page = Math.max(1, current - 2); page <= Math.min(totalPages, current + 2); page += 1) {
+        pages.add(page);
+    }
+    const orderedPages = [...pages].sort((a, b) => a - b);
+    const fragment = document.createDocumentFragment();
+    fragment.append(createPaginationButton('Sebelumnya', current - 1, current === 1, false, resource));
+    orderedPages.forEach((page, index) => {
+        if (index > 0 && page - orderedPages[index - 1] > 1) {
+            const separator = document.createElement('span');
+            separator.textContent = '…';
+            separator.className = 'pagination-separator';
+            fragment.append(separator);
+        }
+        fragment.append(createPaginationButton(String(page), page, false, page === current, resource));
+    });
+    fragment.append(createPaginationButton('Berikutnya', current + 1, current === totalPages, false, resource));
+    container.replaceChildren(fragment);
+}
+
+function createPaginationButton(label, page, disabled, current, resource) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = label;
+    button.disabled = disabled;
+    if (current) button.setAttribute('aria-current', 'page');
+    button.addEventListener('click', () => {
+        contentListState[resource].page = page;
+        loadContentList(resource);
+        document.getElementById(`${contentListState[resource].prefix}-list-summary`)?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+        });
+    });
+    return button;
 }
 
 async function loadProfile() {
@@ -639,10 +754,13 @@ function renderList(containerId, items, resource) {
     }
     container.innerHTML = items.map(item => {
         const publication = publicationLabel(item);
+        const dateLabel = item.published_at
+            ? `Tanggal tayang: ${formatAccountDate(item.published_at)}`
+            : `Dibuat: ${formatAccountDate(item.created_at)}`;
         const previewUrl = resource === 'posts'
             ? `/artikel/${encodeURIComponent(item.slug)}?preview=1`
             : `/${encodeURIComponent(item.slug)}?preview=1`;
-        return `<div class="post-list-item"><span><strong>${escapeHtml(item.title)}</strong><br><small>${escapeHtml(item.category || 'Umum')}</small><br><span class="status-badge ${publication.className}">${publication.label}</span></span><div class="post-list-actions">
+        return `<div class="post-list-item"><span><strong>${escapeHtml(item.title)}</strong><small class="admin-account-meta">${escapeHtml(item.category || 'Umum')} · ${escapeHtml(dateLabel)}</small><span class="status-badge ${publication.className}">${publication.label}</span></span><div class="post-list-actions">
         <button type="button" class="btn-secondary" data-preview-url="${escapeHtml(previewUrl)}">Preview</button>
         <button type="button" class="btn-secondary" data-edit="${resource}" data-id="${Number(item.id)}">Edit</button>
         <button type="button" class="btn-delete" data-delete="${resource}" data-id="${Number(item.id)}">Hapus</button>
@@ -822,6 +940,8 @@ async function deleteItem(resource, id) {
 }
 
 async function init() {
+    setupContentListFilters('posts');
+    setupContentListFilters('programs');
     setupAutomaticSlug('post');
     setupAutomaticSlug('prog');
     setupDropZone('article-drop-zone', 'post-image-file', 'post-image-url', 'image-preview', 'post');

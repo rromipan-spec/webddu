@@ -202,7 +202,10 @@ function readResource(string $table): never
     }
 
     $adminListing = (string) ($_GET['admin'] ?? '') === '1';
-    if ($adminListing) Auth::requireAdmin();
+    if ($adminListing) {
+        Auth::requireAdmin();
+        readAdminContentListing($table);
+    }
     $where = $adminListing ? '' : "WHERE {$publicWhere}";
     $order = $table === 'programs' && !$adminListing
         ? 'ORDER BY CASE WHEN featured_order IS NULL THEN 1 ELSE 0 END, featured_order ASC, published_at DESC'
@@ -218,6 +221,84 @@ function readResource(string $table): never
     $rows = $stmt->fetchAll();
     if (!$adminListing) $rows = array_map('publicContentRow', $rows);
     Http::json(['ok' => true, 'data' => $rows]);
+}
+
+function readAdminContentListing(string $table): never
+{
+    $db = Database::connection();
+    $search = mb_substr(trim((string) ($_GET['search'] ?? '')), 0, 180);
+    $status = (string) ($_GET['status'] ?? 'all');
+    $category = mb_substr(trim((string) ($_GET['category'] ?? '')), 0, 100);
+    $sort = (string) ($_GET['sort'] ?? 'created_desc');
+    $page = max(1, (int) ($_GET['page'] ?? 1));
+    $perPage = max(5, min(50, (int) ($_GET['per_page'] ?? 10)));
+
+    if (!in_array($status, ['all', 'draft', 'scheduled', 'published'], true)) {
+        $status = 'all';
+    }
+    $sortSql = [
+        'created_desc' => 'created_at DESC, id DESC',
+        'created_asc' => 'created_at ASC, id ASC',
+        'updated_desc' => 'updated_at DESC, id DESC',
+        'published_desc' => 'COALESCE(published_at, created_at) DESC, id DESC',
+        'published_asc' => 'COALESCE(published_at, created_at) ASC, id ASC',
+    ][$sort] ?? 'created_at DESC, id DESC';
+
+    $conditions = [];
+    $parameters = [];
+    if ($search !== '') {
+        $conditions[] = 'title LIKE :search';
+        $parameters['search'] = '%' . addcslashes($search, '%_\\') . '%';
+    }
+    if ($category !== '') {
+        $conditions[] = 'category = :category';
+        $parameters['category'] = $category;
+    }
+    if ($status === 'draft') {
+        $conditions[] = "status = 'draft'";
+    } elseif ($status === 'scheduled') {
+        $conditions[] = "status = 'published' AND published_at > UTC_TIMESTAMP()";
+    } elseif ($status === 'published') {
+        $conditions[] = "status = 'published' AND (published_at IS NULL OR published_at <= UTC_TIMESTAMP())";
+    }
+
+    $where = $conditions ? 'WHERE ' . implode(' AND ', array_map(
+        static fn(string $condition): string => '(' . $condition . ')',
+        $conditions
+    )) : '';
+    $countStatement = $db->prepare("SELECT COUNT(*) FROM {$table} {$where}");
+    $countStatement->execute($parameters);
+    $total = (int) $countStatement->fetchColumn();
+    $totalPages = max(1, (int) ceil($total / $perPage));
+    $page = min($page, $totalPages);
+    $offset = ($page - 1) * $perPage;
+
+    $statement = $db->prepare(
+        "SELECT * FROM {$table} {$where} ORDER BY {$sortSql} LIMIT :limit OFFSET :offset"
+    );
+    foreach ($parameters as $key => $value) {
+        $statement->bindValue(':' . $key, $value, PDO::PARAM_STR);
+    }
+    $statement->bindValue(':limit', $perPage, PDO::PARAM_INT);
+    $statement->bindValue(':offset', $offset, PDO::PARAM_INT);
+    $statement->execute();
+
+    $categories = $db->query(
+        "SELECT DISTINCT category FROM {$table}
+         WHERE category <> '' ORDER BY category ASC"
+    )->fetchAll(PDO::FETCH_COLUMN);
+
+    Http::json([
+        'ok' => true,
+        'data' => $statement->fetchAll(),
+        'meta' => [
+            'page' => $page,
+            'per_page' => $perPage,
+            'total' => $total,
+            'total_pages' => $totalPages,
+            'categories' => array_values(array_map('strval', $categories)),
+        ],
+    ]);
 }
 
 function publicContentRow(array $row): array

@@ -102,7 +102,7 @@
             .toolbar button, .toolbar select { flex: 1 1 auto; }
         }
     </style>
-    <link rel="stylesheet" href="admin.css?v=20260727-3">
+    <link rel="stylesheet" href="admin.css?v=20260727-4">
 </head>
 <body class="admin-page">
     <!-- Login Section tetap berada di tengah -->
@@ -332,7 +332,38 @@
                 </div>
                 <div class="card" style="margin-top: 20px;">
                     <h3>Daftar Program Saat Ini</h3>
+                    <div class="content-list-toolbar" aria-label="Pencarian dan filter program">
+                        <div class="content-search">
+                            <label for="program-list-search">Cari program</label>
+                            <input type="search" id="program-list-search" placeholder="Ketik judul program..." autocomplete="off">
+                        </div>
+                        <div>
+                            <label for="program-list-status">Status</label>
+                            <select id="program-list-status">
+                                <option value="all">Semua status</option>
+                                <option value="draft">Draft</option>
+                                <option value="scheduled">Terjadwal</option>
+                                <option value="published">Dipublikasikan</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="program-list-category">Kategori</label>
+                            <select id="program-list-category"><option value="">Semua kategori</option></select>
+                        </div>
+                        <div>
+                            <label for="program-list-sort">Urutan tanggal</label>
+                            <select id="program-list-sort">
+                                <option value="created_desc">Terbaru dibuat</option>
+                                <option value="created_asc">Terlama dibuat</option>
+                                <option value="updated_desc">Terakhir diperbarui</option>
+                                <option value="published_desc">Terbaru tayang</option>
+                                <option value="published_asc">Terlama tayang</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="program-list-summary" class="content-list-summary" aria-live="polite"></div>
                     <div id="admin-program-list"></div>
+                    <nav id="program-list-pagination" class="admin-pagination" aria-label="Halaman daftar program"></nav>
                 </div>
             </div>
 
@@ -429,8 +460,39 @@
                     </form>
                 </div>
                 <div class="card" style="margin-top: 20px;">
-                    <h3>Daftar Berita</h3>
+                    <h3>Daftar Artikel</h3>
+                    <div class="content-list-toolbar" aria-label="Pencarian dan filter artikel">
+                        <div class="content-search">
+                            <label for="post-list-search">Cari artikel</label>
+                            <input type="search" id="post-list-search" placeholder="Ketik judul artikel..." autocomplete="off">
+                        </div>
+                        <div>
+                            <label for="post-list-status">Status</label>
+                            <select id="post-list-status">
+                                <option value="all">Semua status</option>
+                                <option value="draft">Draft</option>
+                                <option value="scheduled">Terjadwal</option>
+                                <option value="published">Dipublikasikan</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="post-list-category">Kategori</label>
+                            <select id="post-list-category"><option value="">Semua kategori</option></select>
+                        </div>
+                        <div>
+                            <label for="post-list-sort">Urutan tanggal</label>
+                            <select id="post-list-sort">
+                                <option value="created_desc">Terbaru dibuat</option>
+                                <option value="created_asc">Terlama dibuat</option>
+                                <option value="updated_desc">Terakhir diperbarui</option>
+                                <option value="published_desc">Terbaru tayang</option>
+                                <option value="published_asc">Terlama tayang</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="post-list-summary" class="content-list-summary" aria-live="polite"></div>
                     <div id="admin-post-list"></div>
+                    <nav id="post-list-pagination" class="admin-pagination" aria-label="Halaman daftar artikel"></nav>
                 </div>
             </div>
 
@@ -515,6 +577,6 @@
         </form>
     </dialog>
 
-    <script type="module" src="admin.js?v=20260727-2"></script>
+    <script type="module" src="admin.js?v=20260727-3"></script>
 </body>
 </html>

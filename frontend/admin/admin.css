@@ -488,6 +488,91 @@ body.admin-page {
 }
 
 /* Buttons and lists */
+.admin-page .content-list-toolbar {
+    display: grid;
+    grid-template-columns: minmax(220px, 1.6fr) repeat(3, minmax(145px, 1fr));
+    gap: 12px;
+    margin: 20px 0 12px;
+    padding: 15px;
+    border: 1px solid var(--admin-line);
+    border-radius: 14px;
+    background: #f8fafc;
+}
+
+.admin-page .content-list-toolbar label {
+    display: block;
+    margin-bottom: 6px;
+    color: #526a85;
+    font-size: .74rem;
+    font-weight: 800;
+    letter-spacing: .03em;
+}
+
+.admin-page .content-list-toolbar input,
+.admin-page .content-list-toolbar select {
+    width: 100%;
+    min-height: 42px;
+    padding: 8px 11px;
+    color: var(--admin-ink);
+    border: 1px solid #cbd8e6;
+    border-radius: 9px;
+    background: #fff;
+    outline: 0;
+}
+
+.admin-page .content-list-toolbar input:focus,
+.admin-page .content-list-toolbar select:focus {
+    border-color: var(--admin-blue);
+    box-shadow: 0 0 0 3px rgba(31, 95, 189, .1);
+}
+
+.admin-page .content-list-summary {
+    min-height: 24px;
+    color: var(--admin-muted);
+    font-size: .82rem;
+    line-height: 1.5;
+}
+
+.admin-page .admin-pagination {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 7px;
+    margin-top: 20px;
+}
+
+.admin-page .admin-pagination button {
+    min-width: 40px;
+    min-height: 40px;
+    padding: 7px 11px;
+    color: var(--admin-blue-dark);
+    border: 1px solid #c8d8eb;
+    border-radius: 9px;
+    background: #f6f9fd;
+    font-weight: 750;
+    cursor: pointer;
+}
+
+.admin-page .admin-pagination button[aria-current="page"] {
+    color: #fff;
+    border-color: var(--admin-blue);
+    background: var(--admin-blue);
+}
+
+.admin-page .admin-pagination button:disabled {
+    color: #9ba9b8;
+    border-color: #e2e8f0;
+    background: #f8fafc;
+}
+
+.admin-page .pagination-separator {
+    display: grid;
+    min-width: 24px;
+    min-height: 40px;
+    place-items: center;
+    color: var(--admin-muted);
+}
+
 .admin-page .btn,
 .admin-page .btn-secondary,
 .admin-page .btn-delete {
@@ -764,6 +849,10 @@ body.admin-page {
     .sidebar-actions {
         grid-template-columns: 1fr;
     }
+
+    .admin-page .content-list-toolbar {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 @media (max-width: 768px) {
@@ -877,6 +966,10 @@ body.admin-page {
     .admin-page .post-list-item {
         display: grid;
         align-items: start;
+    }
+
+    .admin-page .content-list-toolbar {
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .admin-page .post-list-actions,
