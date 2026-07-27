@@ -146,6 +146,13 @@ request 200 "$BASE_URL/api/index.php?resource=programs&slug=$PROGRAM_SLUG"
 jq -e --arg url "$VIDEO_URL" \
   '.data.hero_media_type == "video" and .data.hero_video_url == $url' \
   "$RESPONSE" >/dev/null || fail 'Media hero video lokal program tidak tersimpan.'
+ARTICLE_WITH_VIDEO="$(jq --arg url "$VIDEO_URL" '. + {hero_media_type:"video",hero_video_url:$url}' <<< "$ARTICLE_PUBLISHED")"
+request 200 -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" -H 'Content-Type: application/json' \
+  --data "$ARTICLE_WITH_VIDEO" "$BASE_URL/api/index.php?resource=posts"
+request 200 "$BASE_URL/api/index.php?resource=posts&slug=$ARTICLE_SLUG"
+jq -e --arg url "$VIDEO_URL" \
+  '.data.hero_media_type == "video" and .data.hero_video_url == $url' \
+  "$RESPONSE" >/dev/null || fail 'Media hero video lokal artikel tidak tersimpan.'
 
 echo '[10/14] Tolak upload berbahaya'
 printf '%s' '<?php echo "tidak boleh"; ?>' > "$WORK_DIR/malicious.php"

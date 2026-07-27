@@ -483,27 +483,23 @@ function validatePayload(string $table, array $body): array
         if ($heroImage === '' && $heroImages !== []) $heroImage = $heroImages[0];
         $payload['hero_image'] = $heroImage;
         $payload['hero_images'] = json_encode($heroImages, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        [$heroMediaType, $heroVideoUrl] = validateHeroVideo(
+            (string) ($body['hero_media_type'] ?? 'images'),
+            trim((string) ($body['hero_video_url'] ?? '')),
+            'artikel'
+        );
+        $payload['hero_media_type'] = $heroMediaType;
+        $payload['hero_video_url'] = $heroVideoUrl;
     } else {
         $payload['hero_title'] = mb_substr(trim((string) ($body['hero_title'] ?? '')), 0, 180);
         $payload['hero_subtitle'] = mb_substr(trim((string) ($body['hero_subtitle'] ?? '')), 0, 300);
-        $heroMediaType = (string) ($body['hero_media_type'] ?? 'images');
-        $heroVideoUrl = trim((string) ($body['hero_video_url'] ?? ''));
-        if (!in_array($heroMediaType, ['images', 'video', 'youtube', 'drive'], true)) {
-            Http::json(['ok' => false, 'message' => 'Jenis media hero program tidak valid.'], 422);
-        }
-        if ($heroMediaType === 'images') {
-            $heroVideoUrl = '';
-        } elseif ($heroMediaType === 'video') {
-            if (!preg_match('#^/uploads/videos/[a-f0-9]{32}\.(?:mp4|webm)$#', $heroVideoUrl)) {
-                Http::json(['ok' => false, 'message' => 'Upload video lokal terlebih dahulu sebelum menyimpan program.'], 422);
-            }
-        } elseif ($heroMediaType === 'youtube' && youtubeVideoId($heroVideoUrl) === null) {
-            Http::json(['ok' => false, 'message' => 'Tautan YouTube tidak valid.'], 422);
-        } elseif ($heroMediaType === 'drive' && driveVideoId($heroVideoUrl) === null) {
-            Http::json(['ok' => false, 'message' => 'Tautan Google Drive tidak valid.'], 422);
-        }
+        [$heroMediaType, $heroVideoUrl] = validateHeroVideo(
+            (string) ($body['hero_media_type'] ?? 'images'),
+            trim((string) ($body['hero_video_url'] ?? '')),
+            'program'
+        );
         $payload['hero_media_type'] = $heroMediaType;
-        $payload['hero_video_url'] = mb_substr($heroVideoUrl, 0, 1000);
+        $payload['hero_video_url'] = $heroVideoUrl;
         $featuredOrder = trim((string) ($body['featured_order'] ?? ''));
         if ($featuredOrder !== '' && (!ctype_digit($featuredOrder) || (int) $featuredOrder > 9999)) {
             Http::json(['ok' => false, 'message' => 'Urutan program unggulan harus berupa angka 0 sampai 9999.'], 422);
@@ -521,6 +517,25 @@ function publicationCategory(mixed $value): string
         Http::json(['ok' => false, 'message' => 'Kategori maksimal 100 karakter.'], 422);
     }
     return $category;
+}
+
+function validateHeroVideo(string $type, string $url, string $contentLabel): array
+{
+    if (!in_array($type, ['images', 'video', 'youtube', 'drive'], true)) {
+        Http::json(['ok' => false, 'message' => "Jenis media hero {$contentLabel} tidak valid."], 422);
+    }
+    if ($type === 'images') {
+        $url = '';
+    } elseif ($type === 'video') {
+        if (!preg_match('#^/uploads/videos/[a-f0-9]{32}\.(?:mp4|webm)$#', $url)) {
+            Http::json(['ok' => false, 'message' => "Upload video lokal terlebih dahulu sebelum menyimpan {$contentLabel}."], 422);
+        }
+    } elseif ($type === 'youtube' && youtubeVideoId($url) === null) {
+        Http::json(['ok' => false, 'message' => 'Tautan YouTube tidak valid.'], 422);
+    } elseif ($type === 'drive' && driveVideoId($url) === null) {
+        Http::json(['ok' => false, 'message' => 'Tautan Google Drive tidak valid.'], 422);
+    }
+    return [$type, mb_substr($url, 0, 1000)];
 }
 
 function youtubeVideoId(string $url): ?string

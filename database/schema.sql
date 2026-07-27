@@ -33,6 +33,8 @@ CREATE TABLE IF NOT EXISTS posts (
     gallery_images TEXT NOT NULL,
     hero_image VARCHAR(500) NOT NULL DEFAULT '',
     hero_images TEXT NOT NULL,
+    hero_media_type ENUM('images', 'video', 'youtube', 'drive') NOT NULL DEFAULT 'images',
+    hero_video_url VARCHAR(1000) NOT NULL DEFAULT '',
     excerpt TEXT NOT NULL,
     content MEDIUMTEXT NOT NULL,
     whatsapp_number VARCHAR(20) NOT NULL DEFAULT '',

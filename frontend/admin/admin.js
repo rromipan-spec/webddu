@@ -91,22 +91,22 @@ function setHeroImages(images) {
     preview.innerHTML = normalized.length ? `<div class="admin-slider-preview">${normalized.map((url, index) => `<div class="admin-slider-preview__item"><img src="${escapeHtml(url)}" alt="Background header ${index + 1}"><span>Background ${index + 1}${index === 0 ? ' · Utama' : ''}</span><button type="button" data-remove-hero-image data-index="${index}" aria-label="Hapus background ${index + 1}">×</button></div>`).join('')}</div>` : '';
 }
 
-function setProgramVideoPreview(url) {
-    const input = document.getElementById('prog-hero-video-url');
-    const preview = document.getElementById('prog-video-preview');
+function setHeroVideoPreview(prefix, url) {
+    const input = document.getElementById(`${prefix}-hero-video-url`);
+    const preview = document.getElementById(`${prefix}-video-preview`);
     if (input) input.value = url || '';
     if (!preview) return;
     preview.innerHTML = url
-        ? `<video src="${escapeHtml(url)}" controls muted playsinline preload="metadata"></video><button type="button" data-clear-program-video aria-label="Hapus video">×</button>`
+        ? `<video src="${escapeHtml(url)}" controls muted playsinline preload="metadata"></video><button type="button" data-clear-hero-video="${escapeHtml(prefix)}" aria-label="Hapus video">×</button>`
         : '';
 }
 
-function updateProgramHeroMediaFields() {
-    const type = document.getElementById('prog-hero-media-type')?.value || 'images';
-    document.getElementById('prog-local-video-fields')?.classList.toggle('hidden', type !== 'video');
-    document.getElementById('prog-external-video-fields')?.classList.toggle('hidden', !['youtube', 'drive'].includes(type));
-    const link = document.getElementById('prog-hero-video-link');
-    const help = document.getElementById('prog-video-link-help');
+function updateHeroMediaFields(prefix) {
+    const type = document.getElementById(`${prefix}-hero-media-type`)?.value || 'images';
+    document.getElementById(`${prefix}-local-video-fields`)?.classList.toggle('hidden', type !== 'video');
+    document.getElementById(`${prefix}-external-video-fields`)?.classList.toggle('hidden', !['youtube', 'drive'].includes(type));
+    const link = document.getElementById(`${prefix}-hero-video-link`);
+    const help = document.getElementById(`${prefix}-video-link-help`);
     if (link) {
         link.placeholder = type === 'drive'
             ? 'https://drive.google.com/file/d/.../view'
@@ -120,13 +120,13 @@ function updateProgramHeroMediaFields() {
     updatePreview();
 }
 
-function setupProgramHeroMedia() {
-    const type = document.getElementById('prog-hero-media-type');
-    const zone = document.getElementById('prog-video-drop-zone');
-    const input = document.getElementById('prog-video-file');
-    type?.addEventListener('change', updateProgramHeroMediaFields);
+function setupHeroMedia(prefix) {
+    const type = document.getElementById(`${prefix}-hero-media-type`);
+    const zone = document.getElementById(`${prefix}-video-drop-zone`);
+    const input = document.getElementById(`${prefix}-video-file`);
+    type?.addEventListener('change', () => updateHeroMediaFields(prefix));
     zone?.addEventListener('click', event => {
-        if (!event.target.closest('[data-clear-program-video]')) input?.click();
+        if (!event.target.closest('[data-clear-hero-video]')) input?.click();
     });
     zone?.addEventListener('dragover', event => {
         event.preventDefault();
@@ -137,18 +137,18 @@ function setupProgramHeroMedia() {
         event.preventDefault();
         zone.classList.remove('dragover');
         const file = event.dataTransfer?.files?.[0];
-        if (file) uploadProgramHeroVideo(file);
+        if (file) uploadHeroVideo(prefix, file);
     });
     input?.addEventListener('change', () => {
         const file = input.files?.[0];
-        if (file) uploadProgramHeroVideo(file);
+        if (file) uploadHeroVideo(prefix, file);
     });
-    updateProgramHeroMediaFields();
+    updateHeroMediaFields(prefix);
 }
 
-async function uploadProgramHeroVideo(file) {
-    const status = document.getElementById('prog-video-upload-status');
-    const input = document.getElementById('prog-video-file');
+async function uploadHeroVideo(prefix, file) {
+    const status = document.getElementById(`${prefix}-video-upload-status`);
+    const input = document.getElementById(`${prefix}-video-file`);
     const allowedTypes = ['video/mp4', 'video/webm'];
     if (!allowedTypes.includes(file.type) && !/\.(mp4|webm)$/i.test(file.name)) {
         alert('Pilih video MP4 atau WebM.');
@@ -163,8 +163,9 @@ async function uploadProgramHeroVideo(file) {
     form.append('video', file);
     try {
         const result = await api('video_upload', { method: 'POST', body: form });
-        setProgramVideoPreview(result.url);
-        if (status) status.textContent = `Video tersimpan (${formatFileSize(result.size)}). Klik Simpan Program untuk menerapkannya.`;
+        setHeroVideoPreview(prefix, result.url);
+        const contentLabel = prefix === 'post' ? 'Artikel' : 'Program';
+        if (status) status.textContent = `Video tersimpan (${formatFileSize(result.size)}). Klik Simpan ${contentLabel} untuk menerapkannya.`;
     } catch (error) {
         if (status) status.textContent = '';
         alert(error.message);
@@ -561,6 +562,12 @@ async function saveForm(event, resource) {
     } else {
         payload.hero_image = document.getElementById('post-hero-image-url').value;
         payload.hero_images = parseGalleryImages(document.getElementById('post-hero-images').value, 10);
+        payload.hero_media_type = document.getElementById('post-hero-media-type').value;
+        payload.hero_video_url = payload.hero_media_type === 'video'
+            ? document.getElementById('post-hero-video-url').value
+            : (['youtube', 'drive'].includes(payload.hero_media_type)
+                ? document.getElementById('post-hero-video-link').value.trim()
+                : '');
     }
     try {
         await api(resource, { method: 'POST', body: JSON.stringify(payload) });
@@ -903,7 +910,7 @@ document.addEventListener('click', event => {
     const removeHeroImage = event.target.closest('[data-remove-hero-image]');
     const removeContentPhoto = event.target.closest('.content-photo-remove');
     const clearSeoImage = event.target.closest('[data-clear-seo-image]');
-    const clearProgramVideo = event.target.closest('[data-clear-program-video]');
+    const clearHeroVideo = event.target.closest('[data-clear-hero-video]');
     const previewButton = event.target.closest('[data-preview-url]');
     const edit = event.target.closest('[data-edit]');
     const remove = event.target.closest('[data-delete]');
@@ -934,11 +941,13 @@ document.addEventListener('click', event => {
     if (clearSeoImage) {
         setSeoImage(clearSeoImage.dataset.clearSeoImage, '');
     }
-    if (clearProgramVideo) {
+    if (clearHeroVideo) {
         event.stopPropagation();
-        setProgramVideoPreview('');
-        const status = document.getElementById('prog-video-upload-status');
-        if (status) status.textContent = 'Video dihapus dari rancangan. Simpan program untuk menerapkan perubahan.';
+        const prefix = clearHeroVideo.dataset.clearHeroVideo;
+        setHeroVideoPreview(prefix, '');
+        const status = document.getElementById(`${prefix}-video-upload-status`);
+        const contentLabel = prefix === 'post' ? 'artikel' : 'program';
+        if (status) status.textContent = `Video dihapus dari rancangan. Simpan ${contentLabel} untuk menerapkan perubahan.`;
     }
     if (previewButton) window.open(previewButton.dataset.previewUrl, '_blank', 'noopener,noreferrer');
     if (edit) editItem(edit.dataset.edit, edit.dataset.id);
@@ -1025,16 +1034,25 @@ async function editItem(resource, id) {
                 ? data.hero_media_type
                 : 'images';
             document.getElementById('prog-hero-media-type').value = mediaType;
-            setProgramVideoPreview(mediaType === 'video' ? (data.hero_video_url || '') : '');
+            setHeroVideoPreview('prog', mediaType === 'video' ? (data.hero_video_url || '') : '');
             document.getElementById('prog-hero-video-link').value = ['youtube', 'drive'].includes(mediaType)
                 ? (data.hero_video_url || '')
                 : '';
-            updateProgramHeroMediaFields();
+            updateHeroMediaFields('prog');
             document.getElementById('prog-featured-order').value = data.featured_order ?? '';
         } else {
             const heroImages = parseGalleryImages(data.hero_images, 10);
             if (!heroImages.length && data.hero_image) heroImages.push(data.hero_image);
             setHeroImages(heroImages);
+            const mediaType = ['images', 'video', 'youtube', 'drive'].includes(data.hero_media_type)
+                ? data.hero_media_type
+                : 'images';
+            document.getElementById('post-hero-media-type').value = mediaType;
+            setHeroVideoPreview('post', mediaType === 'video' ? (data.hero_video_url || '') : '');
+            document.getElementById('post-hero-video-link').value = ['youtube', 'drive'].includes(mediaType)
+                ? (data.hero_video_url || '')
+                : '';
+            updateHeroMediaFields('post');
         }
         updatePreview();
         scrollTo({ top: 0, behavior: 'smooth' });
@@ -1057,7 +1075,8 @@ async function init() {
     setupDropZone('article-drop-zone', 'post-image-file', 'post-image-url', 'image-preview', 'post');
     setupDropZone('prog-drop-zone', 'prog-image-file', 'prog-image-url', 'prog-image-preview', 'prog');
     setupHeroImageDropZone('post-hero-drop-zone', 'post-hero-image-file');
-    setupProgramHeroMedia();
+    setupHeroMedia('post');
+    setupHeroMedia('prog');
     setupSeoImageUpload('post');
     setupSeoImageUpload('prog');
     setupContentPhotoUpload('post');

@@ -102,7 +102,7 @@
             .toolbar button, .toolbar select { flex: 1 1 auto; }
         }
     </style>
-    <link rel="stylesheet" href="admin.css?v=20260727-5">
+    <link rel="stylesheet" href="admin.css?v=20260727-6">
 </head>
 <body class="admin-page">
     <!-- Login Section tetap berada di tengah -->
@@ -270,7 +270,7 @@
                             </div>
                             <small>Foto pertama juga digunakan sebagai poster/fallback jika video tidak dapat diputar.</small>
                         </div>
-                        <section class="publication-settings program-hero-media-settings" aria-labelledby="prog-hero-media-heading">
+                        <section class="publication-settings hero-media-settings" aria-labelledby="prog-hero-media-heading">
                             <h3 id="prog-hero-media-heading">Media Background Hero</h3>
                             <p class="seo-settings-note">Pilih gambar seperti sekarang, video lokal, YouTube, atau Google Drive. Video diputar tanpa suara dan berulang otomatis.</p>
                             <div class="form-group">
@@ -283,11 +283,11 @@
                                 </select>
                             </div>
                             <div id="prog-local-video-fields" class="hidden">
-                                <div class="drop-zone program-video-drop-zone" id="prog-video-drop-zone">
+                                <div class="drop-zone hero-video-drop-zone" id="prog-video-drop-zone">
                                     <p>Klik atau jatuhkan video MP4/WebM, maksimal 50 MB</p>
                                     <input type="file" id="prog-video-file" hidden accept="video/mp4,video/webm">
                                     <input type="hidden" id="prog-hero-video-url">
-                                    <div id="prog-video-preview" class="program-video-preview"></div>
+                                    <div id="prog-video-preview" class="hero-video-preview"></div>
                                 </div>
                                 <p id="prog-video-upload-status" class="content-upload-status" aria-live="polite"></p>
                             </div>
@@ -433,7 +433,35 @@
                                 <input type="hidden" id="post-hero-images" value="[]">
                                 <div id="post-hero-image-preview"></div>
                             </div>
+                            <small>Foto pertama menjadi poster/fallback dan tetap dapat dipakai sebagai thumbnail sosial.</small>
                         </div>
+                        <section class="publication-settings hero-media-settings" aria-labelledby="post-hero-media-heading">
+                            <h3 id="post-hero-media-heading">Media Background Header Artikel</h3>
+                            <p class="seo-settings-note">Pilih slider gambar, video lokal, YouTube, atau Google Drive. Video diputar tanpa suara dan berulang otomatis.</p>
+                            <div class="form-group">
+                                <label for="post-hero-media-type">Jenis media</label>
+                                <select id="post-hero-media-type">
+                                    <option value="images">Slider gambar</option>
+                                    <option value="video">Video lokal (MP4/WebM)</option>
+                                    <option value="youtube">Tautan YouTube</option>
+                                    <option value="drive">Tautan Google Drive</option>
+                                </select>
+                            </div>
+                            <div id="post-local-video-fields" class="hidden">
+                                <div class="drop-zone hero-video-drop-zone" id="post-video-drop-zone">
+                                    <p>Klik atau jatuhkan video MP4/WebM, maksimal 50 MB</p>
+                                    <input type="file" id="post-video-file" hidden accept="video/mp4,video/webm">
+                                    <input type="hidden" id="post-hero-video-url">
+                                    <div id="post-video-preview" class="hero-video-preview"></div>
+                                </div>
+                                <p id="post-video-upload-status" class="content-upload-status" aria-live="polite"></p>
+                            </div>
+                            <div id="post-external-video-fields" class="form-group hidden">
+                                <label for="post-hero-video-link">Tautan video</label>
+                                <input type="url" id="post-hero-video-link" maxlength="1000" placeholder="Tempel tautan YouTube atau Google Drive">
+                                <small id="post-video-link-help">Gunakan tautan lengkap HTTPS.</small>
+                            </div>
+                        </section>
                         <div class="form-group">
                             <label>Ringkasan</label>
                             <textarea id="post-excerpt" rows="2"></textarea>
@@ -605,6 +633,6 @@
         </form>
     </dialog>
 
-    <script type="module" src="admin.js?v=20260727-4"></script>
+    <script type="module" src="admin.js?v=20260727-5"></script>
 </body>
 </html>

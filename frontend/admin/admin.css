@@ -426,17 +426,17 @@ body.admin-page {
     line-height: 1.55;
 }
 
-.admin-page .program-video-drop-zone {
+.admin-page .hero-video-drop-zone {
     cursor: pointer;
 }
 
-.admin-page .program-video-preview {
+.admin-page .hero-video-preview {
     position: relative;
     width: min(100%, 520px);
     margin: 18px auto 0;
 }
 
-.admin-page .program-video-preview video {
+.admin-page .hero-video-preview video {
     display: block;
     width: 100%;
     max-height: 260px;
@@ -445,7 +445,7 @@ body.admin-page {
     background: #071f43;
 }
 
-.admin-page [data-clear-program-video] {
+.admin-page [data-clear-hero-video] {
     position: absolute;
     top: 9px;
     right: 9px;

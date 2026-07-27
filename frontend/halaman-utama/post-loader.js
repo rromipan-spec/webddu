@@ -67,6 +67,83 @@ function articleHeroImages(post) {
     return [...new Set(images)].slice(0, 10);
 }
 
+function articleHeroMediaHtml(post, heroImages) {
+    const type = ['images', 'video', 'youtube', 'drive'].includes(post.hero_media_type)
+        ? post.hero_media_type
+        : 'images';
+    if (type === 'images' || !post.hero_video_url) {
+        return {
+            media: heroImages.map((image, index) => `<img class="post-hero-background${index === 0 ? ' active' : ''}" src="${escapeHtml(image)}" alt="" width="1920" height="1080" decoding="async" aria-hidden="true"${index > 0 ? ' loading="lazy"' : ' fetchpriority="high"'}>`).join(''),
+            dots: heroImages.length > 1 ? `<div class="post-hero-slider-dots" aria-label="Pilih background header">${heroImages.map((image, index) => `<button type="button" class="${index === 0 ? 'active' : ''}" data-hero-slide="${index}" aria-label="Tampilkan background ${index + 1}"></button>`).join('')}</div>` : ''
+        };
+    }
+
+    const fallbackUrl = heroImages[0] || post.hero_image || post.image || '';
+    const fallback = fallbackUrl
+        ? `<img class="post-hero-background active" src="${escapeHtml(fallbackUrl)}" alt="" width="1920" height="1080" decoding="async" aria-hidden="true" fetchpriority="high">`
+        : '';
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (type === 'video') {
+        const source = localVideoUrl(post.hero_video_url);
+        return {
+            media: source ? `${fallback}<video class="post-hero-video" src="${escapeHtml(source)}" ${reducedMotion ? '' : 'autoplay'} muted loop playsinline preload="metadata" poster="${escapeHtml(fallbackUrl)}" aria-hidden="true"></video>` : fallback,
+            dots: ''
+        };
+    }
+    if (type === 'youtube') {
+        const id = youtubeVideoId(post.hero_video_url);
+        const autoplay = reducedMotion ? '0' : '1';
+        const source = id
+            ? `https://www.youtube-nocookie.com/embed/${id}?autoplay=${autoplay}&mute=1&loop=1&playlist=${id}&controls=0&rel=0&playsinline=1&disablekb=1`
+            : '';
+        return {
+            media: source ? `${fallback}<iframe class="post-hero-video post-hero-video-embed" src="${source}" title="Video latar ${escapeHtml(post.title)}" allow="autoplay; encrypted-media; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" tabindex="-1" aria-hidden="true"></iframe>` : fallback,
+            dots: ''
+        };
+    }
+    const driveId = driveVideoId(post.hero_video_url);
+    const source = driveId ? `https://drive.google.com/uc?export=download&id=${encodeURIComponent(driveId)}` : '';
+    return {
+        media: source ? `${fallback}<video class="post-hero-video post-hero-drive-video" src="${source}" ${reducedMotion ? '' : 'autoplay'} muted loop playsinline preload="metadata" poster="${escapeHtml(fallbackUrl)}" aria-hidden="true"></video>` : fallback,
+        dots: ''
+    };
+}
+
+function localVideoUrl(url) {
+    const value = String(url || '');
+    return /^\/uploads\/videos\/[a-f0-9]{32}\.(?:mp4|webm)$/i.test(value) ? value : '';
+}
+
+function youtubeVideoId(url) {
+    try {
+        const parsed = new URL(url);
+        const host = parsed.hostname.toLowerCase().replace(/^www\./, '');
+        let id = '';
+        if (host === 'youtu.be') {
+            id = parsed.pathname.split('/').filter(Boolean)[0] || '';
+        } else if (['youtube.com', 'm.youtube.com', 'youtube-nocookie.com'].includes(host)) {
+            if (parsed.pathname === '/watch') id = parsed.searchParams.get('v') || '';
+            else id = parsed.pathname.match(/^\/(?:embed|shorts|live)\/([A-Za-z0-9_-]{11})/)?.[1] || '';
+        }
+        return /^[A-Za-z0-9_-]{11}$/.test(id) ? id : '';
+    } catch (error) {
+        return '';
+    }
+}
+
+function driveVideoId(url) {
+    try {
+        const parsed = new URL(url);
+        if (parsed.hostname.toLowerCase().replace(/^www\./, '') !== 'drive.google.com') return '';
+        const id = parsed.pathname.match(/\/file\/d\/([A-Za-z0-9_-]{10,})/)?.[1]
+            || parsed.searchParams.get('id')
+            || '';
+        return /^[A-Za-z0-9_-]{10,}$/.test(id) ? id : '';
+    } catch (error) {
+        return '';
+    }
+}
+
 function relatedArticlesHtml(related) {
     if (!related.length) return '';
     return `<section class="related-section" aria-labelledby="related-title">
@@ -109,11 +186,12 @@ function renderPost(container, post, related) {
     const previewUrl = `${canonicalUrl}?v=${Number.isNaN(updatedAt) ? Date.now() : updatedAt}`;
     const summary = articleSummary(post);
     const summaryHtml = summary.length ? `<section class="post-summary" aria-labelledby="summary-title"><span>RINGKASAN ARTIKEL</span><h2 id="summary-title">Yang perlu Anda ketahui</h2><ul>${summary.map(point => `<li>${escapeHtml(point)}</li>`).join('')}</ul></section>` : '';
+    const heroMedia = articleHeroMediaHtml(post, heroImages);
 
     updateSeo(post, post.social_image || post.image || sliderImages[0] || heroImages[0] || DEFAULT_IMAGE, canonicalUrl, minutes);
     container.innerHTML = `
         <section class="post-hero">
-            ${heroImages.map((image, index) => `<img class="post-hero-background${index === 0 ? ' active' : ''}" src="${escapeHtml(image)}" alt="" width="1920" height="1080" decoding="async" aria-hidden="true"${index > 0 ? ' loading="lazy"' : ' fetchpriority="high"'}>`).join('')}
+            ${heroMedia.media}
             <div class="post-hero-overlay" aria-hidden="true"></div>
             <div class="container post-hero-inner">
                 <nav class="post-breadcrumb" aria-label="Breadcrumb"><a href="/">Beranda</a><span aria-hidden="true">›</span><a href="/#blog">Artikel</a><span aria-hidden="true">›</span><span aria-current="page">${escapeHtml(post.title)}</span></nav>
@@ -125,7 +203,7 @@ function renderPost(container, post, related) {
                     <span>${minutes} menit baca</span>
                 </div>
             </div>
-            ${heroImages.length > 1 ? `<div class="post-hero-slider-dots" aria-label="Pilih background header">${heroImages.map((image, index) => `<button type="button" class="${index === 0 ? 'active' : ''}" data-hero-slide="${index}" aria-label="Tampilkan background ${index + 1}"></button>`).join('')}</div>` : ''}
+            ${heroMedia.dots}
         </section>
         <div class="container post-page-layout">
             <div class="post-reading-column">
@@ -150,6 +228,7 @@ function renderPost(container, post, related) {
 
     initDetailSliders(container);
     initPostHeroSlider(container);
+    initPostHeroVideo(container);
     setupShareButtons(container, previewUrl, post.title, canonicalUrl);
 }
 
@@ -175,6 +254,16 @@ function initPostHeroSlider(container) {
     hero.addEventListener('mouseenter', () => { if (timer) window.clearInterval(timer); });
     hero.addEventListener('mouseleave', start);
     start();
+}
+
+function initPostHeroVideo(container) {
+    container.querySelectorAll('video.post-hero-video').forEach(video => {
+        video.addEventListener('playing', () => video.classList.add('is-playing'));
+        video.addEventListener('error', () => video.classList.add('media-failed'));
+        if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            video.play().catch(() => video.classList.add('media-failed'));
+        }
+    });
 }
 
 function setupShareButtons(container, previewUrl, title, canonicalUrl) {

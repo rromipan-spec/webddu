@@ -40,6 +40,7 @@
 }
 
 .post-hero-background,
+.post-hero-video,
 .post-hero-overlay {
     position: absolute;
     inset: 0;
@@ -59,6 +60,37 @@
 .post-hero-background.active {
     opacity: 1;
     transform: scale(1);
+}
+
+.post-hero-video {
+    z-index: 0;
+    border: 0;
+    object-fit: cover;
+    object-position: center;
+    pointer-events: none;
+}
+
+video.post-hero-video {
+    opacity: 0;
+    transition: opacity .35s ease;
+}
+
+video.post-hero-video.is-playing {
+    opacity: 1;
+}
+
+.post-hero-video.media-failed {
+    display: none;
+}
+
+.post-hero-video-embed {
+    top: 50%;
+    left: 50%;
+    width: 100vw;
+    min-width: 177.78vh;
+    height: 56.25vw;
+    min-height: 100%;
+    transform: translate(-50%, -50%);
 }
 
 .post-hero-overlay {
@@ -360,9 +392,18 @@
     }
     .post-hero::after { display: none; }
     .post-hero-background,
+    .post-hero-video,
     .post-hero-overlay {
         inset: 0 0 auto;
         height: var(--post-mobile-photo-height);
+    }
+    .post-hero-video-embed {
+        top: calc(var(--post-mobile-photo-height) / 2);
+        left: 50%;
+        width: calc(var(--post-mobile-photo-height) * 1.7778);
+        min-width: 100%;
+        height: var(--post-mobile-photo-height);
+        min-height: 0;
     }
     .post-hero-background { object-position: center center; }
     .post-hero-overlay {
@@ -451,4 +492,5 @@
 
 @media (prefers-reduced-motion: reduce) {
     .post-hero-background { transition: none; }
+    .post-hero-video { display: none; }
 }
