@@ -64,6 +64,12 @@ if ($resource === 'upload' && $method === 'POST') {
     handleUpload();
 }
 
+if ($resource === 'video_upload' && $method === 'POST') {
+    Auth::requireAdmin();
+    Auth::verifyCsrf();
+    handleVideoUpload();
+}
+
 if ($resource === 'stats') {
     if ($method === 'GET') {
         Auth::requireAdmin();
@@ -480,6 +486,24 @@ function validatePayload(string $table, array $body): array
     } else {
         $payload['hero_title'] = mb_substr(trim((string) ($body['hero_title'] ?? '')), 0, 180);
         $payload['hero_subtitle'] = mb_substr(trim((string) ($body['hero_subtitle'] ?? '')), 0, 300);
+        $heroMediaType = (string) ($body['hero_media_type'] ?? 'images');
+        $heroVideoUrl = trim((string) ($body['hero_video_url'] ?? ''));
+        if (!in_array($heroMediaType, ['images', 'video', 'youtube', 'drive'], true)) {
+            Http::json(['ok' => false, 'message' => 'Jenis media hero program tidak valid.'], 422);
+        }
+        if ($heroMediaType === 'images') {
+            $heroVideoUrl = '';
+        } elseif ($heroMediaType === 'video') {
+            if (!preg_match('#^/uploads/videos/[a-f0-9]{32}\.(?:mp4|webm)$#', $heroVideoUrl)) {
+                Http::json(['ok' => false, 'message' => 'Upload video lokal terlebih dahulu sebelum menyimpan program.'], 422);
+            }
+        } elseif ($heroMediaType === 'youtube' && youtubeVideoId($heroVideoUrl) === null) {
+            Http::json(['ok' => false, 'message' => 'Tautan YouTube tidak valid.'], 422);
+        } elseif ($heroMediaType === 'drive' && driveVideoId($heroVideoUrl) === null) {
+            Http::json(['ok' => false, 'message' => 'Tautan Google Drive tidak valid.'], 422);
+        }
+        $payload['hero_media_type'] = $heroMediaType;
+        $payload['hero_video_url'] = mb_substr($heroVideoUrl, 0, 1000);
         $featuredOrder = trim((string) ($body['featured_order'] ?? ''));
         if ($featuredOrder !== '' && (!ctype_digit($featuredOrder) || (int) $featuredOrder > 9999)) {
             Http::json(['ok' => false, 'message' => 'Urutan program unggulan harus berupa angka 0 sampai 9999.'], 422);
@@ -497,6 +521,45 @@ function publicationCategory(mixed $value): string
         Http::json(['ok' => false, 'message' => 'Kategori maksimal 100 karakter.'], 422);
     }
     return $category;
+}
+
+function youtubeVideoId(string $url): ?string
+{
+    if (!filter_var($url, FILTER_VALIDATE_URL) || strtolower((string) parse_url($url, PHP_URL_SCHEME)) !== 'https') {
+        return null;
+    }
+    $host = strtolower((string) parse_url($url, PHP_URL_HOST));
+    $path = trim((string) parse_url($url, PHP_URL_PATH), '/');
+    $candidate = '';
+    if (in_array($host, ['youtu.be', 'www.youtu.be'], true)) {
+        $candidate = explode('/', $path)[0] ?? '';
+    } elseif (in_array($host, ['youtube.com', 'www.youtube.com', 'm.youtube.com', 'youtube-nocookie.com', 'www.youtube-nocookie.com'], true)) {
+        parse_str((string) parse_url($url, PHP_URL_QUERY), $query);
+        if ($path === 'watch') {
+            $candidate = (string) ($query['v'] ?? '');
+        } elseif (preg_match('#^(?:embed|shorts|live)/([A-Za-z0-9_-]{11})#', $path, $match)) {
+            $candidate = $match[1];
+        }
+    }
+    return preg_match('/^[A-Za-z0-9_-]{11}$/', $candidate) ? $candidate : null;
+}
+
+function driveVideoId(string $url): ?string
+{
+    if (!filter_var($url, FILTER_VALIDATE_URL) || strtolower((string) parse_url($url, PHP_URL_SCHEME)) !== 'https') {
+        return null;
+    }
+    $host = strtolower((string) parse_url($url, PHP_URL_HOST));
+    if (!in_array($host, ['drive.google.com', 'www.drive.google.com'], true)) return null;
+    $path = (string) parse_url($url, PHP_URL_PATH);
+    $candidate = '';
+    if (preg_match('#/file/d/([A-Za-z0-9_-]{10,})#', $path, $match)) {
+        $candidate = $match[1];
+    } else {
+        parse_str((string) parse_url($url, PHP_URL_QUERY), $query);
+        $candidate = (string) ($query['id'] ?? '');
+    }
+    return preg_match('/^[A-Za-z0-9_-]{10,}$/', $candidate) ? $candidate : null;
 }
 
 function publicationStatus(mixed $value): string
@@ -617,6 +680,74 @@ function handleUpload(): never
         Http::json(['ok' => false, 'message' => $error->getMessage()], 422);
     }
     Http::json(['ok' => true] + $result, 201);
+}
+
+function handleVideoUpload(): never
+{
+    if (!isset($_FILES['video'])) {
+        Http::json(['ok' => false, 'message' => 'File video tidak ditemukan.'], 422);
+    }
+    $file = $_FILES['video'];
+    $uploadError = (int) ($file['error'] ?? UPLOAD_ERR_NO_FILE);
+    if ($uploadError !== UPLOAD_ERR_OK) {
+        $message = in_array($uploadError, [UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE], true)
+            ? 'Ukuran video melewati batas upload server Hostinger.'
+            : 'Upload video gagal. Silakan coba lagi.';
+        Http::json(['ok' => false, 'message' => $message], 422);
+    }
+    if (!is_uploaded_file((string) $file['tmp_name'])) {
+        Http::json(['ok' => false, 'message' => 'Upload video tidak sah.'], 422);
+    }
+    $size = (int) ($file['size'] ?? 0);
+    if ($size < 1 || $size > 50 * 1024 * 1024) {
+        Http::json(['ok' => false, 'message' => 'Ukuran video maksimal 50 MB.'], 422);
+    }
+
+    $format = detectUploadedVideoFormat((string) $file['tmp_name'], (string) ($file['name'] ?? ''));
+    if ($format === null) {
+        Http::json(['ok' => false, 'message' => 'Hanya video MP4 atau WebM yang valid yang diperbolehkan.'], 422);
+    }
+
+    $targetDirectory = dirname(__DIR__) . '/uploads/videos';
+    if (!is_dir($targetDirectory) && !mkdir($targetDirectory, 0755, true) && !is_dir($targetDirectory)) {
+        Http::json(['ok' => false, 'message' => 'Folder penyimpanan video tidak dapat dibuat.'], 500);
+    }
+    $filename = bin2hex(random_bytes(16)) . '.' . $format['extension'];
+    $destination = $targetDirectory . '/' . $filename;
+    if (!move_uploaded_file((string) $file['tmp_name'], $destination)) {
+        Http::json(['ok' => false, 'message' => 'Video gagal disimpan di server.'], 500);
+    }
+    @chmod($destination, 0644);
+    Http::json([
+        'ok' => true,
+        'url' => '/uploads/videos/' . $filename,
+        'mime' => $format['mime'],
+        'size' => $size,
+    ], 201);
+}
+
+function detectUploadedVideoFormat(string $path, string $originalName): ?array
+{
+    $mime = (new finfo(FILEINFO_MIME_TYPE))->file($path) ?: '';
+    $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+    if ($extension === 'mp4' && in_array($mime, ['video/mp4', 'application/mp4'], true)) {
+        return ['extension' => 'mp4', 'mime' => 'video/mp4'];
+    }
+    if ($extension === 'webm' && $mime === 'video/webm') {
+        return ['extension' => 'webm', 'mime' => 'video/webm'];
+    }
+
+    $handle = @fopen($path, 'rb');
+    if ($handle === false) return null;
+    $header = fread($handle, 12);
+    fclose($handle);
+    if ($extension === 'mp4' && strlen($header) >= 8 && substr($header, 4, 4) === 'ftyp') {
+        return ['extension' => 'mp4', 'mime' => 'video/mp4'];
+    }
+    if ($extension === 'webm' && str_starts_with(bin2hex($header), '1a45dfa3')) {
+        return ['extension' => 'webm', 'mime' => 'video/webm'];
+    }
+    return null;
 }
 
 function serveOwnProfile(): never

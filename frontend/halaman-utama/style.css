@@ -2791,6 +2791,58 @@ select {
     border-radius: 0;
 }
 
+.detail-program-hero .program-hero-media-fallback,
+.detail-program-hero .program-hero-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.detail-program-hero .program-hero-media-fallback {
+    z-index: 0;
+    overflow: hidden;
+    background: #0a2647;
+}
+
+.detail-program-hero .program-hero-media-fallback img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.detail-program-hero .program-hero-video {
+    z-index: 0;
+    border: 0;
+    object-fit: cover;
+    object-position: center;
+    pointer-events: none;
+}
+
+.detail-program-hero video.program-hero-video {
+    opacity: 0;
+    transition: opacity .35s ease;
+}
+
+.detail-program-hero video.program-hero-video.is-playing {
+    opacity: 1;
+}
+
+.detail-program-hero .program-hero-video.media-failed {
+    display: none;
+}
+
+.detail-program-hero .program-hero-video-embed {
+    top: 50%;
+    left: 50%;
+    width: 100vw;
+    min-width: 177.78vh;
+    height: 56.25vw;
+    min-height: 100%;
+    transform: translate(-50%, -50%);
+}
+
 .detail-program-hero .hero-overlay { z-index: 1; }
 .detail-program-hero .hero-container { position: relative; z-index: 2; }
 .detail-program-hero .detail-slider-button,
@@ -2816,6 +2868,21 @@ select {
         height: var(--program-mobile-photo-height);
     }
 
+    .detail-program-hero .program-hero-media-fallback,
+    .detail-program-hero .program-hero-video {
+        inset: 0 0 auto;
+        height: var(--program-mobile-photo-height);
+    }
+
+    .detail-program-hero .program-hero-video-embed {
+        top: calc(var(--program-mobile-photo-height) / 2);
+        left: 50%;
+        width: calc(var(--program-mobile-photo-height) * 1.7778);
+        min-width: 100%;
+        height: var(--program-mobile-photo-height);
+        min-height: 0;
+    }
+
     .detail-program-hero .detail-hero-slider .detail-image-slide img {
         object-position: center center;
     }
@@ -2835,4 +2902,5 @@ select {
 
 @media (prefers-reduced-motion: reduce) {
     .detail-image-slide { transition: none; }
+    .detail-program-hero video.program-hero-video { display: none; }
 }

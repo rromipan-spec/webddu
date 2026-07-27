@@ -61,6 +61,8 @@ CREATE TABLE IF NOT EXISTS programs (
     excerpt TEXT NOT NULL,
     hero_title VARCHAR(180) NOT NULL DEFAULT '',
     hero_subtitle VARCHAR(300) NOT NULL DEFAULT '',
+    hero_media_type ENUM('images', 'video', 'youtube', 'drive') NOT NULL DEFAULT 'images',
+    hero_video_url VARCHAR(1000) NOT NULL DEFAULT '',
     content MEDIUMTEXT NOT NULL,
     whatsapp_number VARCHAR(20) NOT NULL DEFAULT '',
     whatsapp_message VARCHAR(500) NOT NULL DEFAULT '',

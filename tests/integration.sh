@@ -134,6 +134,19 @@ request 201 -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" \
   -F "image=@$WORK_DIR/test.png;type=image/png" "$BASE_URL/api/index.php?resource=upload"
 assert_json '.ok == true and (.url | startswith("/uploads/"))'
 
+printf '\x00\x00\x00\x18ftypisom\x00\x00\x02\x00isomiso2' > "$WORK_DIR/test.mp4"
+request 201 -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" \
+  -F "video=@$WORK_DIR/test.mp4;type=video/mp4" "$BASE_URL/api/index.php?resource=video_upload"
+assert_json '.ok == true and (.url | test("^/uploads/videos/[a-f0-9]{32}\\.mp4$"))'
+VIDEO_URL="$(jq -r '.url' "$RESPONSE")"
+PROGRAM_WITH_VIDEO="$(jq --arg url "$VIDEO_URL" '. + {hero_media_type:"video",hero_video_url:$url}' <<< "$PROGRAM_UPDATED")"
+request 200 -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" -H 'Content-Type: application/json' \
+  --data "$PROGRAM_WITH_VIDEO" "$BASE_URL/api/index.php?resource=programs"
+request 200 "$BASE_URL/api/index.php?resource=programs&slug=$PROGRAM_SLUG"
+jq -e --arg url "$VIDEO_URL" \
+  '.data.hero_media_type == "video" and .data.hero_video_url == $url' \
+  "$RESPONSE" >/dev/null || fail 'Media hero video lokal program tidak tersimpan.'
+
 echo '[10/14] Tolak upload berbahaya'
 printf '%s' '<?php echo "tidak boleh"; ?>' > "$WORK_DIR/malicious.php"
 request 422 -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" \
