@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <span class="content-category">${escapeHtml(program.category || 'Umum')}</span>
                     <h3>${escapeHtml(program.title)}</h3>
                     <p>${escapeHtml(program.excerpt || 'Klik untuk melihat detail program kebaikan ini.')}</p>
-                    <span class="program-card-action">Lihat Program <span aria-hidden="true">→</span></span>
+                    <span class="program-card-action">Lihat Program <span aria-hidden="true">↗</span></span>
                 </div>
             </a>`).join('') : '<p style="text-align:center;grid-column:1/-1">Belum ada program yang tersedia.</p>';
     } catch (error) {
