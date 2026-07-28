@@ -825,6 +825,42 @@
     line-height: 1.78;
 }
 
+.values-section .section-heading {
+    align-items: center;
+    margin-bottom: 36px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--about-line);
+}
+
+.values-grid--goals {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+}
+
+.values-grid--goals .value-card {
+    padding: 38px 40px;
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(16, 42, 76, .045);
+}
+
+.values-grid--goals .value-card__icon {
+    width: 54px;
+    height: 54px;
+    margin-bottom: 22px;
+    border-radius: 14px;
+}
+
+.values-grid--goals .value-card h3 {
+    margin-bottom: 12px;
+    font-size: 1.4rem;
+}
+
+.values-grid--goals .value-card p {
+    max-width: 660px;
+    font-size: 1rem;
+    line-height: 1.82;
+}
+
 @media (max-width: 1024px) {
     .trust-strip__grid--four {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -842,6 +878,20 @@
 @media (max-width: 768px) {
     .trust-strip__grid--four {
         grid-template-columns: 1fr;
+    }
+
+    .values-section .section-heading {
+        margin-bottom: 24px;
+        padding-bottom: 24px;
+    }
+
+    .values-grid--goals {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .values-grid--goals .value-card {
+        padding: 28px 24px;
     }
 
     .trust-strip__grid--four .trust-item,
