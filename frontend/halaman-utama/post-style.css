@@ -37,6 +37,9 @@
     content: '';
     border: 1px solid rgba(255, 255, 255, .12);
     border-radius: 50%;
+    box-shadow:
+        0 0 0 72px rgba(255, 255, 255, .035),
+        0 0 0 144px rgba(255, 255, 255, .022);
 }
 
 .post-hero-background,
@@ -412,7 +415,17 @@ video.post-hero-video.is-playing {
         align-items: center;
         padding: 120px 0 58px;
     }
-    .post-hero::after { display: none; }
+    .post-hero::after {
+        right: -105px;
+        bottom: -85px;
+        display: block;
+        width: 270px;
+        height: 270px;
+        border-color: rgba(255, 255, 255, .14);
+        box-shadow:
+            0 0 0 48px rgba(255, 255, 255, .035),
+            0 0 0 96px rgba(255, 255, 255, .022);
+    }
     .post-hero-background,
     .post-hero-video,
     .post-hero-overlay {
