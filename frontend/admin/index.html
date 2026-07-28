@@ -102,7 +102,7 @@
             .toolbar button, .toolbar select { flex: 1 1 auto; }
         }
     </style>
-    <link rel="stylesheet" href="admin.css?v=20260727-7">
+    <link rel="stylesheet" href="admin.css?v=20260728-1">
 </head>
 <body class="admin-page">
     <!-- Login Section tetap berada di tengah -->
@@ -178,6 +178,18 @@
         </aside>
 
         <main class="admin-content">
+            <header class="admin-workspace-header">
+                <div>
+                    <p class="admin-workspace-kicker">Workspace Konten DDU</p>
+                    <h1 id="admin-page-title">Ringkasan Website</h1>
+                    <p id="admin-page-description">Pantau aktivitas utama dan kondisi pengelolaan website.</p>
+                </div>
+                <div class="admin-workspace-meta">
+                    <span id="admin-current-date">Hari ini</span>
+                    <a href="/" target="_blank" rel="noopener noreferrer">Buka website <span aria-hidden="true">↗</span></a>
+                </div>
+            </header>
+
             <!-- Tab Dashboard -->
             <div id="content-dashboard">
                 <div id="dashboard-security-alert" class="security-alert hidden" role="alert"></div>

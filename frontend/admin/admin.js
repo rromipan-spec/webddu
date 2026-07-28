@@ -240,7 +240,36 @@ async function api(resource, options = {}) {
     return result;
 }
 
+const adminPageHeadings = {
+    dashboard: ['Ringkasan Website', 'Pantau aktivitas utama dan kondisi pengelolaan website.'],
+    articles: ['Kelola Artikel', 'Tulis, jadwalkan, dan publikasikan informasi untuk pembaca.'],
+    'programs-admin': ['Kelola Program', 'Susun program unggulan, media, dan kanal kontribusi resmi.'],
+    institution: ['Kredibilitas Lembaga', 'Kelola informasi legalitas, transparansi, dan kanal resmi DDU.'],
+    history: ['Riwayat Perubahan', 'Lihat aktivitas perubahan artikel dan program oleh pengelola.'],
+    admins: ['Kelola Admin', 'Atur akun dan hak akses pengelola website.'],
+    profile: ['Profil dan Keamanan', 'Perbarui identitas akun serta lindungi akses panel Anda.']
+};
+
+function updateAdminWorkspaceHeader(tab) {
+    const [title, description] = adminPageHeadings[tab] || adminPageHeadings.dashboard;
+    const titleElement = document.getElementById('admin-page-title');
+    const descriptionElement = document.getElementById('admin-page-description');
+    if (titleElement) titleElement.textContent = title;
+    if (descriptionElement) descriptionElement.textContent = description;
+}
+
+const currentDateElement = document.getElementById('admin-current-date');
+if (currentDateElement) {
+    currentDateElement.textContent = new Intl.DateTimeFormat('id-ID', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+    }).format(new Date());
+}
+
 window.switchTab = tab => {
+    updateAdminWorkspaceHeader(tab);
     document.getElementById('content-dashboard')?.classList.toggle('hidden', tab !== 'dashboard');
     document.getElementById('content-articles')?.classList.toggle('hidden', tab !== 'articles');
     document.getElementById('content-programs-admin')?.classList.toggle('hidden', tab !== 'programs-admin');
