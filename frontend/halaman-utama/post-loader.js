@@ -64,7 +64,6 @@ function articleHeroImages(post) {
     }
     images = images.map(value => String(value || '').trim()).filter(Boolean);
     if (post.hero_image && !images.includes(post.hero_image)) images.unshift(post.hero_image);
-    if (images.length === 0 && post.image) images.push(String(post.image).trim());
     return [...new Set(images)].slice(0, 10);
 }
 
