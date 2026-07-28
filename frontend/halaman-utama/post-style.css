@@ -407,33 +407,33 @@ video.post-hero-video.is-playing {
     .article-page.mobile-menu-open .whatsapp-popup,
     .article-page.mobile-menu-open .back-to-top { opacity: 0; visibility: hidden; pointer-events: none; }
     .post-hero {
-        --post-mobile-photo-height: clamp(260px, 72vw, 360px);
-        display: block;
-        min-height: 0;
-        padding: var(--post-mobile-photo-height) 0 0;
+        display: flex;
+        min-height: clamp(520px, 135vw, 650px);
+        align-items: center;
+        padding: 120px 0 58px;
     }
     .post-hero::after { display: none; }
     .post-hero-background,
     .post-hero-video,
     .post-hero-overlay {
-        inset: 0 0 auto;
-        height: var(--post-mobile-photo-height);
+        inset: 0;
+        height: 100%;
     }
     .post-hero-video-embed {
-        top: calc(var(--post-mobile-photo-height) / 2);
+        top: 50%;
         left: 50%;
-        width: calc(var(--post-mobile-photo-height) * 1.7778);
-        min-width: 100%;
-        height: var(--post-mobile-photo-height);
-        min-height: 0;
+        width: 100vw;
+        min-width: 177.78vh;
+        height: 56.25vw;
+        min-height: 100%;
     }
     .post-hero-background { object-position: center center; }
     .post-hero-overlay {
-        background: linear-gradient(180deg, rgba(3, 21, 48, .4), rgba(4, 27, 59, .2) 48%, #071f43 100%);
+        background: linear-gradient(180deg, rgba(3, 21, 48, .76), rgba(4, 27, 59, .62) 42%, rgba(7, 42, 82, .92) 100%);
     }
     .post-hero-inner {
         width: 100%;
-        padding: 30px 20px 62px;
+        padding: 0 20px;
     }
     .post-breadcrumb { justify-content: flex-start; margin-bottom: 20px; overflow: hidden; font-size: .78rem; white-space: nowrap; }
     .post-breadcrumb span:last-child { display: none; }
@@ -441,8 +441,8 @@ video.post-hero-video.is-playing {
     .post-category { display: block; text-align: left; }
     .post-hero-meta { justify-content: flex-start; gap: 7px 9px; font-size: .84rem; text-align: left; }
     .post-hero-slider-dots {
-        top: calc(var(--post-mobile-photo-height) - 32px);
-        bottom: auto;
+        top: auto;
+        bottom: 22px;
         gap: 6px;
     }
     .post-hero-slider-dots button { width: 10px; height: 10px; }
