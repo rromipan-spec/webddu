@@ -87,6 +87,7 @@ $socialImageMeta = $socialImage . (str_contains($socialImage, '?') ? '&' : '?') 
 $publishedTime = date(DATE_ATOM, strtotime((string) ($post['published_at'] ?? $post['created_at'] ?? 'now')) ?: time());
 $modifiedTime = date(DATE_ATOM, strtotime((string) ($post['updated_at'] ?? $post['created_at'] ?? 'now')) ?: time());
 $imageAlt = trim((string) ($post['image_alt'] ?? '')) ?: (string) $post['title'];
+$authorName = trim((string) ($post['author_name'] ?? '')) ?: $siteName;
 $pageTitle = $metaTitle . ' - ' . $siteName;
 $structuredData = [
     '@context' => 'https://schema.org',
@@ -98,7 +99,9 @@ $structuredData = [
     'datePublished' => $publishedTime,
     'dateModified' => $modifiedTime,
     'mainEntityOfPage' => $canonicalUrl,
-    'author' => ['@type' => 'Organization', 'name' => $siteName, 'url' => $appUrl],
+    'author' => $authorName === $siteName
+        ? ['@type' => 'Organization', 'name' => $siteName, 'url' => $appUrl]
+        : ['@type' => 'Person', 'name' => $authorName],
     'publisher' => [
         '@type' => 'Organization',
         'name' => $siteName,
@@ -108,7 +111,7 @@ $structuredData = [
 
 $socialMeta = '<title>' . $escape($pageTitle) . '</title>' . "\n"
     . '    <meta name="description" content="' . $escape($description) . '">' . "\n"
-    . '    <meta name="author" content="' . $escape($siteName) . '">' . "\n"
+    . '    <meta name="author" content="' . $escape($authorName) . '">' . "\n"
     . '    <link rel="canonical" href="' . $escape($canonicalUrl) . '">' . "\n"
     . '    <meta property="og:type" content="article">' . "\n"
     . '    <meta property="og:site_name" content="' . $escape($siteName) . '">' . "\n"
@@ -119,6 +122,7 @@ $socialMeta = '<title>' . $escape($pageTitle) . '</title>' . "\n"
     . '    <meta property="og:image" content="' . $escape($socialImageMeta) . '">' . "\n"
     . '    <meta property="og:image:secure_url" content="' . $escape($socialImageMeta) . '">' . "\n"
     . '    <meta property="og:image:alt" content="' . $escape($imageAlt) . '">' . "\n"
+    . '    <meta property="article:author" content="' . $escape($authorName) . '">' . "\n"
     . ($imageWidth ? '    <meta property="og:image:width" content="' . $imageWidth . '">' . "\n" : '')
     . ($imageHeight ? '    <meta property="og:image:height" content="' . $imageHeight . '">' . "\n" : '')
     . ($imageMime ? '    <meta property="og:image:type" content="' . $escape($imageMime) . '">' . "\n" : '')

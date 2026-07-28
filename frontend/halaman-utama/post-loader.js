@@ -185,6 +185,7 @@ function shareButtonsHtml(previewUrl, title, canonicalUrl = previewUrl) {
 }
 
 function renderPost(container, post, related) {
+    const authorName = String(post.author_name || '').trim() || SITE_NAME;
     const wa = post.whatsapp_number || '6285121277046';
     const message = post.whatsapp_message || `Assalamualaikum, saya ingin berdonasi setelah membaca artikel: ${post.title}.`;
     const whatsappUrl = `https://wa.me/${encodeURIComponent(wa)}?text=${encodeURIComponent(message)}`;
@@ -209,7 +210,7 @@ function renderPost(container, post, related) {
                 <span class="post-category">${escapeHtml(post.category || 'Artikel DDU')}</span>
                 <h1>${escapeHtml(post.title)}</h1>
                 <div class="post-hero-meta">
-                    <span>Oleh <strong>${SITE_NAME}</strong></span><span aria-hidden="true">•</span>
+                    <span>Oleh <strong>${escapeHtml(authorName)}</strong></span><span aria-hidden="true">•</span>
                     <time datetime="${escapeHtml(String(post.published_at || post.created_at || '').slice(0, 10))}">${escapeHtml(dateText(post.published_at || post.created_at))}</time><span aria-hidden="true">•</span>
                     <span>${minutes} menit baca</span>
                 </div>
@@ -324,13 +325,14 @@ function setMeta(selector, attribute, value) {
 }
 
 function updateSeo(post, image, canonicalUrl, minutes) {
+    const authorName = String(post.author_name || '').trim() || SITE_NAME;
     const metaTitle = String(post.seo_title || post.title).trim();
     const description = String(post.seo_description || post.excerpt || plainText(post.content).slice(0, 160)).trim().slice(0, 160);
     const imageAlt = String(post.image_alt || post.title).trim();
     const absoluteImage = new URL(image, location.origin).href;
     document.title = `${metaTitle} - ${SITE_NAME}`;
     setMeta('meta[name="description"]', 'content', description);
-    setMeta('meta[name="author"]', 'content', SITE_NAME);
+    setMeta('meta[name="author"]', 'content', authorName);
     setMeta('meta[property="og:type"]', 'content', 'article');
     setMeta('meta[property="og:site_name"]', 'content', SITE_NAME);
     setMeta('meta[property="og:locale"]', 'content', 'id_ID');
@@ -341,7 +343,7 @@ function updateSeo(post, image, canonicalUrl, minutes) {
     setMeta('meta[property="og:image:alt"]', 'content', imageAlt);
     setMeta('meta[property="article:published_time"]', 'content', post.created_at || '');
     setMeta('meta[property="article:modified_time"]', 'content', post.updated_at || post.created_at || '');
-    setMeta('meta[property="article:author"]', 'content', SITE_NAME);
+    setMeta('meta[property="article:author"]', 'content', authorName);
     setMeta('meta[name="twitter:card"]', 'content', 'summary_large_image');
     setMeta('meta[name="twitter:title"]', 'content', metaTitle);
     setMeta('meta[name="twitter:description"]', 'content', description);
@@ -369,7 +371,9 @@ function updateSeo(post, image, canonicalUrl, minutes) {
         dateModified: post.updated_at || post.created_at,
         mainEntityOfPage: canonicalUrl,
         timeRequired: `PT${minutes}M`,
-        author: { '@type': 'Organization', name: SITE_NAME, url: location.origin },
+        author: authorName === SITE_NAME
+            ? { '@type': 'Organization', name: SITE_NAME, url: location.origin }
+            : { '@type': 'Person', name: authorName },
         publisher: { '@type': 'Organization', name: SITE_NAME, logo: { '@type': 'ImageObject', url: DEFAULT_IMAGE } }
     });
     document.head.appendChild(structuredData);

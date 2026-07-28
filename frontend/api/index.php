@@ -468,6 +468,7 @@ function validatePayload(string $table, array $body): array
     ];
 
     if ($table === 'posts') {
+        $payload['author_name'] = mb_substr(trim((string) ($body['author_name'] ?? '')), 0, 120);
         $heroImage = trim((string) ($body['hero_image'] ?? ''));
         if ($heroImage !== '' && !filter_var($heroImage, FILTER_VALIDATE_URL) && !str_starts_with($heroImage, '/uploads/')) {
             Http::json(['ok' => false, 'message' => 'Alamat background header artikel tidak valid.'], 422);

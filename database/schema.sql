@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS posts (
     hero_video_url VARCHAR(1000) NOT NULL DEFAULT '',
     excerpt TEXT NOT NULL,
     content MEDIUMTEXT NOT NULL,
+    author_name VARCHAR(120) NOT NULL DEFAULT '',
     whatsapp_number VARCHAR(20) NOT NULL DEFAULT '',
     whatsapp_message VARCHAR(500) NOT NULL DEFAULT '',
     donation_qr_image VARCHAR(500) NOT NULL DEFAULT '',

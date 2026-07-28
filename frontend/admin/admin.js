@@ -791,6 +791,7 @@ async function saveForm(event, resource) {
                 : '');
         payload.featured_order = document.getElementById('prog-featured-order').value;
     } else {
+        payload.author_name = document.getElementById('post-author-name').value.trim();
         payload.hero_image = document.getElementById('post-hero-image-url').value;
         payload.hero_images = parseGalleryImages(document.getElementById('post-hero-images').value, 10);
         payload.hero_media_type = document.getElementById('post-hero-media-type').value;
@@ -1281,6 +1282,7 @@ async function editItem(resource, id) {
             updateHeroMediaFields('prog');
             document.getElementById('prog-featured-order').value = data.featured_order ?? '';
         } else {
+            document.getElementById('post-author-name').value = data.author_name || '';
             const heroImages = parseGalleryImages(data.hero_images, 10);
             if (!heroImages.length && data.hero_image) heroImages.push(data.hero_image);
             setHeroImages(heroImages);
