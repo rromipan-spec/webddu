@@ -1072,8 +1072,17 @@ p {
 }
 
 .about-list strong {
+    display: block;
+    margin-bottom: 3px;
     color: #1e4b9c;
     font-weight: 700;
+}
+
+.about-list li > span {
+    display: block;
+    color: #445d80;
+    font-size: .98rem;
+    line-height: 1.72;
 }
 /* RESPONSIVE DESIGN */
 @media (max-width: 1024px) {
