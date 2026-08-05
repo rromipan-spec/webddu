@@ -1309,7 +1309,51 @@ async function deleteItem(resource, id) {
     } catch (error) { alert(error.message); }
 }
 
+function setupPasswordVisibility() {
+    document.querySelectorAll('input[type="password"]').forEach((input) => {
+        if (input.closest('.password-input-wrap')) return;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'password-input-wrap';
+        input.parentNode.insertBefore(wrapper, input);
+        wrapper.appendChild(input);
+
+        const toggle = document.createElement('button');
+        toggle.type = 'button';
+        toggle.className = 'password-visibility-toggle';
+        toggle.setAttribute('aria-label', 'Tampilkan kata sandi');
+        toggle.setAttribute('aria-pressed', 'false');
+        toggle.title = 'Tampilkan kata sandi';
+        toggle.innerHTML = `
+            <svg class="password-eye password-eye-open" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"></path>
+                <circle cx="12" cy="12" r="2.75"></circle>
+            </svg>
+            <svg class="password-eye password-eye-closed" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M3 3l18 18"></path>
+                <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8"></path>
+                <path d="M9.9 4.2A9.8 9.8 0 0 1 12 4c6 0 10 8 10 8a16.7 16.7 0 0 1-2.1 3.1"></path>
+                <path d="M6.6 6.6C3.8 8.5 2 12 2 12s4 8 10 8a9.7 9.7 0 0 0 4.1-.9"></path>
+            </svg>`;
+
+        toggle.addEventListener('click', () => {
+            const willShow = input.type === 'password';
+            input.type = willShow ? 'text' : 'password';
+            toggle.classList.toggle('is-visible', willShow);
+            toggle.setAttribute('aria-pressed', String(willShow));
+
+            const label = willShow ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi';
+            toggle.setAttribute('aria-label', label);
+            toggle.title = label;
+            input.focus({ preventScroll: true });
+        });
+
+        wrapper.appendChild(toggle);
+    });
+}
+
 async function init() {
+    setupPasswordVisibility();
     setupContentListFilters('posts');
     setupContentListFilters('programs');
     setupAutomaticSlug('post');
