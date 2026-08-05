@@ -1,6 +1,7 @@
 const API = '../api/index.php';
 let csrfToken = '';
 let currentRole = '';
+let currentAdminId = 0;
 const contentListState = {
     posts: { prefix: 'post', page: 1, perPage: 10, searchTimer: null, requestId: 0 },
     programs: { prefix: 'program', page: 1, perPage: 10, searchTimer: null, requestId: 0 }
@@ -293,7 +294,8 @@ window.switchTab = tab => {
         }
     });
     if (tab === 'dashboard') fetchStats();
-    if (tab === 'profile') loadProfile();
+    if (tab === 'profile') loadProfile().then(() => loadAdminSessions('own'));
+    if (tab === 'admins' && currentRole === 'super_admin') loadAdminSessions('all');
     if (tab === 'history') loadHistory();
     if (tab === 'institution') loadInstitutionProfile();
     updatePreview();
@@ -812,10 +814,85 @@ async function saveForm(event, resource) {
 
 async function fetchStats() {
     try {
-        const result = await api('stats');
-        document.getElementById('count-visits').textContent = result.data.visit || 0;
-        document.getElementById('count-wa').textContent = result.data.wa_click || 0;
-    } catch (error) { console.error(error); }
+        const days = Number(document.getElementById('analytics-days')?.value || 30);
+        const result = await api(`analytics&days=${days}`);
+        renderAnalytics(result.data || {});
+    } catch (error) {
+        console.error(error);
+        document.getElementById('analytics-daily-chart').innerHTML = `<p class="analytics-empty">${escapeHtml(error.message)}</p>`;
+    }
+}
+
+function numberLabel(value) {
+    return new Intl.NumberFormat('id-ID').format(Number(value || 0));
+}
+
+function renderAnalytics(data) {
+    const summary = data.summary || {};
+    document.getElementById('count-visits').textContent = numberLabel(summary.page_views);
+    document.getElementById('count-visitors').textContent = numberLabel(summary.visitors);
+    document.getElementById('count-sessions').textContent = numberLabel(summary.sessions);
+    document.getElementById('count-wa').textContent = numberLabel(summary.wa_clicks);
+    document.getElementById('count-conversion').textContent = `${Number(summary.conversion_rate || 0).toLocaleString('id-ID')}%`;
+    document.getElementById('analytics-retention').textContent = `Retensi ${Number(data.retention_days || 90)} hari`;
+
+    const migrationAlert = document.getElementById('analytics-migration-alert');
+    migrationAlert.innerHTML = data.migration_required
+        ? '<strong>Analitik detail belum aktif</strong>Jalankan database/add_visitor_analytics.sql melalui phpMyAdmin. Data total lama tetap dipertahankan.'
+        : '';
+    migrationAlert.classList.toggle('hidden', !data.migration_required);
+
+    renderDailyChart(data.daily || []);
+    renderAnalyticsBars('analytics-devices', data.devices || []);
+    renderAnalyticsBars('analytics-visitor-types', data.visitor_types || []);
+    renderAnalyticsBars('analytics-browsers', data.browsers || []);
+    renderAnalyticsBars('analytics-os', data.operating_systems || []);
+    renderAnalyticsBars('analytics-sources', data.sources || []);
+    renderAnalyticsBars('analytics-screens', data.screens || []);
+    renderAnalyticsRanking('analytics-pages', data.pages || []);
+    renderAnalyticsRanking('analytics-whatsapp-pages', data.whatsapp_pages || []);
+}
+
+function renderDailyChart(rows) {
+    const container = document.getElementById('analytics-daily-chart');
+    if (!rows.length) {
+        container.innerHTML = '<p class="analytics-empty">Belum ada data pada periode ini.</p>';
+        return;
+    }
+    const maximum = Math.max(1, ...rows.flatMap(row => [Number(row.total || 0), Number(row.secondary || 0)]));
+    container.innerHTML = rows.map(row => {
+        const date = new Date(`${row.label}T00:00:00`);
+        const label = Number.isNaN(date.getTime()) ? row.label : date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+        const visitHeight = Math.max(2, Math.round((Number(row.total || 0) / maximum) * 180));
+        const waHeight = Math.max(2, Math.round((Number(row.secondary || 0) / maximum) * 180));
+        return `<div class="analytics-day" title="${escapeHtml(label)}: ${numberLabel(row.total)} kunjungan, ${numberLabel(row.secondary)} klik WhatsApp">
+            <span class="analytics-day-bar" style="height:${visitHeight}px"></span>
+            <span class="analytics-day-bar is-wa" style="height:${waHeight}px"></span>
+            <span class="analytics-day-label">${escapeHtml(label)}</span>
+        </div>`;
+    }).join('');
+}
+
+function renderAnalyticsBars(containerId, rows) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    if (!rows.length) {
+        container.innerHTML = '<p class="analytics-empty">Belum ada data.</p>';
+        return;
+    }
+    const maximum = Math.max(1, ...rows.map(row => Number(row.total || 0)));
+    container.innerHTML = rows.map(row => `<div class="analytics-bar-item">
+        <div class="analytics-bar-heading"><span>${escapeHtml(row.label)}</span><strong>${numberLabel(row.total)}</strong></div>
+        <div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:${Math.max(2, (Number(row.total || 0) / maximum) * 100)}%"></div></div>
+    </div>`).join('');
+}
+
+function renderAnalyticsRanking(containerId, rows) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = rows.length
+        ? rows.map((row, index) => `<div class="analytics-ranking-item"><span>${index + 1}. ${escapeHtml(row.label)}</span><strong>${numberLabel(row.total)}</strong></div>`).join('')
+        : '<p class="analytics-empty">Belum ada data.</p>';
 }
 
 async function showDashboard() {
@@ -958,6 +1035,7 @@ async function loadProfile() {
         document.getElementById('profile-last-login').textContent = formatAccountDate(profile.last_login_at);
         document.getElementById('profile-created-at').textContent = formatAccountDate(profile.created_at);
         document.getElementById('reset-admin-id').dataset.currentAdminId = String(profile.id || '');
+        currentAdminId = Number(profile.id || 0);
         currentRole = profile.role || currentRole;
         document.getElementById('tab-admins')?.classList.toggle('hidden', currentRole !== 'super_admin');
         updateSecurityAlerts(result.security || {});
@@ -1075,6 +1153,58 @@ async function loadAdminAccounts() {
             ${Number(admin.is_active) && Number(admin.id) !== currentAdminId ? `<button type="button" class="btn-delete" data-disable-admin="${Number(admin.id)}">Nonaktifkan</button>` : ''}
         </div>
     </div>`).join('') : '<p class="admin-empty-state">Belum ada akun admin untuk ditampilkan.</p>';
+}
+
+async function loadAdminSessions(scope = 'own') {
+    const container = document.getElementById(scope === 'all' ? 'all-admin-session-list' : 'own-admin-session-list');
+    if (!container) return;
+    container.innerHTML = '<p class="analytics-empty">Memuat daftar perangkat...</p>';
+    try {
+        const query = scope === 'own' && currentAdminId ? `admin_sessions&admin_id=${currentAdminId}` : 'admin_sessions';
+        const result = await api(query);
+        if (result.migration_required) {
+            container.innerHTML = '<p class="analytics-empty">Jalankan database/add_visitor_analytics.sql melalui phpMyAdmin untuk mengaktifkan daftar perangkat.</p>';
+            return;
+        }
+        const sessions = result.data || [];
+        container.innerHTML = sessions.length ? sessions.map(session => {
+            const active = !session.revoked_at;
+            const current = Number(session.is_current) === 1;
+            const createdAt = utcDate(session.created_at);
+            const newDevice = Number(session.is_first_device) === 1
+                && createdAt && (Date.now() - createdAt.getTime()) <= 86400000;
+            const account = scope === 'all'
+                ? `<strong>${escapeHtml(session.display_name || session.email)}</strong><small>${escapeHtml(session.email)}</small>`
+                : '';
+            return `<div class="admin-session-item">
+                <div class="admin-session-copy">
+                    ${account}
+                    <strong>${escapeHtml(deviceLabel(session.device_type))} · ${escapeHtml(session.browser_family)} · ${escapeHtml(session.os_family)}</strong>
+                    <small>Jaringan: ${escapeHtml(session.ip_hint || 'Disamarkan')}<br>Terakhir aktif: ${escapeHtml(formatAccountDate(session.last_seen_at))}<br>Login pertama: ${escapeHtml(formatAccountDate(session.created_at))}</small>
+                    <span class="session-status ${active ? '' : 'is-revoked'}">${current ? 'Perangkat ini' : (active ? 'Aktif' : 'Sudah dihentikan')}</span>
+                    ${newDevice ? '<span class="session-status is-new">Perangkat baru</span>' : ''}
+                </div>
+                ${active && !current ? `<button type="button" class="btn-secondary" data-revoke-admin-session="${Number(session.id)}" data-session-scope="${escapeHtml(scope)}">Hentikan Sesi</button>` : ''}
+            </div>`;
+        }).join('') : '<p class="analytics-empty">Belum ada perangkat tercatat. Login ulang setelah migrasi untuk mendaftarkan perangkat ini.</p>';
+    } catch (error) {
+        container.innerHTML = `<p class="analytics-empty">${escapeHtml(error.message)}</p>`;
+    }
+}
+
+function deviceLabel(value) {
+    return ({ mobile: 'Ponsel', tablet: 'Tablet', desktop: 'Desktop', unknown: 'Perangkat tidak dikenal' })[value] || 'Perangkat tidak dikenal';
+}
+
+async function revokeAdminSession(id, scope) {
+    if (!confirm('Hentikan sesi pada perangkat ini? Admin tersebut harus login kembali.')) return;
+    try {
+        const result = await api(`admin_sessions&id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+        await loadAdminSessions(scope || 'own');
+        alert(result.message);
+    } catch (error) {
+        alert(error.message);
+    }
 }
 
 function renderList(containerId, items, resource) {
@@ -1199,6 +1329,10 @@ document.addEventListener('click', event => {
     if (event.target.closest('[data-generate-admin-password]')) generateAdminPassword();
     if (event.target.closest('[data-copy-admin-password]')) copyAdminPassword();
     if (event.target.closest('[data-close-password-dialog]')) closeAdminPasswordDialog();
+    const refreshSessions = event.target.closest('[data-refresh-sessions]');
+    if (refreshSessions) loadAdminSessions(refreshSessions.dataset.refreshSessions);
+    const revokeSession = event.target.closest('[data-revoke-admin-session]');
+    if (revokeSession) revokeAdminSession(revokeSession.dataset.revokeAdminSession, revokeSession.dataset.sessionScope);
 });
 
 function openAdminPasswordDialog(id, email) {
@@ -1416,6 +1550,7 @@ function setupPasswordVisibility() {
 
 async function init() {
     setupPasswordVisibility();
+    document.getElementById('analytics-days')?.addEventListener('change', fetchStats);
     setupContentListFilters('posts');
     setupContentListFilters('programs');
     setupAutomaticSlug('post');

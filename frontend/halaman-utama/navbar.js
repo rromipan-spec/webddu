@@ -1,6 +1,34 @@
-const recordStat = type => fetch('../api/index.php?resource=stats', {
-    method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type })
-}).catch(() => {});
+const anonymousId = (storage, key) => {
+    try {
+        let value = storage.getItem(key);
+        if (!value) {
+            value = globalThis.crypto?.randomUUID?.()
+                || `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
+            storage.setItem(key, value);
+        }
+        return value;
+    } catch {
+        return '';
+    }
+};
+
+const analyticsAllowed = navigator.doNotTrack !== '1' && navigator.globalPrivacyControl !== true;
+const visitorId = analyticsAllowed ? anonymousId(localStorage, 'ddu_anonymous_visitor') : '';
+const visitSessionId = analyticsAllowed ? anonymousId(sessionStorage, 'ddu_visit_session') : '';
+const recordStat = type => analyticsAllowed ? fetch('../api/index.php?resource=stats', {
+    method: 'POST',
+    credentials: 'same-origin',
+    keepalive: true,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        type,
+        page: window.location.pathname,
+        referrer: document.referrer,
+        screen_width: Math.round(window.screen?.width || window.innerWidth || 0),
+        visitor_id: visitorId,
+        session_id: visitSessionId
+    })
+}).catch(() => {}) : Promise.resolve();
 
 document.addEventListener('DOMContentLoaded', () => {
     const isPublicHome = /^\/(?:halaman-utama\/)?index\.html$/i.test(window.location.pathname);
@@ -9,12 +37,15 @@ document.addEventListener('DOMContentLoaded', () => {
         window.history.replaceState(null, '', `${cleanPath}${window.location.search}`);
     }
 
-    if (!sessionStorage.getItem('ddu_visit')) {
+    const pageVisitKey = `ddu_visit_${window.location.pathname}`;
+    if (analyticsAllowed && !sessionStorage.getItem(pageVisitKey)) {
         recordStat('visit');
-        sessionStorage.setItem('ddu_visit', '1');
+        sessionStorage.setItem(pageVisitKey, '1');
     }
     document.addEventListener('click', event => {
-        if (event.target.closest('.whatsapp-popup, .btn-whatsapp-minimal')) recordStat('wa_click');
+        if (event.target.closest('.whatsapp-popup, .btn-whatsapp-minimal, [href*="wa.me/"], [href*="whatsapp.com/"]')) {
+            recordStat('wa_click');
+        }
     });
 
     const preloader = document.querySelector('.preloader');

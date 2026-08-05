@@ -1550,6 +1550,294 @@ body.admin-page {
     line-height: 1.5;
 }
 
+/* Privacy-friendly visitor analytics */
+.admin-page .analytics-heading,
+.admin-page .analytics-panel-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.admin-page .analytics-heading h2,
+.admin-page .analytics-panel-heading h3,
+.admin-page .analytics-card > h3 {
+    margin-bottom: 6px;
+}
+
+.admin-page .analytics-period {
+    display: grid;
+    min-width: 135px;
+    gap: 6px;
+    color: var(--admin-muted);
+    font-size: .78rem;
+    font-weight: 800;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+.admin-page .analytics-period select {
+    min-height: 42px;
+    padding: 8px 36px 8px 12px;
+    border: 1px solid var(--admin-line);
+    border-radius: 10px;
+    background: #fff;
+    color: var(--admin-navy);
+    font: inherit;
+    text-transform: none;
+}
+
+.admin-page .analytics-summary-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    margin-bottom: 0;
+}
+
+.admin-page .analytics-summary-grid .stat-card-admin {
+    min-width: 0;
+    padding: 20px 16px;
+}
+
+.admin-page .analytics-summary-grid .number {
+    font-size: clamp(1.7rem, 3vw, 2.35rem);
+}
+
+.admin-page .analytics-card,
+.admin-page .admin-sessions-card {
+    margin-top: 20px;
+}
+
+.admin-page .analytics-panel-heading > span {
+    flex: 0 0 auto;
+    padding: 7px 11px;
+    color: #1559ad;
+    background: #eaf2ff;
+    border-radius: 999px;
+    font-size: .78rem;
+    font-weight: 800;
+}
+
+.admin-page .analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.admin-page .analytics-grid-wide {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.admin-page .analytics-daily-chart {
+    display: flex;
+    min-height: 230px;
+    align-items: flex-end;
+    gap: 5px;
+    margin-top: 22px;
+    padding: 18px 12px 34px;
+    overflow-x: auto;
+    border-bottom: 1px solid var(--admin-line);
+    background: repeating-linear-gradient(to top, transparent 0 54px, #e8eef6 55px 56px);
+}
+
+.admin-page .analytics-day {
+    position: relative;
+    display: flex;
+    min-width: 18px;
+    height: 180px;
+    flex: 1 0 18px;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 2px;
+}
+
+.admin-page .analytics-day-bar {
+    width: min(46%, 15px);
+    min-height: 2px;
+    border-radius: 5px 5px 1px 1px;
+    background: #1d63bd;
+}
+
+.admin-page .analytics-day-bar.is-wa {
+    background: #20bf6b;
+}
+
+.admin-page .analytics-day-label {
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    color: var(--admin-muted);
+    font-size: .66rem;
+    white-space: nowrap;
+    transform: translateX(-50%) rotate(-35deg);
+}
+
+.admin-page .analytics-chart-legend {
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+    margin-top: 12px;
+    color: var(--admin-muted);
+    font-size: .8rem;
+    font-weight: 700;
+}
+
+.admin-page .analytics-chart-legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.admin-page .analytics-chart-legend i {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    background: #1d63bd;
+}
+
+.admin-page .analytics-chart-legend .legend-wa {
+    background: #20bf6b;
+}
+
+.admin-page .analytics-bars,
+.admin-page .analytics-ranking,
+.admin-page .admin-session-list {
+    display: grid;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.admin-page .analytics-bar-heading,
+.admin-page .analytics-ranking-item,
+.admin-page .admin-session-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.admin-page .analytics-bar-heading {
+    margin-bottom: 5px;
+    color: #314b68;
+    font-size: .86rem;
+}
+
+.admin-page .analytics-bar-track {
+    height: 8px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #e8eef6;
+}
+
+.admin-page .analytics-bar-fill {
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #1559ad, #48a2ff);
+}
+
+.admin-page .analytics-ranking-item,
+.admin-page .admin-session-item {
+    padding: 12px 0;
+    border-bottom: 1px solid #e7edf5;
+}
+
+.admin-page .analytics-ranking-item:last-child,
+.admin-page .admin-session-item:last-child {
+    border-bottom: 0;
+}
+
+.admin-page .analytics-ranking-item span,
+.admin-page .admin-session-copy {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    color: #314b68;
+}
+
+.admin-page .analytics-ranking-item strong {
+    flex: 0 0 auto;
+    color: var(--admin-navy);
+}
+
+.admin-page .admin-session-item {
+    align-items: flex-start;
+}
+
+.admin-page .admin-session-copy strong,
+.admin-page .admin-session-copy small {
+    display: block;
+}
+
+.admin-page .admin-session-copy small {
+    margin-top: 4px;
+    color: var(--admin-muted);
+    line-height: 1.5;
+}
+
+.admin-page .session-status {
+    display: inline-flex;
+    margin-top: 7px;
+    padding: 3px 8px;
+    color: #166534;
+    background: #dcfce7;
+    border-radius: 999px;
+    font-size: .72rem;
+    font-weight: 800;
+}
+
+.admin-page .session-status.is-revoked {
+    color: #64748b;
+    background: #eef2f6;
+}
+
+.admin-page .session-status.is-new {
+    margin-left: 5px;
+    color: #92400e;
+    background: #fef3c7;
+}
+
+.admin-page .analytics-empty {
+    padding: 20px;
+    color: var(--admin-muted);
+    border: 1px dashed var(--admin-line);
+    border-radius: 12px;
+    background: #f8fafc;
+    text-align: center;
+}
+
+@media (max-width: 1100px) {
+    .admin-page .analytics-summary-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .admin-page .analytics-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 700px) {
+    .admin-page .analytics-heading,
+    .admin-page .analytics-panel-heading,
+    .admin-page .admin-session-item {
+        display: grid;
+    }
+
+    .admin-page .analytics-period {
+        width: 100%;
+    }
+
+    .admin-page .analytics-summary-grid,
+    .admin-page .analytics-grid,
+    .admin-page .analytics-grid-wide {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .admin-page .analytics-summary-grid {
+        gap: 10px;
+    }
+
+    .admin-page .admin-session-item .btn-secondary {
+        width: 100%;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     .admin-page *,
     .admin-page *::before,

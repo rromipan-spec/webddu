@@ -112,6 +112,36 @@ CREATE TABLE IF NOT EXISTS institution_profile (
 CREATE TABLE IF NOT EXISTS stats (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     type ENUM('visit', 'wa_click') NOT NULL,
+    page_path VARCHAR(255) NOT NULL DEFAULT '/',
+    content_type ENUM('page', 'article', 'program') NOT NULL DEFAULT 'page',
+    content_slug VARCHAR(180) NOT NULL DEFAULT '',
+    visitor_hash CHAR(64) NOT NULL DEFAULT '',
+    session_hash CHAR(64) NOT NULL DEFAULT '',
+    device_type ENUM('desktop', 'mobile', 'tablet', 'unknown') NOT NULL DEFAULT 'unknown',
+    os_family VARCHAR(40) NOT NULL DEFAULT 'Lainnya',
+    browser_family VARCHAR(40) NOT NULL DEFAULT 'Lainnya',
+    referrer_source VARCHAR(80) NOT NULL DEFAULT 'Langsung',
+    screen_bucket VARCHAR(20) NOT NULL DEFAULT 'Tidak diketahui',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_stats_type_created (type, created_at)
+    INDEX idx_stats_type_created (type, created_at),
+    INDEX idx_stats_created_at (created_at),
+    INDEX idx_stats_page_created (page_path, created_at),
+    INDEX idx_stats_device_created (device_type, created_at),
+    INDEX idx_stats_session_created (session_hash, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS admin_sessions (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    admin_id BIGINT UNSIGNED NOT NULL,
+    token_hash CHAR(64) NOT NULL UNIQUE,
+    device_type ENUM('desktop', 'mobile', 'tablet', 'unknown') NOT NULL DEFAULT 'unknown',
+    os_family VARCHAR(40) NOT NULL DEFAULT 'Lainnya',
+    browser_family VARCHAR(40) NOT NULL DEFAULT 'Lainnya',
+    ip_hash CHAR(64) NOT NULL DEFAULT '',
+    ip_hint VARCHAR(64) NOT NULL DEFAULT '',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_seen_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    revoked_at DATETIME NULL,
+    INDEX idx_admin_sessions_admin (admin_id, last_seen_at),
+    INDEX idx_admin_sessions_active (admin_id, revoked_at, last_seen_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

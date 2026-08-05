@@ -88,18 +88,42 @@ if ($resource === 'stats') {
     }
     if ($method === 'POST') {
         $body = Http::body();
-        $type = (string) ($body['type'] ?? '');
-        if (!in_array($type, ['visit', 'wa_click'], true)) {
+        if (!in_array((string) ($body['type'] ?? ''), ['visit', 'wa_click'], true)) {
             Http::json(['ok' => false, 'message' => 'Tipe statistik tidak valid.'], 422);
         }
-        $key = 'last_stat_' . $type;
-        if ((time() - (int) ($_SESSION[$key] ?? 0)) >= 10) {
-            $stmt = Database::connection()->prepare('INSERT INTO stats (type) VALUES (:type)');
-            $stmt->execute(['type' => $type]);
-            $_SESSION[$key] = time();
-        }
+        Analytics::record($body);
         Http::json(['ok' => true], 201);
     }
+}
+
+if ($resource === 'analytics' && $method === 'GET') {
+    Auth::requireAdmin();
+    $days = filter_var($_GET['days'] ?? 30, FILTER_VALIDATE_INT) ?: 30;
+    Http::json(['ok' => true, 'data' => Analytics::report((int) $days)]);
+}
+
+if ($resource === 'admin_sessions') {
+    Auth::requireAdmin();
+    if ($method === 'GET') {
+        $adminId = filter_var($_GET['admin_id'] ?? null, FILTER_VALIDATE_INT);
+        if ($adminId && (int) $adminId !== Auth::id() && Auth::role() !== 'super_admin') {
+            Http::json(['ok' => false, 'message' => 'Akses sesi admin ditolak.'], 403);
+        }
+        Http::json([
+            'ok' => true,
+            'data' => Auth::sessions($adminId ? (int) $adminId : null),
+            'migration_required' => !adminSessionsTableAvailable(),
+        ]);
+    }
+    if ($method === 'DELETE') {
+        Auth::verifyCsrf();
+        $sessionId = filter_var($_GET['id'] ?? null, FILTER_VALIDATE_INT);
+        if (!$sessionId || !Auth::revokeSession((int) $sessionId)) {
+            Http::json(['ok' => false, 'message' => 'Sesi tidak ditemukan, sedang digunakan, atau tidak dapat dihentikan.'], 422);
+        }
+        Http::json(['ok' => true, 'message' => 'Sesi perangkat berhasil dihentikan.']);
+    }
+    Http::json(['ok' => false, 'message' => 'Metode tidak diizinkan.'], 405);
 }
 
 if ($resource === 'gold_price') {
@@ -894,6 +918,8 @@ function updateOwnProfile(array $profile, array $body): never
         accountMigrationError($error);
     }
 
+    Auth::revokeAllSessions((int) $profile['id']);
+    session_regenerate_id(true);
     $updated = findAdminProfile((int) $profile['id']);
     Auth::refreshSession(
         (int) $updated['id'],
@@ -933,6 +959,7 @@ function changeOwnPassword(array $profile, array $body): never
         accountMigrationError($error);
     }
 
+    Auth::revokeAllSessions((int) $profile['id']);
     $updated = findAdminProfile((int) $profile['id']);
     session_regenerate_id(true);
     Auth::refreshSession(
@@ -981,11 +1008,22 @@ function resetAdminPassword(array $body): never
         accountMigrationError($error);
     }
 
+    Auth::revokeAllSessions((int) $target['id']);
     Auth::recordSecurityEvent('password_reset', (string) $target['email'], (int) $target['id']);
     Http::json([
         'ok' => true,
         'message' => 'Kata sandi admin berhasil direset. Semua sesi lama akun tersebut telah dihentikan.',
     ]);
+}
+
+function adminSessionsTableAvailable(): bool
+{
+    try {
+        $statement = Database::connection()->query("SHOW COLUMNS FROM admin_sessions LIKE 'ip_hint'");
+        return (bool) $statement->fetchColumn();
+    } catch (Throwable) {
+        return false;
+    }
 }
 
 function findAdminProfile(int $id, bool $withPassword = false): array|false
@@ -1105,7 +1143,7 @@ function saveAdmin(array $body): never
     if ($existing->fetch()) {
         Http::json([
             'ok' => false,
-            'message' => 'Email sudah terdaftar. Gunakan tombol Reset Password pada daftar admin.',
+            'message' => 'Email sudah terdaftar. Gunakan tombol Ganti Password pada daftar admin.',
         ], 409);
     }
 
@@ -1133,6 +1171,7 @@ function deactivateAdmin(): never
     }
     $stmt = Database::connection()->prepare('UPDATE admins SET is_active = 0 WHERE id = :id');
     $stmt->execute(['id' => $id]);
+    Auth::revokeAllSessions((int) $id);
     Http::json(['ok' => true, 'message' => 'Admin dinonaktifkan.']);
 }
 

@@ -41,6 +41,9 @@ final class Auth
             if (!$admin || (int) $admin['is_active'] !== 1 || (int) $admin['session_version'] !== $sessionVersion) {
                 return self::$requestCheck = false;
             }
+            if (!self::syncTrackedSession((int) $admin['id'])) {
+                return self::$requestCheck = false;
+            }
             $_SESSION['admin_email'] = (string) $admin['email'];
             $_SESSION['admin_role'] = (string) $admin['role'];
             return self::$requestCheck = true;
@@ -181,6 +184,7 @@ final class Auth
 
     public static function logout(): void
     {
+        self::revokeCurrentSession();
         self::$requestCheck = null;
         $_SESSION = [];
         if (ini_get('session.use_cookies')) {
@@ -189,6 +193,79 @@ final class Auth
         }
         if (session_status() === PHP_SESSION_ACTIVE) {
             session_destroy();
+        }
+    }
+
+    public static function sessions(?int $adminId = null): array
+    {
+        $targetId = $adminId ?: self::id();
+        if ($targetId !== self::id() && self::role() !== 'super_admin') {
+            return [];
+        }
+        try {
+            $statement = Database::connection()->prepare(
+                'SELECT s.id, s.admin_id, a.email, a.display_name, s.device_type,
+                        s.os_family, s.browser_family, s.ip_hint, s.created_at, s.last_seen_at, s.revoked_at,
+                        CASE WHEN s.token_hash = :current_token THEN 1 ELSE 0 END AS is_current,
+                        CASE WHEN NOT EXISTS (
+                            SELECT 1 FROM admin_sessions prior_session
+                            WHERE prior_session.admin_id = s.admin_id AND prior_session.id < s.id
+                              AND prior_session.device_type = s.device_type
+                              AND prior_session.os_family = s.os_family
+                              AND prior_session.browser_family = s.browser_family
+                        ) THEN 1 ELSE 0 END AS is_first_device
+                 FROM admin_sessions s
+                 INNER JOIN admins a ON a.id = s.admin_id
+                 WHERE (:all_admins = 1 OR s.admin_id = :admin_id)
+                 ORDER BY (s.revoked_at IS NULL) DESC, s.last_seen_at DESC
+                 LIMIT 100'
+            );
+            $statement->execute([
+                'current_token' => self::sessionTokenHash(),
+                'all_admins' => $adminId === null && self::role() === 'super_admin' ? 1 : 0,
+                'admin_id' => $targetId,
+            ]);
+            return $statement->fetchAll();
+        } catch (Throwable $error) {
+            error_log('[AdminSessions] ' . $error->getMessage());
+            return [];
+        }
+    }
+
+    public static function revokeSession(int $sessionId): bool
+    {
+        try {
+            $statement = Database::connection()->prepare(
+                'SELECT id, admin_id, token_hash FROM admin_sessions WHERE id = :id LIMIT 1'
+            );
+            $statement->execute(['id' => $sessionId]);
+            $session = $statement->fetch();
+            if (!$session
+                || ((int) $session['admin_id'] !== self::id() && self::role() !== 'super_admin')
+                || hash_equals((string) $session['token_hash'], self::sessionTokenHash())) {
+                return false;
+            }
+            $update = Database::connection()->prepare(
+                'UPDATE admin_sessions SET revoked_at = UTC_TIMESTAMP() WHERE id = :id AND revoked_at IS NULL'
+            );
+            $update->execute(['id' => $sessionId]);
+            return $update->rowCount() > 0;
+        } catch (Throwable $error) {
+            error_log('[AdminSessionRevoke] ' . $error->getMessage());
+            return false;
+        }
+    }
+
+    public static function revokeAllSessions(int $adminId): void
+    {
+        try {
+            $statement = Database::connection()->prepare(
+                'UPDATE admin_sessions SET revoked_at = UTC_TIMESTAMP()
+                 WHERE admin_id = :admin_id AND revoked_at IS NULL'
+            );
+            $statement->execute(['admin_id' => $adminId]);
+        } catch (Throwable $error) {
+            error_log('[AdminSessionsRevokeAll] ' . $error->getMessage());
         }
     }
 
@@ -214,5 +291,81 @@ final class Auth
         $address = (string) ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
         $salt = Config::get('DB_NAME', 'ddu') . '|' . Config::get('APP_URL', '');
         return hash('sha256', $salt . '|' . $address);
+    }
+
+    private static function syncTrackedSession(int $adminId): bool
+    {
+        try {
+            $tokenHash = self::sessionTokenHash();
+            $statement = Database::connection()->prepare(
+                'SELECT id, revoked_at FROM admin_sessions WHERE token_hash = :token_hash LIMIT 1'
+            );
+            $statement->execute(['token_hash' => $tokenHash]);
+            $tracked = $statement->fetch();
+            if ($tracked && $tracked['revoked_at'] !== null) return false;
+
+            if (!$tracked) {
+                $client = Analytics::clientInfo((string) ($_SERVER['HTTP_USER_AGENT'] ?? ''));
+                $insert = Database::connection()->prepare(
+                    'INSERT INTO admin_sessions
+                        (admin_id, token_hash, device_type, os_family, browser_family, ip_hash, ip_hint)
+                     VALUES (:admin_id, :token_hash, :device_type, :os_family, :browser_family, :ip_hash, :ip_hint)'
+                );
+                $insert->execute([
+                    'admin_id' => $adminId,
+                    'token_hash' => $tokenHash,
+                    'device_type' => $client['device'],
+                    'os_family' => $client['os'],
+                    'browser_family' => $client['browser'],
+                    'ip_hash' => self::clientAddressHash(),
+                    'ip_hint' => self::clientAddressHint(),
+                ]);
+            } elseif ((time() - (int) ($_SESSION['tracked_session_touch'] ?? 0)) >= 60) {
+                $update = Database::connection()->prepare(
+                    'UPDATE admin_sessions SET last_seen_at = UTC_TIMESTAMP() WHERE id = :id'
+                );
+                $update->execute(['id' => (int) $tracked['id']]);
+            }
+            $_SESSION['tracked_session_touch'] = time();
+            return true;
+        } catch (Throwable $error) {
+            // Login tetap berfungsi sebelum migrasi analitik dijalankan.
+            error_log('[AdminSessionTracking] ' . $error->getMessage());
+            return true;
+        }
+    }
+
+    private static function revokeCurrentSession(): void
+    {
+        if (session_status() !== PHP_SESSION_ACTIVE || session_id() === '') return;
+        try {
+            $statement = Database::connection()->prepare(
+                'UPDATE admin_sessions SET revoked_at = UTC_TIMESTAMP()
+                 WHERE token_hash = :token_hash AND revoked_at IS NULL'
+            );
+            $statement->execute(['token_hash' => self::sessionTokenHash()]);
+        } catch (Throwable) {
+            // Tabel sesi bersifat kompatibel mundur.
+        }
+    }
+
+    private static function sessionTokenHash(): string
+    {
+        $key = Config::get('ANALYTICS_HASH_KEY', Config::get('APP_URL', '') . '|' . Config::get('DB_NAME', 'ddu'));
+        return hash_hmac('sha256', 'admin-session|' . session_id(), $key);
+    }
+
+    private static function clientAddressHint(): string
+    {
+        $address = (string) ($_SERVER['REMOTE_ADDR'] ?? '');
+        if (filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            $parts = explode('.', $address);
+            return $parts[0] . '.' . $parts[1] . '.xxx.xxx';
+        }
+        if (filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+            $parts = array_values(array_filter(explode(':', $address), static fn(string $part): bool => $part !== ''));
+            return implode(':', array_slice($parts, 0, 2)) . ':xxxx:xxxx';
+        }
+        return 'Tidak diketahui';
     }
 }

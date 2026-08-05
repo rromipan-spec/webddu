@@ -27,6 +27,7 @@ Panduan draft, jadwal tayang, preview, kategori, dan riwayat admin tersedia di [
 Panduan legalitas, rekening resmi, transparansi, dan kebijakan privasi tersedia di [docs/CREDIBILITY-PROFILE.md](docs/CREDIBILITY-PROFILE.md).
 Panduan error log privat dan pemeriksaan kesehatan website tersedia di [docs/MONITORING.md](docs/MONITORING.md).
 Panduan integration test dengan database MySQL sementara tersedia di [docs/AUTOMATED-TESTS.md](docs/AUTOMATED-TESTS.md).
+Panduan analitik pengunjung anonim dan perangkat login admin tersedia di [docs/ANALYTICS.md](docs/ANALYTICS.md).
 
 Setelah GitHub Secrets selesai dikonfigurasi, deploy perubahan dari terminal VS Code dengan:
 

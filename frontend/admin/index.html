@@ -102,7 +102,7 @@
             .toolbar button, .toolbar select { flex: 1 1 auto; }
         }
     </style>
-    <link rel="stylesheet" href="admin.css?v=20260805-2">
+    <link rel="stylesheet" href="admin.css?v=20260805-3">
 </head>
 <body class="admin-page">
     <!-- Login Section tetap berada di tengah -->
@@ -194,18 +194,45 @@
             <div id="content-dashboard">
                 <div id="dashboard-security-alert" class="security-alert hidden" role="alert"></div>
                 <div class="card">
-                    <h2>Statistik Website</h2>
-                    <p>Pantau performa website Dompet Dana Umat secara real-time.</p>
-                    <div class="stats-grid-admin">
-                        <div class="stat-card-admin">
-                            <h4>Total Kunjungan</h4>
-                            <div id="count-visits" class="number">0</div>
+                    <div class="analytics-heading">
+                        <div>
+                            <p class="section-kicker">Analitik anonim</p>
+                            <h2>Statistik Website</h2>
+                            <p>Data perangkat dan aktivitas tanpa menampilkan identitas atau alamat IP pengunjung.</p>
                         </div>
-                        <div class="stat-card-admin">
-                            <h4>Klik WhatsApp</h4>
-                            <div id="count-wa" class="number">0</div>
-                        </div>
+                        <label class="analytics-period">Periode
+                            <select id="analytics-days">
+                                <option value="7">7 hari</option>
+                                <option value="30" selected>30 hari</option>
+                                <option value="90">90 hari</option>
+                            </select>
+                        </label>
                     </div>
+                    <div id="analytics-migration-alert" class="security-alert hidden" role="alert"></div>
+                    <div class="stats-grid-admin analytics-summary-grid">
+                        <div class="stat-card-admin"><h4>Tampilan Halaman</h4><div id="count-visits" class="number">0</div></div>
+                        <div class="stat-card-admin"><h4>Pengunjung</h4><div id="count-visitors" class="number">0</div></div>
+                        <div class="stat-card-admin"><h4>Sesi Kunjungan</h4><div id="count-sessions" class="number">0</div></div>
+                        <div class="stat-card-admin"><h4>Klik WhatsApp</h4><div id="count-wa" class="number">0</div></div>
+                        <div class="stat-card-admin"><h4>Konversi WhatsApp</h4><div id="count-conversion" class="number">0%</div></div>
+                    </div>
+                </div>
+                <div class="card analytics-card">
+                    <div class="analytics-panel-heading"><div><h3>Aktivitas Harian</h3><p>Kunjungan dan klik WhatsApp per hari.</p></div><span id="analytics-retention">Retensi 90 hari</span></div>
+                    <div id="analytics-daily-chart" class="analytics-daily-chart" aria-label="Grafik aktivitas harian"></div>
+                    <div class="analytics-chart-legend"><span><i class="legend-visit"></i>Kunjungan</span><span><i class="legend-wa"></i>WhatsApp</span></div>
+                </div>
+                <div class="analytics-grid">
+                    <section class="card analytics-card"><h3>Jenis Perangkat</h3><div id="analytics-devices" class="analytics-bars"></div></section>
+                    <section class="card analytics-card"><h3>Pengunjung Baru/Kembali</h3><div id="analytics-visitor-types" class="analytics-bars"></div></section>
+                    <section class="card analytics-card"><h3>Browser</h3><div id="analytics-browsers" class="analytics-bars"></div></section>
+                    <section class="card analytics-card"><h3>Sistem Operasi</h3><div id="analytics-os" class="analytics-bars"></div></section>
+                    <section class="card analytics-card"><h3>Sumber Kunjungan</h3><div id="analytics-sources" class="analytics-bars"></div></section>
+                    <section class="card analytics-card"><h3>Ukuran Layar</h3><div id="analytics-screens" class="analytics-bars"></div></section>
+                </div>
+                <div class="analytics-grid analytics-grid-wide">
+                    <section class="card analytics-card"><h3>Halaman Terpopuler</h3><div id="analytics-pages" class="analytics-ranking"></div></section>
+                    <section class="card analytics-card"><h3>Klik WhatsApp per Halaman</h3><div id="analytics-whatsapp-pages" class="analytics-ranking"></div></section>
                 </div>
             </div>
 
@@ -248,6 +275,13 @@
                             <button type="submit" class="btn btn-primary">Ganti Kata Sandi</button>
                         </form>
                     </div>
+                </div>
+                <div class="card admin-sessions-card">
+                    <div class="analytics-panel-heading">
+                        <div><h3>Perangkat Login Saya</h3><p>Hentikan sesi yang tidak Anda kenali. Data ini terpisah dari statistik pengunjung publik.</p></div>
+                        <button type="button" class="btn-secondary" data-refresh-sessions="own">Muat Ulang</button>
+                    </div>
+                    <div id="own-admin-session-list" class="admin-session-list"></div>
                 </div>
             </div>
 
@@ -660,6 +694,13 @@
                     <p>Kata sandi lama tersimpan dalam bentuk terenkripsi dan tidak dapat dilihat. Super admin dapat membuat kata sandi baru dan menghentikan seluruh sesi lama akun lain.</p>
                     <div id="admin-account-list"></div>
                 </div>
+                <div class="card admin-sessions-card">
+                    <div class="analytics-panel-heading">
+                        <div><h3>Perangkat Login Seluruh Admin</h3><p>Super admin dapat menghentikan sesi perangkat lain tanpa mengetahui kata sandinya.</p></div>
+                        <button type="button" class="btn-secondary" data-refresh-sessions="all">Muat Ulang</button>
+                    </div>
+                    <div id="all-admin-session-list" class="admin-session-list"></div>
+                </div>
             </div>
 
             <div id="content-history" class="hidden">
@@ -729,6 +770,6 @@
         </form>
     </dialog>
 
-    <script type="module" src="admin.js?v=20260805-2"></script>
+    <script type="module" src="admin.js?v=20260805-3"></script>
 </body>
 </html>
