@@ -190,7 +190,7 @@ request 404 "$BASE_URL/api/index.php?resource=posts&slug=$ARTICLE_SLUG"
 echo '[13/14] Ubah profil dan kata sandi sendiri'
 PROFILE_PAYLOAD="$(jq -nc --arg email "$UPDATED_ADMIN_EMAIL" \
   '{action:"update_profile",display_name:"Admin Integration Diperbarui",email:$email,current_password:"DduIntegrationTest!2026"}')"
-request 200 -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" -H 'Content-Type: application/json' \
+request 200 -c "$COOKIE_JAR" -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" -H 'Content-Type: application/json' \
   --data "$PROFILE_PAYLOAD" "$BASE_URL/api/index.php?resource=profile"
 assert_json '.ok == true and .data.display_name == "Admin Integration Diperbarui" and (.csrf | length) >= 32'
 CSRF="$(jq -r '.csrf' "$RESPONSE")"
