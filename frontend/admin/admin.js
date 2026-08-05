@@ -1069,9 +1069,9 @@ async function loadAdminAccounts() {
     const admins = result.data || [];
     const currentAdminId = Number(document.getElementById('reset-admin-id')?.dataset.currentAdminId || 0);
     container.innerHTML = admins.length ? admins.map(admin => `<div class="post-list-item">
-        <span><strong>${escapeHtml(admin.display_name || admin.email)}</strong><small class="admin-account-meta">${escapeHtml(admin.email)} · ${escapeHtml(admin.role)} · ${Number(admin.is_active) ? 'Aktif' : 'Nonaktif'}<br>Login terakhir: ${escapeHtml(formatAccountDate(admin.last_login_at))}</small></span>
+        <span><strong>${escapeHtml(admin.display_name || admin.email)}</strong><small class="admin-account-meta">${escapeHtml(admin.email)} · ${escapeHtml(admin.role)} · ${Number(admin.is_active) ? 'Aktif' : 'Nonaktif'}<br>Login terakhir: ${escapeHtml(formatAccountDate(admin.last_login_at))}<br>Kata sandi: terenkripsi dan tidak dapat ditampilkan</small></span>
         <div class="post-list-actions">
-            ${Number(admin.id) !== currentAdminId ? `<button type="button" class="btn-secondary" data-reset-admin="${Number(admin.id)}" data-admin-email="${escapeHtml(admin.email)}">Reset Password</button>` : ''}
+            ${Number(admin.id) !== currentAdminId ? `<button type="button" class="btn-secondary" data-reset-admin="${Number(admin.id)}" data-admin-email="${escapeHtml(admin.email)}">Ganti Password</button>` : ''}
             ${Number(admin.is_active) && Number(admin.id) !== currentAdminId ? `<button type="button" class="btn-delete" data-disable-admin="${Number(admin.id)}">Nonaktifkan</button>` : ''}
         </div>
     </div>`).join('') : '<p class="admin-empty-state">Belum ada akun admin untuk ditampilkan.</p>';
@@ -1196,6 +1196,8 @@ document.addEventListener('click', event => {
     if (disableAdmin) deactivateAdminAccount(disableAdmin.dataset.disableAdmin);
     const resetAdmin = event.target.closest('[data-reset-admin]');
     if (resetAdmin) openAdminPasswordDialog(resetAdmin.dataset.resetAdmin, resetAdmin.dataset.adminEmail);
+    if (event.target.closest('[data-generate-admin-password]')) generateAdminPassword();
+    if (event.target.closest('[data-copy-admin-password]')) copyAdminPassword();
     if (event.target.closest('[data-close-password-dialog]')) closeAdminPasswordDialog();
 });
 
@@ -1205,7 +1207,73 @@ function openAdminPasswordDialog(id, email) {
     document.getElementById('reset-admin-description').textContent = `Buat kata sandi baru untuk ${email}.`;
     document.getElementById('admin-password-reset-form').reset();
     document.getElementById('reset-admin-id').value = id;
+    document.getElementById('admin-password-helper-status').textContent = 'Minimal 15 karakter. Simpan password baru di pengelola kata sandi yang aman.';
     dialog?.showModal();
+}
+
+function randomCharacter(characters) {
+    const values = new Uint32Array(1);
+    crypto.getRandomValues(values);
+    return characters[values[0] % characters.length];
+}
+
+function createStrongPassword(length = 22) {
+    const groups = [
+        'ABCDEFGHJKLMNPQRSTUVWXYZ',
+        'abcdefghijkmnopqrstuvwxyz',
+        '23456789',
+        '!@#$%&*-_+'
+    ];
+    const allCharacters = groups.join('');
+    const password = groups.map(randomCharacter);
+
+    while (password.length < length) password.push(randomCharacter(allCharacters));
+    for (let index = password.length - 1; index > 0; index -= 1) {
+        const values = new Uint32Array(1);
+        crypto.getRandomValues(values);
+        const swapIndex = values[0] % (index + 1);
+        [password[index], password[swapIndex]] = [password[swapIndex], password[index]];
+    }
+    return password.join('');
+}
+
+function setPasswordFieldVisibility(input, visible) {
+    if (!input) return;
+    input.type = visible ? 'text' : 'password';
+    const toggle = input.closest('.password-input-wrap')?.querySelector('.password-visibility-toggle');
+    if (!toggle) return;
+    toggle.classList.toggle('is-visible', visible);
+    toggle.setAttribute('aria-pressed', String(visible));
+    const label = visible ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi';
+    toggle.setAttribute('aria-label', label);
+    toggle.title = label;
+}
+
+function generateAdminPassword() {
+    const password = createStrongPassword();
+    const passwordInput = document.getElementById('reset-admin-password');
+    const confirmationInput = document.getElementById('reset-admin-password-confirmation');
+    passwordInput.value = password;
+    confirmationInput.value = password;
+    setPasswordFieldVisibility(passwordInput, true);
+    setPasswordFieldVisibility(confirmationInput, true);
+    document.getElementById('admin-password-helper-status').textContent = 'Password kuat dibuat dan ditampilkan. Salin sebelum menyimpannya.';
+    passwordInput.focus({ preventScroll: true });
+}
+
+async function copyAdminPassword() {
+    const password = document.getElementById('reset-admin-password').value;
+    const status = document.getElementById('admin-password-helper-status');
+    if (!password) {
+        status.textContent = 'Isi atau buat password baru terlebih dahulu.';
+        return;
+    }
+    try {
+        await navigator.clipboard.writeText(password);
+        status.textContent = 'Password baru berhasil disalin. Simpan di tempat yang aman.';
+    } catch {
+        status.textContent = 'Tidak dapat menyalin otomatis. Tampilkan lalu salin password secara manual.';
+    }
 }
 
 function closeAdminPasswordDialog() {
@@ -1338,13 +1406,7 @@ function setupPasswordVisibility() {
 
         toggle.addEventListener('click', () => {
             const willShow = input.type === 'password';
-            input.type = willShow ? 'text' : 'password';
-            toggle.classList.toggle('is-visible', willShow);
-            toggle.setAttribute('aria-pressed', String(willShow));
-
-            const label = willShow ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi';
-            toggle.setAttribute('aria-label', label);
-            toggle.title = label;
+            setPasswordFieldVisibility(input, willShow);
             input.focus({ preventScroll: true });
         });
 

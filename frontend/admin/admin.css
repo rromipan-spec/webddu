@@ -1537,6 +1537,19 @@ body.admin-page {
     display: none;
 }
 
+.admin-page .password-helper-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+.admin-page .password-helper-actions small {
+    flex: 1 0 100%;
+    color: var(--admin-muted);
+    line-height: 1.5;
+}
+
 @media (prefers-reduced-motion: reduce) {
     .admin-page *,
     .admin-page *::before,

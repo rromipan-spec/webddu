@@ -102,7 +102,7 @@
             .toolbar button, .toolbar select { flex: 1 1 auto; }
         }
     </style>
-    <link rel="stylesheet" href="admin.css?v=20260805-1">
+    <link rel="stylesheet" href="admin.css?v=20260805-2">
 </head>
 <body class="admin-page">
     <!-- Login Section tetap berada di tengah -->
@@ -657,7 +657,7 @@
                 </div>
                 <div class="card" style="margin-top:20px">
                     <h3>Daftar Admin</h3>
-                    <p>Super admin dapat mereset kata sandi dan menghentikan seluruh sesi lama akun lain.</p>
+                    <p>Kata sandi lama tersimpan dalam bentuk terenkripsi dan tidak dapat dilihat. Super admin dapat membuat kata sandi baru dan menghentikan seluruh sesi lama akun lain.</p>
                     <div id="admin-account-list"></div>
                 </div>
             </div>
@@ -710,20 +710,25 @@
             <div class="admin-dialog-heading">
                 <div>
                     <p class="section-kicker">Super admin</p>
-                    <h2 id="admin-password-dialog-title">Reset Kata Sandi</h2>
+                    <h2 id="admin-password-dialog-title">Ganti Kata Sandi Admin</h2>
                     <p id="reset-admin-description">Buat kata sandi baru untuk admin.</p>
                 </div>
                 <button type="button" class="dialog-close" data-close-password-dialog aria-label="Tutup">×</button>
             </div>
             <div class="form-group"><label for="reset-admin-password">Kata sandi baru</label><input type="password" id="reset-admin-password" minlength="15" maxlength="128" autocomplete="new-password" required></div>
             <div class="form-group"><label for="reset-admin-password-confirmation">Ulangi kata sandi baru</label><input type="password" id="reset-admin-password-confirmation" minlength="15" maxlength="128" autocomplete="new-password" required></div>
+            <div class="password-helper-actions">
+                <button type="button" class="btn-secondary" data-generate-admin-password>Buat Password Kuat</button>
+                <button type="button" class="btn-secondary" data-copy-admin-password>Salin Password</button>
+                <small id="admin-password-helper-status" aria-live="polite">Minimal 15 karakter. Simpan password baru di pengelola kata sandi yang aman.</small>
+            </div>
             <div class="admin-dialog-actions">
                 <button type="button" class="btn-secondary" data-close-password-dialog>Batal</button>
-                <button type="submit" class="btn btn-primary">Reset Kata Sandi</button>
+                <button type="submit" class="btn btn-primary">Simpan Kata Sandi Baru</button>
             </div>
         </form>
     </dialog>
 
-    <script type="module" src="admin.js?v=20260805-1"></script>
+    <script type="module" src="admin.js?v=20260805-2"></script>
 </body>
 </html>
