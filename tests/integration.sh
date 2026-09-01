@@ -144,12 +144,13 @@ request 201 -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" \
   -F "video=@$WORK_DIR/test.mp4;type=video/mp4" "$BASE_URL/api/index.php?resource=video_upload"
 assert_json '.ok == true and (.url | test("^/uploads/videos/[a-f0-9]{32}\\.mp4$"))'
 VIDEO_URL="$(jq -r '.url' "$RESPONSE")"
-PROGRAM_WITH_VIDEO="$(jq --arg video "$VIDEO_URL" --arg qr "$QR_URL" '. + {hero_media_type:"video",hero_video_url:$video,donation_qr_image:$qr,whatsapp_number:"6285121277046"}' <<< "$PROGRAM_UPDATED")"
+PROGRAM_LAYOUT_CONTENT="<figure class=\"content-image-block image-position-left image-wrap-square-left image-width-40 image-gap-normal\"><img src=\"$QR_URL\" alt=\"Foto program\" loading=\"lazy\"></figure><p>Teks harus membungkus gambar program.</p>"
+PROGRAM_WITH_VIDEO="$(jq --arg video "$VIDEO_URL" --arg qr "$QR_URL" --arg content "$PROGRAM_LAYOUT_CONTENT" '. + {hero_media_type:"video",hero_video_url:$video,donation_qr_image:$qr,whatsapp_number:"6285121277046",content:$content}' <<< "$PROGRAM_UPDATED")"
 request 200 -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" -H 'Content-Type: application/json' \
   --data "$PROGRAM_WITH_VIDEO" "$BASE_URL/api/index.php?resource=programs"
 request 200 "$BASE_URL/api/index.php?resource=programs&slug=$PROGRAM_SLUG"
 jq -e --arg video "$VIDEO_URL" --arg qr "$QR_URL" \
-  '.data.hero_media_type == "video" and .data.hero_video_url == $video and .data.donation_qr_image == $qr and .data.whatsapp_number == "6285121277046"' \
+  '.data.hero_media_type == "video" and .data.hero_video_url == $video and .data.donation_qr_image == $qr and .data.whatsapp_number == "6285121277046" and (.data.content | contains("image-wrap-square-left"))' \
   "$RESPONSE" >/dev/null || fail 'Media hero video lokal program tidak tersimpan.'
 ARTICLE_WITH_VIDEO="$(jq --arg video "$VIDEO_URL" --arg qr "$QR_URL" '. + {hero_media_type:"video",hero_video_url:$video,donation_qr_image:$qr,whatsapp_number:"6285121277046"}' <<< "$ARTICLE_PUBLISHED")"
 request 200 -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" -H 'Content-Type: application/json' \

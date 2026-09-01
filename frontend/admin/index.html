@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - DDU</title>
-    <link rel="stylesheet" href="../halaman-utama/style.css?v=20260728-3">
+    <link rel="stylesheet" href="../halaman-utama/style.css?v=20260901-1">
     <style>
         .admin-container { padding: 120px 20px; max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 400px 1fr; gap: 30px; }
         .admin-sidebar { display: flex; flex-direction: column; gap: 20px; position: sticky; top: 100px; height: calc(100vh - 120px); }
@@ -102,7 +102,7 @@
             .toolbar button, .toolbar select { flex: 1 1 auto; }
         }
     </style>
-    <link rel="stylesheet" href="admin.css?v=20260805-3">
+    <link rel="stylesheet" href="admin.css?v=20260901-1">
 </head>
 <body class="admin-page">
     <!-- Login Section tetap berada di tengah -->
@@ -433,8 +433,34 @@
                             <button type="button" onclick="formatDoc('undo')" aria-label="Batalkan perubahan terakhir">↶ Undo</button>
                             <button type="button" onclick="formatDoc('redo')" aria-label="Ulangi perubahan">↷ Redo</button>
                             <button type="button" id="prog-add-content-photos">+ Tambah Foto</button>
+                            <select id="prog-image-position" aria-label="Atur posisi gambar" onchange="applyImageFormatting('position', this.value); this.selectedIndex=0;">
+                                <option value="" selected disabled>Posisi Gambar</option>
+                                <option value="left">Kiri</option>
+                                <option value="center">Tengah</option>
+                                <option value="right">Kanan</option>
+                            </select>
+                            <select id="prog-image-wrap" aria-label="Atur wrap text gambar" onchange="applyImageFormatting('wrap', this.value); this.selectedIndex=0;">
+                                <option value="" selected disabled>Wrap Teks</option>
+                                <option value="inline">Sebaris dengan Teks</option>
+                                <option value="top-bottom">Atas &amp; Bawah</option>
+                                <option value="square-left">Kotak – Gambar di Kiri</option>
+                                <option value="square-right">Kotak – Gambar di Kanan</option>
+                            </select>
+                            <select id="prog-image-size" aria-label="Atur ukuran gambar" onchange="applyImageFormatting('size', this.value); this.selectedIndex=0;">
+                                <option value="" selected disabled>Ukuran Gambar</option>
+                                <option value="25">Kecil (25%)</option>
+                                <option value="40">Sedang (40%)</option>
+                                <option value="60">Besar (60%)</option>
+                                <option value="100">Lebar Penuh (100%)</option>
+                            </select>
+                            <select id="prog-image-gap" aria-label="Atur jarak gambar terhadap teks" onchange="applyImageFormatting('gap', this.value); this.selectedIndex=0;">
+                                <option value="" selected disabled>Jarak Teks</option>
+                                <option value="tight">Rapat</option>
+                                <option value="normal">Normal</option>
+                                <option value="wide">Lebar</option>
+                            </select>
                             <input type="file" id="prog-content-image-files" hidden accept="image/jpeg,image/png,image/webp" multiple>
-                            <span id="prog-content-upload-status" class="content-upload-status" aria-live="polite">Maksimal 20 foto, 5 MB dan 24 MP per foto. Otomatis dioptimalkan ke WebP.</span>
+                            <span id="prog-content-upload-status" class="content-upload-status" aria-live="polite">Letakkan kursor pada paragraf tujuan sebelum menambah foto. Setelah masuk, klik fotonya untuk mengatur posisi dan wrap teks. Maksimal 20 foto, 5 MB dan 24 MP per foto.</span>
                         </div>
                         <div class="editor-area">
                             <div id="prog-content-editor" class="visual-editor" contenteditable="true"></div>
@@ -770,6 +796,6 @@
         </form>
     </dialog>
 
-    <script type="module" src="admin.js?v=20260805-3"></script>
+    <script type="module" src="admin.js?v=20260901-1"></script>
 </body>
 </html>

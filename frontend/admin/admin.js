@@ -27,11 +27,13 @@ function serializeEditorContent(editor) {
     if (!editor) return '';
     const clone = editor.cloneNode(true);
     clone.querySelectorAll('.content-photo-remove').forEach(button => button.remove());
+    clone.querySelectorAll('.is-editor-image-selected').forEach(figure => figure.classList.remove('is-editor-image-selected'));
     return clone.innerHTML;
 }
 
 function addGalleryRemoveButtons(editor) {
-    editor?.querySelectorAll('.content-photo-grid figure').forEach(figure => {
+    editor?.querySelectorAll('figure').forEach(figure => {
+        if (!figure.querySelector('img')) return;
         if (figure.querySelector('.content-photo-remove')) return;
         const button = document.createElement('button');
         button.type = 'button';
@@ -302,9 +304,17 @@ window.switchTab = tab => {
 };
 
 const editorSelectionRanges = { post: null, prog: null };
+const selectedEditorImages = { post: null, prog: null };
 const blockFormatClasses = {
     align: ['text-align-left', 'text-align-center', 'text-align-right', 'text-align-justify'],
     spacing: ['text-spacing-1', 'text-spacing-115', 'text-spacing-15', 'text-spacing-2']
+};
+
+const imageFormatClasses = {
+    position: ['image-position-left', 'image-position-center', 'image-position-right'],
+    wrap: ['image-wrap-inline', 'image-wrap-top-bottom', 'image-wrap-square-left', 'image-wrap-square-right'],
+    size: ['image-width-25', 'image-width-40', 'image-width-60', 'image-width-100'],
+    gap: ['image-gap-tight', 'image-gap-normal', 'image-gap-wide']
 };
 
 function activeEditorPrefix() {
@@ -382,6 +392,90 @@ window.applyBlockFormatting = (type, value) => {
         block.classList.remove(...blockFormatClasses[type]);
         if (className) block.classList.add(className);
     });
+    updatePreview();
+};
+
+function selectEditorImage(prefix, figure) {
+    const editor = document.getElementById(`${prefix}-content-editor`);
+    if (!editor || !figure || !editor.contains(figure)) return;
+    editor.querySelectorAll('.is-editor-image-selected').forEach(item => item.classList.remove('is-editor-image-selected'));
+    figure.classList.add('is-editor-image-selected');
+    selectedEditorImages[prefix] = figure;
+    const status = document.getElementById(`${prefix}-content-upload-status`);
+    if (status && prefix === 'prog') status.textContent = 'Foto dipilih. Gunakan Posisi Gambar, Wrap Teks, Ukuran Gambar, atau Jarak Teks.';
+}
+
+function makeEditorImageStandalone(prefix, figure) {
+    const editor = document.getElementById(`${prefix}-content-editor`);
+    if (!editor || !figure || !editor.contains(figure)) return null;
+    const grid = figure.closest('.content-photo-grid');
+    if (grid) {
+        grid.parentNode.insertBefore(figure, grid.nextSibling);
+        if (!grid.querySelector('figure')) grid.remove();
+    }
+    figure.classList.add('content-image-block');
+    if (!imageFormatClasses.position.some(className => figure.classList.contains(className))) {
+        figure.classList.add('image-position-center');
+    }
+    if (!imageFormatClasses.wrap.some(className => figure.classList.contains(className))) {
+        figure.classList.add('image-wrap-top-bottom');
+    }
+    if (!imageFormatClasses.size.some(className => figure.classList.contains(className))) {
+        figure.classList.add('image-width-60');
+    }
+    if (!imageFormatClasses.gap.some(className => figure.classList.contains(className))) {
+        figure.classList.add('image-gap-normal');
+    }
+    return figure;
+}
+
+function insertEditorHtmlNearSelection(prefix, html) {
+    const editor = document.getElementById(`${prefix}-content-editor`);
+    const range = editorSelectionRanges[prefix];
+    if (!editor) return;
+    if (!range || !editor.contains(range.commonAncestorContainer)) {
+        editor.insertAdjacentHTML('beforeend', html);
+        return;
+    }
+    const startElement = range.startContainer.nodeType === Node.ELEMENT_NODE
+        ? range.startContainer
+        : range.startContainer.parentElement;
+    const block = startElement?.closest('p,h1,h2,h3,h4,blockquote,li,figure,.content-photo-grid');
+    if (block && editor.contains(block)) {
+        block.insertAdjacentHTML('afterend', html);
+    } else {
+        editor.insertAdjacentHTML('beforeend', html);
+    }
+}
+
+window.applyImageFormatting = (type, value) => {
+    const prefix = activeEditorPrefix();
+    const editor = document.getElementById(`${prefix}-content-editor`);
+    let figure = selectedEditorImages[prefix];
+    if (!editor || !figure || !editor.contains(figure)) {
+        alert('Klik salah satu foto di area Isi Detail Program terlebih dahulu.');
+        return;
+    }
+    figure = makeEditorImageStandalone(prefix, figure);
+    if (!figure || !imageFormatClasses[type]) return;
+    figure.classList.remove(...imageFormatClasses[type]);
+    const className = type === 'position'
+        ? `image-position-${value}`
+        : type === 'wrap'
+            ? `image-wrap-${value}`
+            : type === 'size'
+                ? `image-width-${value}`
+                : `image-gap-${value}`;
+    if (imageFormatClasses[type].includes(className)) figure.classList.add(className);
+
+    if (type === 'wrap' && value === 'square-left') {
+        figure.classList.remove(...imageFormatClasses.position);
+        figure.classList.add('image-position-left');
+    } else if (type === 'wrap' && value === 'square-right') {
+        figure.classList.remove(...imageFormatClasses.position);
+        figure.classList.add('image-position-right');
+    }
+    selectEditorImage(prefix, figure);
     updatePreview();
 };
 
@@ -681,9 +775,11 @@ async function uploadContentPhotos(prefix, files) {
 
     if (uploaded.length) {
         const title = document.getElementById(`${prefix}-title`)?.value.trim() || 'Dokumentasi Dompet Dana Umat';
-        const figures = uploaded.map((url, index) => `<figure><img src="${escapeHtml(url)}" alt="${escapeHtml(title)} - foto ${index + 1}" loading="lazy"></figure>`).join('');
-        editor.insertAdjacentHTML('beforeend', `<div class="content-photo-grid">${figures}</div><p><br></p>`);
+        const figures = uploaded.map((url, index) => `<figure class="content-image-block image-position-center image-wrap-top-bottom image-width-60 image-gap-normal"><img src="${escapeHtml(url)}" alt="${escapeHtml(title)} - foto ${index + 1}" loading="lazy"></figure>`).join('');
+        insertEditorHtmlNearSelection(prefix, `${figures}<p><br></p>`);
         addGalleryRemoveButtons(editor);
+        const latestFigure = Array.from(editor.querySelectorAll('figure')).filter(figure => figure.querySelector('img')).at(-1);
+        if (latestFigure) selectEditorImage(prefix, latestFigure);
         updatePreview();
     }
 
@@ -1294,10 +1390,12 @@ document.addEventListener('click', event => {
     if (removeContentPhoto) {
         const editor = removeContentPhoto.closest('.visual-editor');
         const grid = removeContentPhoto.closest('.content-photo-grid');
-        removeContentPhoto.closest('figure')?.remove();
+        const figure = removeContentPhoto.closest('figure');
+        const prefix = editor?.id.startsWith('prog-') ? 'prog' : 'post';
+        if (selectedEditorImages[prefix] === figure) selectedEditorImages[prefix] = null;
+        figure?.remove();
         if (grid && !grid.querySelector('figure')) grid.remove();
         updatePreview();
-        const prefix = editor?.id.startsWith('prog-') ? 'prog' : 'post';
         const status = document.getElementById(`${prefix}-content-upload-status`);
         if (status) status.textContent = 'Foto dihapus dari rancangan. Klik simpan agar perubahan diterapkan.';
     }
@@ -1566,6 +1664,13 @@ async function init() {
     setupSeoImageUpload('prog');
     setupContentPhotoUpload('post');
     setupContentPhotoUpload('prog');
+    ['post', 'prog'].forEach(prefix => {
+        const editor = document.getElementById(`${prefix}-content-editor`);
+        editor?.addEventListener('click', event => {
+            const figure = event.target.closest('figure');
+            if (figure?.querySelector('img')) selectEditorImage(prefix, figure);
+        });
+    });
     try {
         const session = await api('session');
         if (session.authenticated) {

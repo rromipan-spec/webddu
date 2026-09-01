@@ -560,6 +560,80 @@ body.admin-page {
     line-height: 1.5;
 }
 
+.admin-page .visual-editor::after {
+    display: table;
+    clear: both;
+    content: "";
+}
+
+.admin-page .visual-editor .content-image-block {
+    --content-image-gap: 22px;
+    position: relative;
+    display: block;
+    max-width: 100%;
+    margin-top: var(--content-image-gap);
+    margin-bottom: var(--content-image-gap);
+    border-radius: 12px;
+    transition: outline-color .18s ease, box-shadow .18s ease;
+}
+
+.admin-page .visual-editor .content-image-block.is-editor-image-selected,
+.admin-page .visual-editor figure.is-editor-image-selected {
+    outline: 3px solid #2874cf;
+    outline-offset: 4px;
+    box-shadow: 0 0 0 8px rgba(40, 116, 207, .11);
+}
+
+.admin-page .visual-editor .content-image-block img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+}
+
+.admin-page .visual-editor .image-width-25 { width: 25%; }
+.admin-page .visual-editor .image-width-40 { width: 40%; }
+.admin-page .visual-editor .image-width-60 { width: 60%; }
+.admin-page .visual-editor .image-width-100 { width: 100%; }
+.admin-page .visual-editor .image-gap-tight { --content-image-gap: 10px; }
+.admin-page .visual-editor .image-gap-normal { --content-image-gap: 22px; }
+.admin-page .visual-editor .image-gap-wide { --content-image-gap: 38px; }
+.admin-page .visual-editor .image-position-left { margin-right: auto; margin-left: 0; }
+.admin-page .visual-editor .image-position-center { margin-right: auto; margin-left: auto; }
+.admin-page .visual-editor .image-position-right { margin-right: 0; margin-left: auto; }
+.admin-page .visual-editor .image-wrap-top-bottom { clear: both; }
+.admin-page .visual-editor .image-wrap-inline {
+    display: inline-block;
+    margin-right: var(--content-image-gap);
+    margin-left: var(--content-image-gap);
+    vertical-align: middle;
+}
+.admin-page .visual-editor .image-wrap-square-left {
+    float: left;
+    clear: left;
+    margin-right: var(--content-image-gap);
+    margin-left: 0;
+}
+.admin-page .visual-editor .image-wrap-square-right {
+    float: right;
+    clear: right;
+    margin-right: 0;
+    margin-left: var(--content-image-gap);
+}
+
+@media (max-width: 620px) {
+    .admin-page .visual-editor .content-image-block,
+    .admin-page .visual-editor .image-wrap-inline,
+    .admin-page .visual-editor .image-wrap-square-left,
+    .admin-page .visual-editor .image-wrap-square-right {
+        display: block;
+        float: none;
+        clear: both;
+        width: 100%;
+        margin: 22px 0;
+    }
+}
+
 /* Buttons and lists */
 .admin-page .content-list-toolbar {
     display: grid;

@@ -4,10 +4,15 @@ declare(strict_types=1);
 final class Sanitizer
 {
     private const ALLOWED_TAGS = ['p', 'br', 'hr', 'h1', 'h2', 'h3', 'h4', 'strong', 'b', 'em', 'i', 'u', 'ul', 'ol', 'li', 'blockquote', 'a', 'div', 'figure', 'figcaption', 'img'];
-    private const FORMAT_CLASS_TAGS = ['p', 'h1', 'h2', 'h3', 'h4', 'blockquote', 'li'];
+    private const FORMAT_CLASS_TAGS = ['p', 'h1', 'h2', 'h3', 'h4', 'blockquote', 'li', 'figure'];
     private const ALLOWED_FORMAT_CLASSES = [
         'text-align-left', 'text-align-center', 'text-align-right', 'text-align-justify',
         'text-spacing-1', 'text-spacing-115', 'text-spacing-15', 'text-spacing-2',
+        'content-image-block',
+        'image-position-left', 'image-position-center', 'image-position-right',
+        'image-wrap-inline', 'image-wrap-top-bottom', 'image-wrap-square-left', 'image-wrap-square-right',
+        'image-width-25', 'image-width-40', 'image-width-60', 'image-width-100',
+        'image-gap-tight', 'image-gap-normal', 'image-gap-wide',
     ];
 
     public static function richText(string $html): string
