@@ -2197,6 +2197,45 @@ select {
 
 .mock-content p { margin: 0 0 1.35em; }
 
+/* Permanent compact rhythm for every program detail page. */
+.program-page .mock-content {
+    line-height: 1.55 !important;
+}
+
+.program-page .mock-content h1,
+.program-page .mock-content h2,
+.program-page .mock-content h3,
+.program-page .mock-content h4 {
+    margin-top: 1.05em;
+    margin-bottom: .25em;
+    line-height: 1.25;
+}
+
+.program-page .mock-content h1:first-child,
+.program-page .mock-content h2:first-child,
+.program-page .mock-content h3:first-child,
+.program-page .mock-content h4:first-child {
+    margin-top: 0;
+}
+
+.program-page .mock-content p {
+    margin-top: 0;
+    margin-bottom: .7em;
+    line-height: 1.55;
+}
+
+.program-page .mock-content h1 + p,
+.program-page .mock-content h2 + p,
+.program-page .mock-content h3 + p,
+.program-page .mock-content h4 + p {
+    margin-top: 0;
+}
+
+.program-page .mock-content p:empty,
+.program-page .mock-content p:has(> br:only-child) {
+    display: none;
+}
+
 .mock-content ul,
 .mock-content ol {
     margin: 0 0 1.6em;
