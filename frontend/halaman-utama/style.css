@@ -2206,8 +2206,8 @@ select {
 .program-page .mock-content h2,
 .program-page .mock-content h3,
 .program-page .mock-content h4 {
-    margin-top: 1.05em;
-    margin-bottom: .25em;
+    margin-top: .6em !important;
+    margin-bottom: .18em !important;
     line-height: 1.25;
 }
 
@@ -2215,12 +2215,12 @@ select {
 .program-page .mock-content h2:first-child,
 .program-page .mock-content h3:first-child,
 .program-page .mock-content h4:first-child {
-    margin-top: 0;
+    margin-top: 0 !important;
 }
 
 .program-page .mock-content p {
-    margin-top: 0;
-    margin-bottom: .7em;
+    margin-top: 0 !important;
+    margin-bottom: .45em !important;
     line-height: 1.55;
 }
 
@@ -2234,6 +2234,16 @@ select {
 .program-page .mock-content p:empty,
 .program-page .mock-content p:has(> br:only-child) {
     display: none;
+}
+
+.program-page .mock-content ul,
+.program-page .mock-content ol {
+    margin-top: .25em;
+    margin-bottom: .65em;
+}
+
+.program-page .mock-content li {
+    margin-bottom: .25em;
 }
 
 .mock-content ul,

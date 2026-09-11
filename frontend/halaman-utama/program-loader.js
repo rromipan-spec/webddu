@@ -49,8 +49,19 @@ function renderProgram(container, program) {
     </div></div></section>
     ${siteFooterHtml()}
     <a href="#" class="back-to-top">↑</a><a href="${whatsappUrl}" class="whatsapp-popup" target="_blank" rel="noopener noreferrer" aria-label="Hubungi WhatsApp"><img src="/asset/whatsapp-phone.svg" alt="" width="24" height="24"></a>`;
+    removeEmptyContentLines(container.querySelector('.mock-content'));
     initDetailSliders(container);
     initProgramHeroVideo(container);
+}
+
+function removeEmptyContentLines(content) {
+    if (!content) return;
+
+    content.querySelectorAll('p, div').forEach(block => {
+        const text = (block.textContent || '').replace(/\u00a0/g, '').trim();
+        const hasVisibleContent = block.querySelector('img, video, iframe, svg, hr, table');
+        if (!text && !hasVisibleContent) block.remove();
+    });
 }
 
 function programNavbarHtml() {
