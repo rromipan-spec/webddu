@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error(error);
         showError(container);
     } finally {
-        document.querySelector('.preloader')?.classList.add('hidden');
+        window.requestDduPreloaderHide?.();
     }
 });
 
@@ -215,6 +215,6 @@ function setupPage() {
 }
 
 function showError(container) {
-    document.querySelector('.preloader')?.classList.add('hidden');
+    window.requestDduPreloaderHide?.();
     if (container) container.innerHTML = '<div style="padding:200px 20px;text-align:center"><h2>Program tidak ditemukan</h2><a href="index.html">Kembali</a></div>';
 }
