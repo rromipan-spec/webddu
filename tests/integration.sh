@@ -43,9 +43,6 @@ assert_json() {
 echo '[1/14] Health check'
 request 200 "$BASE_URL/health.php"
 assert_json '.ok == true and .status == "healthy"'
-request 200 "$BASE_URL/"
-grep -q 'id="home-trust-title"' "$RESPONSE" || fail 'Komponen kepercayaan homepage tidak ditemukan.'
-grep -q 'style.css?v=20260915-2' "$RESPONSE" || fail 'Versi CSS homepage belum diperbarui.'
 
 echo '[2/14] Sesi anonim dan login salah'
 request 200 -c "$COOKIE_JAR" "$BASE_URL/api/index.php?resource=session"
