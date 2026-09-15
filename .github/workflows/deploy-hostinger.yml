@@ -284,6 +284,12 @@ jobs:
           grep -qi '^strict-transport-security:' <<< "$headers"
           grep -qi '^content-security-policy:' <<< "$headers"
 
+          homepage="$(curl --fail --silent --show-error \
+            --retry 3 --retry-delay 3 \
+            "${SITE_URL%/}/?deploy_sha=${GITHUB_SHA}")"
+          grep -q 'id="home-trust-title"' <<< "$homepage"
+          grep -q 'style.css?v=20260915-2' <<< "$homepage"
+
           sitemap="$(curl --fail --silent --show-error \
             --retry 3 --retry-delay 3 "${SITE_URL%/}/sitemap.xml")"
           grep -q '<urlset' <<< "$sitemap"

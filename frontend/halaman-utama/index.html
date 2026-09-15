@@ -86,7 +86,7 @@
       ]
     }
     </script>
-    <link rel="stylesheet" href="style.css?v=20260912-1">
+    <link rel="stylesheet" href="style.css?v=20260915-2">
     <link rel="stylesheet" href="navbar-mobile.css?v=20260721-2">
     <link rel="stylesheet" href="footer-shared.css?v=20260722-1">
 </head>
@@ -157,19 +157,48 @@
         </div>
     </section>
 
-    <!-- Blog Section -->
-    <section class="blog fade-in" id="blog">
+    <!-- Trust Snapshot -->
+    <section class="home-trust" aria-labelledby="home-trust-title">
         <div class="container">
-            <div class="section-header">
-                <h2>Berita & Artikel</h2>
-                <p>Informasi terbaru seputar kegiatan dan artikel inspiratif.</p>
+            <div class="home-trust__heading">
+                <span class="section-kicker">Amanah dapat diperiksa</span>
+                <h2 id="home-trust-title">Kenali lembaga dan kanal resminya sebelum berdonasi</h2>
             </div>
-            <div class="blog-search-wrapper">
-                <input type="text" id="blogSearchInput" placeholder="Cari artikel berdasarkan judul...">
+            <div class="home-trust__grid">
+                <a href="/transparansi.html#identitas" class="home-trust__item">
+                    <span class="home-trust__number">01</span>
+                    <span><strong>Identitas lembaga</strong><small>Lihat profil dan informasi legalitas yang telah dipublikasikan.</small></span>
+                </a>
+                <a href="/transparansi.html#kanal-resmi" class="home-trust__item">
+                    <span class="home-trust__number">02</span>
+                    <span><strong>Kanal donasi resmi</strong><small>Pastikan rekening dan tujuan penyaluran sebelum melakukan transaksi.</small></span>
+                </a>
+                <a href="/transparansi.html" class="home-trust__item">
+                    <span class="home-trust__number">03</span>
+                    <span><strong>Laporan &amp; dokumentasi</strong><small>Periksa informasi penghimpunan, penyaluran, dan penerima manfaat.</small></span>
+                </a>
+                <a href="https://wa.me/6285121277046?text=Assalamualaikum%2C%20saya%20ingin%20memverifikasi%20kanal%20resmi%20Dompet%20Dana%20Umat." target="_blank" rel="noopener noreferrer" class="home-trust__item home-trust__item--contact">
+                    <span class="home-trust__number">04</span>
+                    <span><strong>Konfirmasi langsung</strong><small>Tanyakan informasi yang belum jelas melalui WhatsApp resmi DDU.</small></span>
+                </a>
             </div>
-            <div class="blog-grid"></div>
-            <div id="noResultsMessage" style="display: none; text-align: center; margin-top: 40px; padding: 20px;"></div>
-            <div id="blogPagination" class="pagination-container"></div>
+        </div>
+    </section>
+
+    <!-- Programs Section -->
+    <section class="gallery-section fade-in" id="programs">
+        <div class="container">
+            <div class="gallery-header">
+                <div class="section-header">
+                    <span class="section-kicker">Pilih jalan kebaikan</span>
+                    <h2>Program Unggulan</h2>
+                    <p>Pelajari tujuan dan kebutuhan setiap program sebelum menyalurkan dukungan Anda.</p>
+                </div>
+                <p class="gallery-intro">Program disusun untuk menghadirkan manfaat yang terarah, dapat dipahami, dan relevan bagi penerima manfaat.</p>
+            </div>
+            <div class="gallery-grid" id="program-list-home">
+                <!-- Data dimuat dari sistem -->
+            </div>
         </div>
     </section>
 
@@ -213,23 +242,74 @@
         </div>
     </section>
     
-    <!-- Programs Section (Ganti Gallery) -->
-<section class="gallery-section fade-in" id="programs">
-    <div class="container">
-        <div class="gallery-header">
-            <div class="section-header">
-                <h2>Program Unggulan</h2>
-                <p>Berbagai inisiatif kebaikan untuk pemberdayaan umat.</p>
+    <!-- Donation Management Journey -->
+    <section class="home-process fade-in" aria-labelledby="home-process-title">
+        <div class="container">
+            <div class="home-process__intro">
+                <span class="section-kicker">Dari amanah menuju manfaat</span>
+                <h2 id="home-process-title">Cara dukungan Anda dikelola</h2>
+                <p>Setiap program perlu memiliki tujuan yang jelas. Alur ini membantu donatur memahami perjalanan dukungan sejak kebutuhan dikenali hingga manfaat dilaporkan.</p>
             </div>
-            <p class="gallery-intro">
-                Salurkan kepedulian Anda melalui program-program strategis kami yang dirancang untuk memberikan dampak jangka panjang bagi penerima manfaat.
-            </p>
+            <ol class="home-process__steps">
+                <li><span>01</span><strong>Kebutuhan dikenali</strong><p>Tim memetakan kebutuhan serta sasaran penerima manfaat.</p></li>
+                <li><span>02</span><strong>Dukungan dihimpun</strong><p>Donasi disalurkan melalui kanal resmi yang dapat diverifikasi.</p></li>
+                <li><span>03</span><strong>Program dilaksanakan</strong><p>Dana digunakan sesuai tujuan dan prioritas program.</p></li>
+                <li><span>04</span><strong>Manfaat dilaporkan</strong><p>Dokumentasi dan informasi penyaluran disampaikan secara bertahap.</p></li>
+            </ol>
         </div>
-        <div class="gallery-grid" id="program-list-home">
-            <!-- Data akan dimuat dari Supabase -->
+    </section>
+
+    <!-- Impact Video -->
+    <section class="video-promo fade-in" aria-label="Cerita dampak Dompet Dana Umat">
+        <div class="video-wrapper">
+            <iframe
+                src="https://www.youtube.com/embed/GcS7TklMpFk?autoplay=1&amp;mute=1&amp;loop=1&amp;playlist=GcS7TklMpFk&amp;controls=0&amp;rel=0"
+                title="Video kegiatan dan dampak Dompet Dana Umat"
+                loading="lazy"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen></iframe>
+            <div class="video-overlay"></div>
+            <div class="video-promo-content">
+                <span class="section-kicker">Dampak yang terus bergerak</span>
+                <h2>Sebaik-baiknya amal adalah yang dilakukan secara terus-menerus.</h2>
+                <p>Kami berkomitmen menjaga amanah dan menghadirkan manfaat bagi pendidikan di Pesantren Daarul Uluum.</p>
+                <a href="#programs" class="btn btn-primary">Lihat Program Kebaikan</a>
+            </div>
         </div>
-    </div>
-</section>
+    </section>
+
+    <!-- Transparency Gateway -->
+    <section class="home-proof fade-in" aria-labelledby="home-proof-title">
+        <div class="container home-proof__inner">
+            <div>
+                <span class="section-kicker">Transparansi bukan sekadar janji</span>
+                <h2 id="home-proof-title">Periksa informasi sebelum menyalurkan donasi</h2>
+                <p>Kenali identitas lembaga, pengurus, kanal resmi, dokumentasi kegiatan, dan informasi penyaluran dalam satu halaman.</p>
+            </div>
+            <div class="home-proof__actions">
+                <a href="/transparansi.html" class="btn btn-primary">Buka Halaman Transparansi</a>
+                <a href="/kebijakan-privasi.html" class="home-proof__link">Baca kebijakan privasi</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Blog Section -->
+    <section class="blog fade-in" id="blog">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-kicker">Kabar &amp; wawasan</span>
+                <h2>Berita &amp; Artikel</h2>
+                <p>Ikuti kegiatan, cerita penerima manfaat, dan informasi terbaru dari Dompet Dana Umat.</p>
+            </div>
+            <div class="blog-search-wrapper">
+                <label class="sr-only" for="blogSearchInput">Cari artikel berdasarkan judul</label>
+                <input type="search" id="blogSearchInput" placeholder="Cari artikel berdasarkan judul...">
+            </div>
+            <div class="blog-grid"></div>
+            <div id="noResultsMessage" style="display: none; text-align: center; margin-top: 40px; padding: 20px;"></div>
+            <div id="blogPagination" class="pagination-container"></div>
+        </div>
+    </section>
 
     <!-- Calculator Section -->
     <section class="calculator fade-in" id="calculator">
@@ -302,41 +382,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Video Promo Section -->
-    <section class="video-promo fade-in">
-        <div class="video-wrapper">
-            
-            <!-- OPSI 1: YouTube (Disarankan - Cepat & Mudah) -->
-            <!-- Ganti 'ID_VIDEO_YOUTUBE' di bawah ini dengan ID video Anda -->
-            <iframe 
-                src="https://www.youtube.com/embed/GcS7TklMpFk?autoplay=1&mute=1&loop=1&playlist=GcS7TklMpFk&controls=0&showinfo=0&rel=0" 
-                title="Video Promo" 
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                allowfullscreen>
-            </iframe>
-            <!-- 
-                Ganti "URL_VIDEO_ANDA.mp4" dengan link ke file video yang sudah Anda upload.
-                Atribut 'muted' dan 'playsinline' sangat penting untuk autoplay di mobile.
-            -->
-            <video 
-                src="https://www.youtube.com/embed/GcS7TklMpFk?autoplay=1&mute=1&loop=1&playlist=GcS7TklMpFk&controls=0&showinfo=0&rel=0" 
-                autoplay 
-                muted 
-                loop 
-                playsinline></video>
-
-            <!-- OPSI 2: Google Drive (Loading Lebih Lama) -->
-            <!-- <iframe src="https://drive.google.com/file/d/1Eco9igX9-2shforVNr0hVRxJIjVVIl5k/preview?autoplay=1&mute=1&loop=1&controls=0" title="Video Promo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe> -->
-
-            <div class="video-overlay"></div>
-            <div class="video-promo-content">
-                <h2>Sebaik-baiknya amal adalah yang dilakukan secara terus menerus.</h2>
-                <p>Kami berkomitmen dalam memberikan dampak dan amanah dalam pengalokasiannya untuk kepentingan pendidikan di Pesantren Daarul Uluum.</p>
-                <a href="#contact" class="btn btn-primary">Donasi Sekarang.</a>
             </div>
         </div>
     </section>
