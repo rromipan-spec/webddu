@@ -813,7 +813,8 @@ function saveHomepageSettings(array $body): never
     }
 
     $buttonUrl = trim((string) ($body['button_url'] ?? ''));
-    $isRelativeUrl = preg_match('#^(?!//)(?:[a-z0-9][a-z0-9._/-]*|/[^\s]*)?(?:#[a-z0-9_-]+)?$#i', $buttonUrl) === 1;
+    // Gunakan delimiter ~ karena karakter # juga sah sebagai anchor URL (contoh: /#programs).
+    $isRelativeUrl = preg_match('~^(?!//)(?:[a-z0-9][a-z0-9._/-]*|/[^\s]*)?(?:#[a-z0-9_-]+)?$~i', $buttonUrl) === 1;
     $isRemoteUrl = filter_var($buttonUrl, FILTER_VALIDATE_URL)
         && in_array(strtolower((string) parse_url($buttonUrl, PHP_URL_SCHEME)), ['http', 'https'], true);
     if ($buttonUrl === '' || (!$isRelativeUrl && !$isRemoteUrl)) {
