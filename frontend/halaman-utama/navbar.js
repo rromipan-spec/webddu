@@ -15,13 +15,6 @@ const anonymousId = (storage, key) => {
 const analyticsAllowed = navigator.doNotTrack !== '1' && navigator.globalPrivacyControl !== true;
 const visitorId = analyticsAllowed ? anonymousId(localStorage, 'ddu_anonymous_visitor') : '';
 const visitSessionId = analyticsAllowed ? anonymousId(sessionStorage, 'ddu_visit_session') : '';
-const preloaderStartedAt = performance.now();
-const PRELOADER_MIN_DURATION = 2000;
-
-window.requestDduPreloaderHide = () => {
-    const remainingTime = Math.max(0, PRELOADER_MIN_DURATION - (performance.now() - preloaderStartedAt));
-    window.setTimeout(() => document.querySelector('.preloader')?.classList.add('hidden'), remainingTime);
-};
 
 const recordStat = type => analyticsAllowed ? fetch('../api/index.php?resource=stats', {
     method: 'POST',
@@ -80,9 +73,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    const hidePreloader = () => window.requestDduPreloaderHide();
-    window.addEventListener('load', hidePreloader, { once: true });
-    window.setTimeout(hidePreloader, PRELOADER_MIN_DURATION);
     const header = document.querySelector('.main-header');
     const backToTop = document.querySelector('.back-to-top');
     window.addEventListener('scroll', () => {

@@ -21,8 +21,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (error) {
         console.error(error);
         showError(container);
-    } finally {
-        window.requestDduPreloaderHide?.();
     }
 });
 
@@ -215,6 +213,5 @@ function setupPage() {
 }
 
 function showError(container) {
-    window.requestDduPreloaderHide?.();
     if (container) container.innerHTML = '<div style="padding:200px 20px;text-align:center"><h2>Program tidak ditemukan</h2><a href="index.html">Kembali</a></div>';
 }
