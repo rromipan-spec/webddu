@@ -170,11 +170,6 @@ style.css
     <link rel="stylesheet" href="about.css">
 </head>
 <body>
-    <!-- Preloader -->
-    <div class="preloader">
-        <div class="spinner"></div>
-    </div>
-
     <!-- Navigation -->
     <header class="main-header">
         <div class="container">
@@ -316,12 +311,6 @@ style.css
     <a href="#" class="back-to-top">↑</a>
 
     <script>
-        // Preloader
-        window.addEventListener('load', function() {
-            const preloader = document.querySelector('.preloader');
-            preloader.classList.add('hidden');
-        });
-
         // Navbar Scroll Effect
         window.addEventListener('scroll', function() {
             const header = document.querySelector('.main-header');
@@ -545,11 +534,6 @@ style.css
     <link rel="stylesheet" href="about.css">
 </head>
 <body>
-    <!-- Preloader -->
-    <div class="preloader">
-        <div class="spinner"></div>
-    </div>
-
     <!-- Navigation -->
     <header class="main-header">
         <div class="container">
@@ -691,12 +675,6 @@ style.css
     <a href="#" class="back-to-top">↑</a>
 
     <script>
-        // Preloader
-        window.addEventListener('load', function() {
-            const preloader = document.querySelector('.preloader');
-            preloader.classList.add('hidden');
-        });
-
         // Navbar Scroll Effect
         window.addEventListener('scroll', function() {
             const header = document.querySelector('.main-header');
@@ -758,11 +736,6 @@ style.css
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Preloader -->
-    <div class="preloader">
-        <div class="spinner"></div>
-    </div>
-
     <!-- Navigation -->
     <header class="main-header">
         <div class="container">
@@ -1119,12 +1092,6 @@ style.css
 
     <script>
         const backToTopButton = document.querySelector('.back-to-top');
-
-        // Preloader Script
-        window.addEventListener('load', function() {
-            const preloader = document.querySelector('.preloader');
-            preloader.classList.add('hidden');
-        });
 
         window.addEventListener('scroll', function() {
             const header = document.querySelector('.main-header');
@@ -2207,40 +2174,6 @@ p {
     100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
 }
 
-/* PRELOADER */
-.preloader {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: #ffffff;
-    z-index: 9999;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: opacity 0.5s ease, visibility 0.5s ease;
-}
-
-.preloader.hidden {
-    opacity: 0;
-    visibility: hidden;
-}
-
-.spinner {
-    width: 50px;
-    height: 50px;
-    border: 5px solid #f3f3f3;
-    border-top: 5px solid #1e4b9c; /* Warna biru tema */
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
 /* LIGHTBOX */
 .lightbox {
     display: none;
@@ -2313,11 +2246,6 @@ p {
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Preloader -->
-    <div class="preloader">
-        <div class="spinner"></div>
-    </div>
-
     <!-- Navigation -->
     <header class="main-header">
         <div class="container">
@@ -2629,12 +2557,6 @@ p {
 
     <script>
         const backToTopButton = document.querySelector('.back-to-top');
-
-        // Preloader Script
-        window.addEventListener('load', function() {
-            const preloader = document.querySelector('.preloader');
-            preloader.classList.add('hidden');
-        });
 
         window.addEventListener('scroll', function() {
             const header = document.querySelector('.main-header');
@@ -3768,40 +3690,6 @@ p {
     0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); }
     70% { box-shadow: 0 0 0 15px rgba(37, 211, 102, 0); }
     100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
-}
-
-/* PRELOADER */
-.preloader {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: #ffffff;
-    z-index: 9999;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: opacity 0.5s ease, visibility 0.5s ease;
-}
-
-.preloader.hidden {
-    opacity: 0;
-    visibility: hidden;
-}
-
-.spinner {
-    width: 50px;
-    height: 50px;
-    border: 5px solid #f3f3f3;
-    border-top: 5px solid #1e4b9c; /* Warna biru tema */
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
 }
 
 /* LIGHTBOX */
