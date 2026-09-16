@@ -199,6 +199,20 @@
         background-position: center center;
     }
 
+    .home-page .slide-backdrop {
+        background-image: var(--hero-mobile-backdrop, var(--hero-desktop-backdrop));
+        background-position: center top;
+        filter: blur(15px) brightness(.82);
+        transform: scale(1.1);
+    }
+
+    /* Foto utama selalu ditampilkan utuh; latar blur mengisi ruang sisa layar. */
+    .home-page .slide picture img,
+    .home-page .slide.has-mobile-image picture img {
+        object-fit: contain;
+        object-position: center top;
+    }
+
     .home-page .hero-overlay {
         background: linear-gradient(180deg, rgba(4, 23, 51, .42) 0%, rgba(5, 28, 62, .66) 45%, rgba(4, 24, 55, .94) 100%);
     }

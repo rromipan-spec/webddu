@@ -60,6 +60,13 @@ CSRF="$(jq -r '.csrf' "$RESPONSE")"
 request 419 -b "$COOKIE_JAR" -H 'Content-Type: application/json' \
   --data "{\"title\":\"Ditolak CSRF\",\"slug\":\"ditolak-csrf-$TEST_SUFFIX\",\"status\":\"draft\"}" \
   "$BASE_URL/api/index.php?resource=posts"
+request 200 "$BASE_URL/api/index.php?resource=homepage"
+assert_json '.data.title == "Dompet Dana Umat Daarul Uluum" and (.data.desktop_images | length) >= 1 and (.data.mobile_images | type) == "array"'
+HOMEPAGE_PAYLOAD='{"kicker":"Profil","title":"Hero Integration Test","description":"Deskripsi hero untuk pengujian otomatis.","button_label":"Selengkapnya","button_url":"about.html","desktop_images":["https://example.com/hero-desktop.jpg"],"mobile_images":["https://example.com/hero-mobile.jpg"]}'
+request 200 -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" -H 'Content-Type: application/json' \
+  --data "$HOMEPAGE_PAYLOAD" "$BASE_URL/api/index.php?resource=homepage"
+request 200 "$BASE_URL/api/index.php?resource=homepage"
+assert_json '.data.title == "Hero Integration Test" and .data.mobile_images[0] == "https://example.com/hero-mobile.jpg"'
 
 echo '[4/14] Profil akun dan reset password oleh super admin'
 request 200 -b "$COOKIE_JAR" "$BASE_URL/api/index.php?resource=profile"
@@ -132,7 +139,7 @@ echo '[9/14] Upload gambar valid'
 php -r '$image=imagecreatetruecolor(320,320); $white=imagecolorallocate($image,255,255,255); $blue=imagecolorallocate($image,20,80,160); imagefill($image,0,0,$white); imagefilledrectangle($image,40,40,280,280,$blue); imagepng($image,$argv[1]); imagedestroy($image);' "$WORK_DIR/test.png"
 request 201 -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" \
   -F "image=@$WORK_DIR/test.png;type=image/png" "$BASE_URL/api/index.php?resource=upload"
-assert_json '.ok == true and (.url | startswith("/uploads/"))'
+assert_json '.ok == true and (.url | startswith("/uploads/")) and (.variants.hero_mobile | test("/hero_mobile\\.webp$"))'
 
 request 201 -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" \
   -F "qr=@$WORK_DIR/test.png;type=image/png" "$BASE_URL/api/index.php?resource=qr_upload"

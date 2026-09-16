@@ -12,6 +12,8 @@ final class ImageProcessor
         'card' => ['width' => 800, 'height' => 520, 'crop' => true, 'format' => 'webp', 'quality' => 82],
         'content' => ['width' => 1440, 'height' => 1800, 'crop' => false, 'format' => 'webp', 'quality' => 84],
         'hero' => ['width' => 1920, 'height' => 1080, 'crop' => true, 'format' => 'webp', 'quality' => 84],
+        // Versi mobile memakai contain agar foto tidak dipotong oleh server.
+        'hero_mobile' => ['width' => 1080, 'height' => 1440, 'crop' => false, 'format' => 'webp', 'quality' => 84],
         // JPEG dipakai untuk kompatibilitas thumbnail WhatsApp, Facebook, dan crawler lain.
         'social' => ['width' => 1200, 'height' => 630, 'crop' => true, 'format' => 'jpg', 'quality' => 86],
     ];

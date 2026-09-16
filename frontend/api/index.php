@@ -172,6 +172,18 @@ if ($resource === 'institution') {
     Http::json(['ok' => false, 'message' => 'Metode tidak diizinkan.'], 405);
 }
 
+if ($resource === 'homepage') {
+    if ($method === 'GET') {
+        serveHomepageSettings();
+    }
+    if ($method === 'POST') {
+        Auth::requireAdmin();
+        Auth::verifyCsrf();
+        saveHomepageSettings(Http::body());
+    }
+    Http::json(['ok' => false, 'message' => 'Metode tidak diizinkan.'], 405);
+}
+
 if ($resource === 'history') {
     Auth::requireAdmin();
     if ($method !== 'GET') {
@@ -699,6 +711,142 @@ function saveInstitutionProfile(array $body): never
         }
         $db->commit();
         Http::json(['ok' => true, 'message' => 'Profil kredibilitas berhasil disimpan.']);
+    } catch (Throwable $error) {
+        if ($db->inTransaction()) $db->rollBack();
+        throw $error;
+    }
+}
+
+function homepageSettingsDefaults(): array
+{
+    return [
+        'kicker' => 'Profil',
+        'title' => 'Dompet Dana Umat Daarul Uluum',
+        'description' => 'Menjadi lembaga amil zakat yang amanah, profesional, dan terpercaya dalam mengelola dana umat untuk mewujudkan kesejahteraan masyarakat.',
+        'button_label' => 'Selengkapnya →',
+        'button_url' => 'about.html',
+        'desktop_images' => [
+            'https://lh3.googleusercontent.com/d/1kuC0kI5fPd_FA0emvuSlRcFSpXQb0KGE',
+            'https://lh3.googleusercontent.com//d/1YgCHGRGZVYz-gpj4umxp4sxx7jIPPMR_',
+            'https://lh3.googleusercontent.com/d/1ZEtIlPw4eOKxu5izFi197otsnkPHrdRf',
+        ],
+        'mobile_images' => [],
+    ];
+}
+
+function homepageProfileKeys(): array
+{
+    return [
+        'kicker' => 'homepage_hero_kicker',
+        'title' => 'homepage_hero_title',
+        'description' => 'homepage_hero_description',
+        'button_label' => 'homepage_hero_button_label',
+        'button_url' => 'homepage_hero_button_url',
+        'desktop_images' => 'homepage_hero_desktop_images',
+        'mobile_images' => 'homepage_hero_mobile_images',
+    ];
+}
+
+function serveHomepageSettings(): never
+{
+    $settings = homepageSettingsDefaults();
+    $keys = homepageProfileKeys();
+    $rows = Database::connection()->query(
+        "SELECT profile_key, profile_value, updated_at
+         FROM institution_profile
+         WHERE profile_key LIKE 'homepage_hero_%'"
+    )->fetchAll();
+    $stored = [];
+    $updatedAt = null;
+    foreach ($rows as $row) {
+        $stored[(string) $row['profile_key']] = (string) $row['profile_value'];
+        if ($updatedAt === null || (string) $row['updated_at'] > $updatedAt) {
+            $updatedAt = (string) $row['updated_at'];
+        }
+    }
+    foreach ($keys as $name => $profileKey) {
+        if (!array_key_exists($profileKey, $stored)) continue;
+        if (in_array($name, ['desktop_images', 'mobile_images'], true)) {
+            $decoded = json_decode($stored[$profileKey], true);
+            if (is_array($decoded)) $settings[$name] = array_values(array_slice($decoded, 0, 3));
+            continue;
+        }
+        $settings[$name] = $stored[$profileKey];
+    }
+    Http::json(['ok' => true, 'data' => $settings, 'updated_at' => $updatedAt]);
+}
+
+function validateHomepageImages(mixed $input, string $label): array
+{
+    if (is_string($input)) {
+        $decoded = json_decode($input, true);
+        $input = is_array($decoded) ? $decoded : [];
+    }
+    if (!is_array($input)) {
+        Http::json(['ok' => false, 'message' => "Daftar foto {$label} tidak valid."], 422);
+    }
+    $images = [];
+    foreach (array_slice($input, 0, 3) as $item) {
+        $url = trim((string) $item);
+        if ($url === '') continue;
+        $isLocalUpload = preg_match('#^/uploads/[a-f0-9]{32}/(?:hero|hero_mobile)\.webp$#i', $url) === 1;
+        $isRemoteImage = filter_var($url, FILTER_VALIDATE_URL)
+            && in_array(strtolower((string) parse_url($url, PHP_URL_SCHEME)), ['http', 'https'], true);
+        if (!$isLocalUpload && !$isRemoteImage) {
+            Http::json(['ok' => false, 'message' => "Tautan foto {$label} tidak valid."], 422);
+        }
+        if (!in_array($url, $images, true)) $images[] = $url;
+    }
+    return $images;
+}
+
+function saveHomepageSettings(array $body): never
+{
+    $limits = ['kicker' => 60, 'title' => 180, 'description' => 500, 'button_label' => 80];
+    $values = [];
+    foreach ($limits as $key => $limit) {
+        $value = trim((string) ($body[$key] ?? ''));
+        if ($value === '' || mb_strlen($value) > $limit) {
+            Http::json(['ok' => false, 'message' => "Kolom {$key} wajib diisi dan maksimal {$limit} karakter."], 422);
+        }
+        $values[$key] = $value;
+    }
+
+    $buttonUrl = trim((string) ($body['button_url'] ?? ''));
+    $isRelativeUrl = preg_match('#^(?!//)(?:[a-z0-9][a-z0-9._/-]*|/[^\s]*)?(?:#[a-z0-9_-]+)?$#i', $buttonUrl) === 1;
+    $isRemoteUrl = filter_var($buttonUrl, FILTER_VALIDATE_URL)
+        && in_array(strtolower((string) parse_url($buttonUrl, PHP_URL_SCHEME)), ['http', 'https'], true);
+    if ($buttonUrl === '' || (!$isRelativeUrl && !$isRemoteUrl)) {
+        Http::json(['ok' => false, 'message' => 'Tautan tombol hero tidak valid.'], 422);
+    }
+    $values['button_url'] = $buttonUrl;
+    $values['desktop_images'] = validateHomepageImages($body['desktop_images'] ?? [], 'desktop');
+    $values['mobile_images'] = validateHomepageImages($body['mobile_images'] ?? [], 'mobile');
+    if ($values['desktop_images'] === []) {
+        Http::json(['ok' => false, 'message' => 'Tambahkan minimal satu foto hero desktop.'], 422);
+    }
+
+    $profileKeys = homepageProfileKeys();
+    $db = Database::connection();
+    try {
+        $db->beginTransaction();
+        $statement = $db->prepare(
+            'INSERT INTO institution_profile (profile_key, profile_value, updated_by)
+             VALUES (:profile_key, :profile_value, :updated_by)
+             ON DUPLICATE KEY UPDATE profile_value = VALUES(profile_value), updated_by = VALUES(updated_by)'
+        );
+        foreach ($values as $key => $value) {
+            $storedValue = is_array($value)
+                ? json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+                : $value;
+            $statement->execute([
+                'profile_key' => $profileKeys[$key],
+                'profile_value' => $storedValue,
+                'updated_by' => Auth::id(),
+            ]);
+        }
+        $db->commit();
+        Http::json(['ok' => true, 'message' => 'Hero homepage berhasil disimpan.', 'data' => $values]);
     } catch (Throwable $error) {
         if ($db->inTransaction()) $db->rollBack();
         throw $error;

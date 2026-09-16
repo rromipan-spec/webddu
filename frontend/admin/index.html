@@ -102,7 +102,7 @@
             .toolbar button, .toolbar select { flex: 1 1 auto; }
         }
     </style>
-    <link rel="stylesheet" href="admin.css?v=20260901-1">
+    <link rel="stylesheet" href="admin.css?v=20260916-1">
 </head>
 <body class="admin-page">
     <!-- Login Section tetap berada di tengah -->
@@ -146,6 +146,7 @@
                 <p class="sidebar-label">Menu utama</p>
                 <nav class="sidebar-nav" aria-label="Navigasi panel admin">
                     <button type="button" onclick="switchTab('dashboard')" id="tab-dashboard" class="active" aria-current="page"><span class="nav-symbol" aria-hidden="true">D</span><span>Dashboard</span></button>
+                    <button type="button" onclick="switchTab('homepage')" id="tab-homepage"><span class="nav-symbol" aria-hidden="true">H</span><span>Hero Homepage</span></button>
                     <button type="button" onclick="switchTab('articles')" id="tab-articles"><span class="nav-symbol" aria-hidden="true">A</span><span>Artikel</span></button>
                     <button type="button" onclick="switchTab('programs-admin')" id="tab-programs-admin"><span class="nav-symbol" aria-hidden="true">P</span><span>Program</span></button>
                     <button type="button" onclick="switchTab('institution')" id="tab-institution"><span class="nav-symbol" aria-hidden="true">K</span><span>Kredibilitas</span></button>
@@ -768,6 +769,110 @@
                     </form>
                 </div>
             </div>
+
+            <div id="content-homepage" class="hidden">
+                <div class="card homepage-hero-admin">
+                    <div class="homepage-editor-heading">
+                        <div>
+                            <p class="admin-workspace-kicker">Tampilan pertama pengunjung</p>
+                            <h2>Hero Homepage</h2>
+                            <p>Kelola tulisan dan foto utama. Foto khusus mobile dipisahkan agar wajah atau objek penting tidak terpotong di layar ponsel.</p>
+                        </div>
+                        <span class="homepage-mobile-priority">Mobile priority</span>
+                    </div>
+
+                    <form id="homepage-form">
+                        <div class="homepage-settings-grid">
+                            <section class="homepage-settings-panel" aria-labelledby="homepage-copy-title">
+                                <h3 id="homepage-copy-title">Tulisan Hero</h3>
+                                <div class="form-group">
+                                    <label for="homepage-kicker">Label kecil</label>
+                                    <input id="homepage-kicker" maxlength="60" required placeholder="Contoh: Profil">
+                                </div>
+                                <div class="form-group">
+                                    <label for="homepage-title">Judul utama</label>
+                                    <textarea id="homepage-title" rows="3" maxlength="180" required></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="homepage-description">Deskripsi</label>
+                                    <textarea id="homepage-description" rows="5" maxlength="500" required></textarea>
+                                </div>
+                                <div class="publication-grid">
+                                    <div class="form-group">
+                                        <label for="homepage-button-label">Tulisan tombol</label>
+                                        <input id="homepage-button-label" maxlength="80" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="homepage-button-url">Tujuan tombol</label>
+                                        <input id="homepage-button-url" maxlength="500" required placeholder="about.html">
+                                    </div>
+                                </div>
+                            </section>
+
+                            <aside class="homepage-live-preview" aria-labelledby="homepage-preview-title">
+                                <div class="homepage-preview-heading">
+                                    <h3 id="homepage-preview-title">Preview Mobile</h3>
+                                    <span>Rasio ponsel</span>
+                                </div>
+                                <div class="homepage-phone-frame">
+                                    <div id="homepage-preview-photo" class="homepage-preview-photo"></div>
+                                    <div class="homepage-preview-shade"></div>
+                                    <div class="homepage-preview-copy">
+                                        <small id="homepage-preview-kicker">PROFIL</small>
+                                        <strong id="homepage-preview-main-title">Dompet Dana Umat Daarul Uluum</strong>
+                                        <p id="homepage-preview-description"></p>
+                                        <span id="homepage-preview-button">Selengkapnya →</span>
+                                    </div>
+                                </div>
+                            </aside>
+                        </div>
+
+                        <section class="homepage-media-section" aria-labelledby="homepage-desktop-title">
+                            <div class="homepage-media-heading">
+                                <div>
+                                    <h3 id="homepage-desktop-title">Foto Desktop</h3>
+                                    <p>Unggah 1–3 foto horizontal. Rekomendasi 1920 × 1080 piksel.</p>
+                                </div>
+                                <span>16:9</span>
+                            </div>
+                            <input type="hidden" id="homepage-desktop-images" value="[]">
+                            <div id="homepage-desktop-drop-zone" class="drop-zone homepage-image-drop-zone" role="button" tabindex="0" aria-label="Unggah foto hero desktop">
+                                <input type="file" id="homepage-desktop-files" accept="image/jpeg,image/png,image/webp" multiple hidden>
+                                <strong>+ Pilih Foto Desktop</strong>
+                                <p>JPG, PNG, atau WebP · maksimal 5 MB per foto · maksimal 3 foto</p>
+                            </div>
+                            <p id="homepage-desktop-status" class="homepage-upload-status" aria-live="polite"></p>
+                            <div id="homepage-desktop-preview" class="homepage-image-list homepage-image-list--desktop"></div>
+                        </section>
+
+                        <section class="homepage-media-section homepage-media-section--mobile" aria-labelledby="homepage-mobile-title">
+                            <div class="homepage-media-heading">
+                                <div>
+                                    <h3 id="homepage-mobile-title">Foto Khusus Mobile</h3>
+                                    <p>Unggah versi vertikal dengan urutan yang sama. Rekomendasi 1080 × 1440 piksel agar foto tampil utuh dan fokus objek tetap terlihat.</p>
+                                </div>
+                                <span>3:4</span>
+                            </div>
+                            <input type="hidden" id="homepage-mobile-images" value="[]">
+                            <div id="homepage-mobile-drop-zone" class="drop-zone homepage-image-drop-zone" role="button" tabindex="0" aria-label="Unggah foto hero mobile">
+                                <input type="file" id="homepage-mobile-files" accept="image/jpeg,image/png,image/webp" multiple hidden>
+                                <strong>+ Pilih Foto Mobile</strong>
+                                <p>Jika dikosongkan, foto desktop tetap ditampilkan utuh dengan latar pengisi otomatis.</p>
+                            </div>
+                            <p id="homepage-mobile-status" class="homepage-upload-status" aria-live="polite"></p>
+                            <div id="homepage-mobile-preview" class="homepage-image-list homepage-image-list--mobile"></div>
+                        </section>
+
+                        <div class="homepage-save-bar">
+                            <div>
+                                <strong>Siap diterapkan ke homepage?</strong>
+                                <p>Perubahan akan langsung terlihat setelah halaman website dimuat ulang.</p>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Simpan Hero Homepage</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </main>
     </div>
 
@@ -796,6 +901,6 @@
         </form>
     </dialog>
 
-    <script type="module" src="admin.js?v=20260901-1"></script>
+    <script type="module" src="admin.js?v=20260916-1"></script>
 </body>
 </html>

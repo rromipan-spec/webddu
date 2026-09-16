@@ -18,7 +18,7 @@ const institutionFields = [
 
 function managedImageVariant(url, variant) {
     return String(url || '').replace(
-        /(\/uploads\/[a-f0-9]{32})\/(?:thumb|card|content|hero|social)\.(?:webp|jpg)$/i,
+        /(\/uploads\/[a-f0-9]{32})\/(?:thumb|card|content|hero|hero_mobile|social)\.(?:webp|jpg)$/i,
         `$1/${variant}.${variant === 'social' ? 'jpg' : 'webp'}`
     );
 }
@@ -245,6 +245,7 @@ async function api(resource, options = {}) {
 
 const adminPageHeadings = {
     dashboard: ['Ringkasan Website', 'Pantau aktivitas utama dan kondisi pengelolaan website.'],
+    homepage: ['Hero Homepage', 'Atur tulisan serta foto desktop dan mobile pada tampilan pertama website.'],
     articles: ['Kelola Artikel', 'Tulis, jadwalkan, dan publikasikan informasi untuk pembaca.'],
     'programs-admin': ['Kelola Program', 'Susun program unggulan, media, dan kanal kontribusi resmi.'],
     institution: ['Kredibilitas Lembaga', 'Kelola informasi legalitas, transparansi, dan kanal resmi DDU.'],
@@ -274,14 +275,16 @@ if (currentDateElement) {
 window.switchTab = tab => {
     updateAdminWorkspaceHeader(tab);
     document.getElementById('content-dashboard')?.classList.toggle('hidden', tab !== 'dashboard');
+    document.getElementById('content-homepage')?.classList.toggle('hidden', tab !== 'homepage');
     document.getElementById('content-articles')?.classList.toggle('hidden', tab !== 'articles');
     document.getElementById('content-programs-admin')?.classList.toggle('hidden', tab !== 'programs-admin');
     document.getElementById('content-admins')?.classList.toggle('hidden', tab !== 'admins');
     document.getElementById('content-profile')?.classList.toggle('hidden', tab !== 'profile');
     document.getElementById('content-history')?.classList.toggle('hidden', tab !== 'history');
     document.getElementById('content-institution')?.classList.toggle('hidden', tab !== 'institution');
-    document.querySelector('.preview-group')?.classList.toggle('hidden', tab === 'dashboard' || tab === 'admins' || tab === 'profile' || tab === 'history' || tab === 'institution');
+    document.querySelector('.preview-group')?.classList.toggle('hidden', tab === 'dashboard' || tab === 'homepage' || tab === 'admins' || tab === 'profile' || tab === 'history' || tab === 'institution');
     document.getElementById('tab-dashboard')?.classList.toggle('active', tab === 'dashboard');
+    document.getElementById('tab-homepage')?.classList.toggle('active', tab === 'homepage');
     document.getElementById('tab-articles')?.classList.toggle('active', tab === 'articles');
     document.getElementById('tab-programs-admin')?.classList.toggle('active', tab === 'programs-admin');
     document.getElementById('tab-admins')?.classList.toggle('active', tab === 'admins');
@@ -300,6 +303,7 @@ window.switchTab = tab => {
     if (tab === 'admins' && currentRole === 'super_admin') loadAdminSessions('all');
     if (tab === 'history') loadHistory();
     if (tab === 'institution') loadInstitutionProfile();
+    if (tab === 'homepage') loadHomepageSettings();
     updatePreview();
 };
 
@@ -821,6 +825,7 @@ document.getElementById('profile-form')?.addEventListener('submit', saveOwnProfi
 document.getElementById('password-form')?.addEventListener('submit', changeOwnPassword);
 document.getElementById('admin-password-reset-form')?.addEventListener('submit', submitAdminPasswordReset);
 document.getElementById('institution-form')?.addEventListener('submit', saveInstitutionProfile);
+document.getElementById('homepage-form')?.addEventListener('submit', saveHomepageSettings);
 
 function institutionElement(key) {
     return document.getElementById(`inst-${key.replaceAll('_', '-')}`);
@@ -851,6 +856,163 @@ async function saveInstitutionProfile(event) {
         alert(error.message);
     } finally {
         button.disabled = false;
+    }
+}
+
+function homepageImages(kind) {
+    return parseGalleryImages(document.getElementById(`homepage-${kind}-images`)?.value, 3);
+}
+
+function setHomepageImages(kind, images) {
+    const normalized = [...new Set((images || []).filter(Boolean))].slice(0, 3);
+    const input = document.getElementById(`homepage-${kind}-images`);
+    const preview = document.getElementById(`homepage-${kind}-preview`);
+    if (input) input.value = JSON.stringify(normalized);
+    if (preview) {
+        preview.innerHTML = normalized.map((url, index) => `
+            <article class="homepage-image-item">
+                <img src="${escapeHtml(url)}" alt="Foto hero ${kind === 'mobile' ? 'mobile' : 'desktop'} ${index + 1}">
+                <div><strong>Foto ${index + 1}</strong><small>${index === 0 ? 'Tampil pertama' : `Slide ${index + 1}`}</small></div>
+                <button type="button" data-remove-homepage-image="${escapeHtml(kind)}" data-index="${index}" aria-label="Hapus foto ${index + 1}">×</button>
+            </article>`).join('');
+    }
+    updateHomepagePreview();
+}
+
+function updateHomepagePreview() {
+    const mobileImages = homepageImages('mobile');
+    const desktopImages = homepageImages('desktop');
+    const photo = document.getElementById('homepage-preview-photo');
+    const imageUrl = mobileImages[0] || desktopImages[0] || '';
+    if (photo) {
+        photo.style.backgroundImage = imageUrl ? `url("${imageUrl.replace(/["\\]/g, '\\$&')}")` : '';
+        photo.classList.toggle('is-desktop-fallback', !mobileImages.length && Boolean(desktopImages.length));
+    }
+    const values = {
+        'homepage-preview-kicker': document.getElementById('homepage-kicker')?.value || 'PROFIL',
+        'homepage-preview-main-title': document.getElementById('homepage-title')?.value || 'Dompet Dana Umat Daarul Uluum',
+        'homepage-preview-description': document.getElementById('homepage-description')?.value || '',
+        'homepage-preview-button': document.getElementById('homepage-button-label')?.value || 'Selengkapnya →'
+    };
+    Object.entries(values).forEach(([id, value]) => {
+        const element = document.getElementById(id);
+        if (element) element.textContent = value;
+    });
+}
+
+function setupHomepageImageUpload(kind, variant) {
+    const zone = document.getElementById(`homepage-${kind}-drop-zone`);
+    const input = document.getElementById(`homepage-${kind}-files`);
+    const preview = document.getElementById(`homepage-${kind}-preview`);
+    const status = document.getElementById(`homepage-${kind}-status`);
+    if (!zone || !input) return;
+
+    const uploadFiles = async selectedFiles => {
+        const existing = homepageImages(kind);
+        const remaining = Math.max(0, 3 - existing.length);
+        const files = Array.from(selectedFiles || []).slice(0, remaining);
+        if (!remaining) {
+            alert('Maksimal tiga foto. Hapus salah satu foto sebelum mengunggah foto baru.');
+            return;
+        }
+        if (!files.length) return;
+        const uploaded = [];
+        zone.classList.add('is-uploading');
+        input.disabled = true;
+        try {
+            for (let index = 0; index < files.length; index += 1) {
+                const file = files[index];
+                if (file.size > 5 * 1024 * 1024) throw new Error(`${file.name}: ukuran melebihi 5 MB.`);
+                if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+                    throw new Error(`${file.name}: pilih gambar JPG, PNG, atau WebP.`);
+                }
+                if (status) status.textContent = `Mengoptimalkan foto ${index + 1} dari ${files.length}...`;
+                uploaded.push(await uploadImageFileWithRetry(file, 3, variant));
+            }
+            setHomepageImages(kind, [...existing, ...uploaded]);
+            if (status) status.textContent = `${uploaded.length} foto siap. Klik Simpan Hero Homepage untuk menerapkan.`;
+        } catch (error) {
+            if (status) status.textContent = '';
+            alert(error.message);
+        } finally {
+            zone.classList.remove('is-uploading');
+            input.disabled = false;
+            input.value = '';
+        }
+    };
+
+    zone.addEventListener('click', event => {
+        if (!event.target.closest('[data-remove-homepage-image]')) input.click();
+    });
+    zone.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            input.click();
+        }
+    });
+    zone.addEventListener('dragover', event => {
+        event.preventDefault();
+        zone.classList.add('dragover');
+    });
+    zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+    zone.addEventListener('drop', event => {
+        event.preventDefault();
+        zone.classList.remove('dragover');
+        uploadFiles(event.dataTransfer?.files);
+    });
+    input.addEventListener('change', () => uploadFiles(input.files));
+    preview?.addEventListener('click', event => {
+        const button = event.target.closest('[data-remove-homepage-image]');
+        if (!button) return;
+        const images = homepageImages(kind);
+        images.splice(Number(button.dataset.index), 1);
+        setHomepageImages(kind, images);
+    });
+}
+
+async function loadHomepageSettings() {
+    try {
+        const result = await api('homepage');
+        const data = result.data || {};
+        ['kicker', 'title', 'description', 'button_label', 'button_url'].forEach(key => {
+            const element = document.getElementById(`homepage-${key.replaceAll('_', '-')}`);
+            if (element) element.value = data[key] || '';
+        });
+        setHomepageImages('desktop', data.desktop_images || []);
+        setHomepageImages('mobile', data.mobile_images || []);
+        updateHomepagePreview();
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
+async function saveHomepageSettings(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const button = form.querySelector('button[type="submit"]');
+    const payload = {
+        kicker: document.getElementById('homepage-kicker')?.value.trim() || '',
+        title: document.getElementById('homepage-title')?.value.trim() || '',
+        description: document.getElementById('homepage-description')?.value.trim() || '',
+        button_label: document.getElementById('homepage-button-label')?.value.trim() || '',
+        button_url: document.getElementById('homepage-button-url')?.value.trim() || '',
+        desktop_images: homepageImages('desktop'),
+        mobile_images: homepageImages('mobile')
+    };
+    if (!payload.desktop_images.length) {
+        alert('Tambahkan minimal satu foto hero desktop.');
+        return;
+    }
+    button.disabled = true;
+    button.textContent = 'Menyimpan...';
+    try {
+        await api('homepage', { method: 'POST', body: JSON.stringify(payload) });
+        alert('Hero homepage berhasil diperbarui. Muat ulang homepage untuk melihat hasilnya.');
+    } catch (error) {
+        alert(error.message);
+    } finally {
+        button.disabled = false;
+        button.textContent = 'Simpan Hero Homepage';
     }
 }
 
@@ -1662,6 +1824,11 @@ async function init() {
     setupDonationQrUpload('prog');
     setupSeoImageUpload('post');
     setupSeoImageUpload('prog');
+    setupHomepageImageUpload('desktop', 'hero');
+    setupHomepageImageUpload('mobile', 'hero_mobile');
+    ['homepage-kicker', 'homepage-title', 'homepage-description', 'homepage-button-label'].forEach(id => {
+        document.getElementById(id)?.addEventListener('input', updateHomepagePreview);
+    });
     setupContentPhotoUpload('post');
     setupContentPhotoUpload('prog');
     ['post', 'prog'].forEach(prefix => {

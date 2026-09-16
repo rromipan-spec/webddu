@@ -87,10 +87,10 @@
       ]
     }
     </script>
-    <link rel="stylesheet" href="style.css?v=20260916-2">
+    <link rel="stylesheet" href="style.css?v=20260916-3">
     <link rel="stylesheet" href="navbar-mobile.css?v=20260721-2">
     <link rel="stylesheet" href="footer-shared.css?v=20260722-1">
-    <link rel="stylesheet" href="mobile-experience.css?v=20260916-1">
+    <link rel="stylesheet" href="mobile-experience.css?v=20260916-2">
 </head>
 <body class="home-page">
     <!-- Preloader -->
@@ -144,18 +144,27 @@
 
     <!-- Hero Section -->
     <section class="hero" id="home">
-        <div class="hero-slider">
-            <div class="slide" style="background-image: url('https://lh3.googleusercontent.com/d/1kuC0kI5fPd_FA0emvuSlRcFSpXQb0KGE');"></div>
-            <div class="slide" style="background-image: url('https://lh3.googleusercontent.com//d/1YgCHGRGZVYz-gpj4umxp4sxx7jIPPMR_');"></div>
-            <div class="slide" style="background-image: url('https://lh3.googleusercontent.com/d/1ZEtIlPw4eOKxu5izFi197otsnkPHrdRf');"></div>
+        <div class="hero-slider" id="homepage-hero-slider" aria-hidden="true">
+            <div class="slide is-active">
+                <div class="slide-backdrop" style="background-image: url('https://lh3.googleusercontent.com/d/1kuC0kI5fPd_FA0emvuSlRcFSpXQb0KGE');"></div>
+                <picture><img src="https://lh3.googleusercontent.com/d/1kuC0kI5fPd_FA0emvuSlRcFSpXQb0KGE" alt="" fetchpriority="high" decoding="async"></picture>
+            </div>
+            <div class="slide">
+                <div class="slide-backdrop" style="background-image: url('https://lh3.googleusercontent.com//d/1YgCHGRGZVYz-gpj4umxp4sxx7jIPPMR_');"></div>
+                <picture><img src="https://lh3.googleusercontent.com//d/1YgCHGRGZVYz-gpj4umxp4sxx7jIPPMR_" alt="" decoding="async"></picture>
+            </div>
+            <div class="slide">
+                <div class="slide-backdrop" style="background-image: url('https://lh3.googleusercontent.com/d/1ZEtIlPw4eOKxu5izFi197otsnkPHrdRf');"></div>
+                <picture><img src="https://lh3.googleusercontent.com/d/1ZEtIlPw4eOKxu5izFi197otsnkPHrdRf" alt="" decoding="async"></picture>
+            </div>
         </div>
         <div class="hero-overlay"></div>
         <div class="container hero-container">
             <div class="hero-content">
-                <span class="section-kicker">Profil</span>
-                <h1>Dompet Dana Umat Daarul Uluum</h1>
-                <p>Menjadi lembaga amil zakat yang amanah, profesional, dan terpercaya dalam mengelola dana umat untuk mewujudkan kesejahteraan masyarakat.</p>
-                <a href="about.html" class="btn btn-primary">Selengkapnya →</a>
+                <span class="section-kicker" id="homepage-hero-kicker">Profil</span>
+                <h1 id="homepage-hero-title">Dompet Dana Umat Daarul Uluum</h1>
+                <p id="homepage-hero-description">Menjadi lembaga amil zakat yang amanah, profesional, dan terpercaya dalam mengelola dana umat untuk mewujudkan kesejahteraan masyarakat.</p>
+                <a href="about.html" class="btn btn-primary" id="homepage-hero-button">Selengkapnya &rarr;</a>
             </div>
         </div>
     </section>
@@ -465,6 +474,7 @@
     <script type="module" src="navbar.js?v=20260912-1"></script>
     <script type="module" src="programs-home.js?v=20260728-2"></script>
     <script type="module" src="site-footer.js?v=20260722-1"></script>
+    <script src="homepage-hero.js?v=20260916-1"></script>
     <script type="module" src="mobile-experience.js?v=20260916-1"></script>
 </body>
 
