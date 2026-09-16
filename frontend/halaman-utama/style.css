@@ -3460,3 +3460,36 @@ select {
     .preloader-logo { animation: none; }
     .detail-program-hero video.program-hero-video { display: none; }
 }
+
+/* Homepage: dokumentasi foto tanpa duplikasi teks Tujuan. */
+.home-page .about--photos {
+    padding: 86px 0 92px;
+    background:
+        radial-gradient(circle at 12% 18%, rgba(54, 126, 207, .1), transparent 30rem),
+        linear-gradient(180deg, #ffffff 0%, #f7faff 100%);
+}
+
+.home-page .about-container--photos {
+    display: block;
+}
+
+.home-page .about-container--photos .about-image {
+    width: min(100%, 980px);
+    margin: 0 auto;
+}
+
+.home-page .about-container--photos .about-img-wrapper {
+    height: clamp(440px, 52vw, 650px);
+    padding: 0 70px 55px 0;
+}
+
+.home-page .about-container--photos .about-img-1 {
+    width: 76%;
+    height: 100%;
+    object-position: center 28%;
+}
+
+.home-page .about-container--photos .about-img-2 {
+    width: 48%;
+    height: 46%;
+}

@@ -304,20 +304,20 @@
         gap: 42px;
     }
 
-    .home-page .about-img-wrapper {
+    .home-page .about-container--photos .about-img-wrapper {
         height: clamp(330px, 100vw, 470px);
         margin: 0;
         padding: 0 26px 28px 0;
     }
 
-    .home-page .about-img-1 {
+    .home-page .about-container--photos .about-img-1 {
         width: 88%;
         height: 100%;
         border-radius: var(--mobile-radius);
         object-position: center 28%;
     }
 
-    .home-page .about-img-2 {
+    .home-page .about-container--photos .about-img-2 {
         right: 0;
         bottom: 0;
         width: 55%;
