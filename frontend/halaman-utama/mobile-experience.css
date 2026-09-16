@@ -200,21 +200,18 @@
     }
 
     .home-page .slide-backdrop {
-        background-image: var(--hero-mobile-backdrop, var(--hero-desktop-backdrop));
-        background-position: center top;
-        filter: blur(15px) brightness(.82);
-        transform: scale(1.1);
+        display: none;
     }
 
-    /* Foto utama selalu ditampilkan utuh; latar blur mengisi ruang sisa layar. */
+    /* Foto memenuhi seluruh hero. Gunakan foto mobile vertikal agar objek utama tidak terpotong. */
     .home-page .slide picture img,
     .home-page .slide.has-mobile-image picture img {
-        object-fit: contain;
-        object-position: center top;
+        object-fit: cover;
+        object-position: center center;
     }
 
     .home-page .hero-overlay {
-        background: linear-gradient(180deg, rgba(4, 23, 51, .42) 0%, rgba(5, 28, 62, .66) 45%, rgba(4, 24, 55, .94) 100%);
+        background: linear-gradient(180deg, rgba(4, 23, 51, .24) 0%, rgba(5, 28, 62, .38) 48%, rgba(4, 24, 55, .78) 100%);
     }
 
     .home-page .hero-content {
@@ -223,7 +220,7 @@
         text-align: left;
         border: 1px solid rgba(255, 255, 255, .13);
         border-radius: 22px;
-        background: rgba(6, 31, 68, .38);
+        background: rgba(6, 31, 68, .48);
         box-shadow: 0 20px 45px rgba(0, 14, 36, .18);
         -webkit-backdrop-filter: blur(6px);
         backdrop-filter: blur(6px);
