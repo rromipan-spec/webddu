@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#071f44">
     <title>Profil Dompet Dana Umat</title>
     <meta name="description" content="Dompet Dana Umat Daarul Uluum adalah lembaga amil zakat yang amanah dan profesional dalam mengelola ZISWAF untuk kesejahteraan umat. Salurkan donasi Anda sekarang.">
     <meta name="robots" content="index, follow, max-image-preview:large">
@@ -89,12 +90,14 @@
     <link rel="stylesheet" href="style.css?v=20260912-1">
     <link rel="stylesheet" href="navbar-mobile.css?v=20260721-2">
     <link rel="stylesheet" href="footer-shared.css?v=20260722-1">
+    <link rel="stylesheet" href="mobile-experience.css?v=20260916-1">
 </head>
 <body class="home-page">
     <!-- Preloader -->
     <div class="preloader">
         <img src="asset/logo-dompet-dana-umat-256.png" alt="" class="preloader-logo" width="256" height="258">
     </div>
+    <div class="page-progress" aria-hidden="true"><span></span></div>
 
     <!-- Navigation -->
     <header class="main-header">
@@ -104,14 +107,14 @@
                     <img src="asset/logo-dompet-dana-umat-256.png" alt="Logo Dompet Dana Umat Daarul Uluum" width="256" height="258">
                     <span>Dompet Dana Umat</span>
                 </a>
-                <div class="menu-toggle">
+                <button class="menu-toggle" type="button" aria-label="Buka menu navigasi" aria-controls="primary-navigation" aria-expanded="false">
                     <span class="bar"></span>
                     <span class="bar"></span>
                     <span class="bar"></span>
-                </div>
-                <div class="nav-links">
+                </button>
+                <div class="nav-links" id="primary-navigation">
                     <!-- Close Button for Mobile -->
-                    <div class="close-menu-btn">&times;</div>
+                    <button class="close-menu-btn" type="button" aria-label="Tutup menu navigasi">&times;</button>
                     <a href="/">Home</a>
                     <a href="#blog">Artikel</a>
                     <a href="#about">About</a>
@@ -165,8 +168,10 @@
                 <p>Informasi terbaru seputar kegiatan dan artikel inspiratif.</p>
             </div>
             <div class="blog-search-wrapper">
-                <input type="text" id="blogSearchInput" placeholder="Cari artikel berdasarkan judul...">
+                <label class="sr-only" for="blogSearchInput">Cari artikel berdasarkan judul</label>
+                <input type="search" id="blogSearchInput" placeholder="Cari artikel berdasarkan judul..." autocomplete="off">
             </div>
+            <p class="mobile-swipe-hint" aria-hidden="true">Geser untuk melihat artikel lainnya <span>&rarr;</span></p>
             <div class="blog-grid"></div>
             <div id="noResultsMessage" style="display: none; text-align: center; margin-top: 40px; padding: 20px;"></div>
             <div id="blogPagination" class="pagination-container"></div>
@@ -225,6 +230,7 @@
                 Salurkan kepedulian Anda melalui program-program strategis kami yang dirancang untuk memberikan dampak jangka panjang bagi penerima manfaat.
             </p>
         </div>
+        <p class="mobile-swipe-hint" aria-hidden="true">Geser untuk melihat program lainnya <span>&rarr;</span></p>
         <div class="gallery-grid" id="program-list-home">
             <!-- Data akan dimuat dari Supabase -->
         </div>
@@ -258,19 +264,19 @@
                         <div class="input-group">
                             <label for="income">Penghasilan Bulanan</label>
                             <div class="input-wrapper">
-                                <input type="text" id="income" class="form-input" placeholder="0" required>
+                                <input type="text" id="income" class="form-input" placeholder="0" inputmode="numeric" autocomplete="off" required>
                             </div>
                         </div>
                         <div class="input-group">
                             <label for="bonus">Bonus / THR / Lainnya</label>
                             <div class="input-wrapper">
-                                <input type="text" id="bonus" class="form-input" placeholder="0">
+                                <input type="text" id="bonus" class="form-input" placeholder="0" inputmode="numeric" autocomplete="off">
                             </div>
                         </div>
                         <div class="input-group">
                             <label for="debt">Hutang / Cicilan Bulanan</label>
                             <div class="input-wrapper">
-                                <input type="text" id="debt" class="form-input" placeholder="0">
+                                <input type="text" id="debt" class="form-input" placeholder="0" inputmode="numeric" autocomplete="off">
                             </div>
                         </div>
                         <div class="calc-buttons">
@@ -313,24 +319,12 @@
             <!-- OPSI 1: YouTube (Disarankan - Cepat & Mudah) -->
             <!-- Ganti 'ID_VIDEO_YOUTUBE' di bawah ini dengan ID video Anda -->
             <iframe
-                src="https://www.youtube.com/embed/GcS7TklMpFk?autoplay=1&mute=1&loop=1&playlist=GcS7TklMpFk&controls=0&showinfo=0&rel=0"
+                data-src="https://www.youtube.com/embed/GcS7TklMpFk?autoplay=1&amp;mute=1&amp;loop=1&amp;playlist=GcS7TklMpFk&amp;controls=0&amp;rel=0"
                 title="Video Promo"
+                loading="lazy"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowfullscreen>
             </iframe>
-            <!--
-                Ganti "URL_VIDEO_ANDA.mp4" dengan link ke file video yang sudah Anda upload.
-                Atribut 'muted' dan 'playsinline' sangat penting untuk autoplay di mobile.
-            -->
-            <video
-                src="https://www.youtube.com/embed/GcS7TklMpFk?autoplay=1&mute=1&loop=1&playlist=GcS7TklMpFk&controls=0&showinfo=0&rel=0"
-                autoplay
-                muted
-                loop
-                playsinline></video>
-
-            <!-- OPSI 2: Google Drive (Loading Lebih Lama) -->
-            <!-- <iframe src="https://drive.google.com/file/d/1Eco9igX9-2shforVNr0hVRxJIjVVIl5k/preview?autoplay=1&mute=1&loop=1&controls=0" title="Video Promo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe> -->
 
             <div class="video-overlay"></div>
             <div class="video-promo-content">
@@ -351,12 +345,15 @@
             <div class="contact-wrapper">
                 <form class="contact-form" data-whatsapp="6285121277046">
                     <div class="form-group">
-                        <input type="text" id="contact-name" placeholder="Nama Lengkap" required>
+                        <label class="sr-only" for="contact-name">Nama lengkap</label>
+                        <input type="text" id="contact-name" placeholder="Nama Lengkap" autocomplete="name" required>
                     </div>
                     <div class="form-group">
-                        <input type="email" id="contact-email" placeholder="Alamat Email" required>
+                        <label class="sr-only" for="contact-email">Alamat email</label>
+                        <input type="email" id="contact-email" placeholder="Alamat Email" inputmode="email" autocomplete="email" required>
                     </div>
                     <div class="form-group">
+                        <label class="sr-only" for="contact-message">Pesan</label>
                         <textarea id="contact-message" placeholder="Pesan Anda" rows="5" required></textarea>
                     </div>
                     <button type="submit" class="btn btn-primary">Kirim Pesan</button>
@@ -409,11 +406,12 @@
     </footer>
 
     <!-- Back to Top Button -->
-    <a href="#" class="back-to-top">↑</a>
+    <a href="#" class="back-to-top" aria-label="Kembali ke bagian atas">↑</a>
 
     <!-- WhatsApp Popup -->
-    <a href="https://wa.me/6285121277046?text=Assalamualaikum,%20saya%20ingin%20bertanya%20tentang%20Dompet%20Dana%20Umat" class="whatsapp-popup" target="_blank">
+    <a href="https://wa.me/6285121277046?text=Assalamualaikum,%20saya%20ingin%20bertanya%20tentang%20Dompet%20Dana%20Umat" class="whatsapp-popup" target="_blank" rel="noopener noreferrer" aria-label="Hubungi Dompet Dana Umat melalui WhatsApp">
         <img src="/asset/whatsapp-phone.svg" alt="" width="24" height="24">
+        <span class="whatsapp-popup__label">WhatsApp</span>
     </a>
 
     <script>
@@ -491,6 +489,7 @@
     <script type="module" src="navbar.js?v=20260912-1"></script>
     <script type="module" src="programs-home.js?v=20260728-2"></script>
     <script type="module" src="site-footer.js?v=20260722-1"></script>
+    <script type="module" src="mobile-experience.js?v=20260916-1"></script>
 </body>
 
 </html>

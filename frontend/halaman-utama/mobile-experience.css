@@ -1,0 +1,715 @@
+/* Lapisan pengalaman mobile DDU. Dimuat paling akhir agar aturan lama tidak saling bertabrakan. */
+.sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+.mobile-swipe-hint,
+.whatsapp-popup__label,
+.page-progress {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    :root {
+        --mobile-gutter: clamp(17px, 5vw, 24px);
+        --mobile-section-space: clamp(58px, 15vw, 76px);
+        --mobile-radius: 20px;
+    }
+
+    html {
+        scroll-padding-top: 92px;
+        -webkit-text-size-adjust: 100%;
+    }
+
+    body.home-page {
+        overflow-x: clip;
+        background: #f3f7fc;
+        -webkit-tap-highlight-color: rgba(30, 91, 168, .15);
+    }
+
+    .home-page :where(a, button, input, textarea) {
+        touch-action: manipulation;
+    }
+
+    .home-page :where(a, button, input, textarea):focus-visible {
+        outline: 3px solid rgba(70, 151, 238, .55);
+        outline-offset: 3px;
+    }
+
+    .home-page section[id] {
+        scroll-margin-top: 92px;
+    }
+
+    .home-page .container {
+        width: 100%;
+        margin-right: auto;
+        margin-left: auto;
+        padding-right: var(--mobile-gutter);
+        padding-left: var(--mobile-gutter);
+    }
+
+    /* Progress tipis membantu orientasi pada halaman yang panjang. */
+    .home-page .page-progress {
+        position: fixed;
+        top: 0;
+        right: 0;
+        left: 0;
+        z-index: 1100;
+        display: block;
+        height: 3px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, .18);
+        pointer-events: none;
+    }
+
+    .home-page .page-progress span {
+        display: block;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, #47a7ff, #76d6ff);
+        box-shadow: 0 0 12px rgba(71, 167, 255, .65);
+        transform: scaleX(var(--page-progress, 0));
+        transform-origin: left center;
+        will-change: transform;
+    }
+
+    /* Header ringkas, aman untuk notch, dan semua target sentuh minimal 44px. */
+    .home-page .main-header {
+        top: max(8px, env(safe-area-inset-top));
+        left: 10px;
+        width: calc(100% - 20px);
+        border: 1px solid rgba(255, 255, 255, .1);
+        border-radius: 16px;
+        background: rgba(5, 28, 62, .9);
+        box-shadow: 0 10px 30px rgba(1, 18, 42, .2);
+        transform: none;
+        -webkit-backdrop-filter: blur(16px) saturate(125%);
+        backdrop-filter: blur(16px) saturate(125%);
+    }
+
+    .home-page .main-header.scrolled {
+        background: rgba(5, 28, 62, .97);
+        box-shadow: 0 10px 30px rgba(1, 18, 42, .3);
+    }
+
+    .home-page .main-header .container {
+        margin: 0;
+        padding: 0 14px;
+    }
+
+    .home-page .navbar,
+    .home-page .main-header.scrolled .navbar {
+        min-height: 62px;
+        padding: 8px 0;
+        flex-flow: row nowrap;
+    }
+
+    .home-page .logo {
+        min-width: 0;
+        max-width: calc(100% - 58px);
+        gap: 9px;
+        font-size: clamp(.94rem, 4.3vw, 1.08rem);
+        line-height: 1.15;
+        white-space: nowrap;
+    }
+
+    .home-page .logo img {
+        width: 38px;
+        height: 38px;
+        flex: 0 0 38px;
+    }
+
+    .home-page .logo span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .home-page .menu-toggle {
+        display: flex;
+        width: 46px;
+        height: 46px;
+        padding: 0;
+        flex: 0 0 46px;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        border: 1px solid rgba(255, 255, 255, .14);
+        border-radius: 13px;
+        background: rgba(255, 255, 255, .07);
+    }
+
+    .home-page .menu-toggle .bar {
+        width: 23px;
+        height: 2px;
+    }
+
+    .home-page .nav-links {
+        top: max(7px, env(safe-area-inset-top));
+        left: 7px;
+        width: calc(100% - 14px);
+        height: calc(100dvh - max(14px, env(safe-area-inset-top)));
+        max-height: calc(100dvh - max(14px, env(safe-area-inset-top)));
+        padding: 88px 24px max(22px, env(safe-area-inset-bottom));
+        gap: 6px;
+        border-radius: 20px;
+        background:
+            radial-gradient(circle at 90% 0%, rgba(59, 139, 226, .24), transparent 35%),
+            linear-gradient(160deg, rgba(7, 32, 70, .998), rgba(3, 18, 42, .998));
+    }
+
+    .home-page .nav-links::before {
+        top: 31px;
+        left: 24px;
+    }
+
+    .home-page .nav-links > a {
+        min-height: 46px;
+        padding: 9px 4px 11px;
+        font-size: 1.08rem;
+    }
+
+    .home-page .close-menu-btn {
+        top: 17px;
+        right: 17px;
+        width: 46px;
+        height: 46px;
+        padding: 0 0 4px;
+    }
+
+    /* Hero: gambar tetap dominan, teks selalu terbaca di berbagai tinggi ponsel. */
+    .home-page .hero {
+        min-height: clamp(620px, 100svh, 780px);
+        padding: 118px 0 54px;
+        align-items: flex-end;
+    }
+
+    .home-page .hero-container {
+        width: 100%;
+    }
+
+    .home-page .slide {
+        background-position: center center;
+    }
+
+    .home-page .hero-overlay {
+        background: linear-gradient(180deg, rgba(4, 23, 51, .42) 0%, rgba(5, 28, 62, .66) 45%, rgba(4, 24, 55, .94) 100%);
+    }
+
+    .home-page .hero-content {
+        max-width: 560px;
+        padding: 24px 22px 23px;
+        text-align: left;
+        border: 1px solid rgba(255, 255, 255, .13);
+        border-radius: 22px;
+        background: rgba(6, 31, 68, .38);
+        box-shadow: 0 20px 45px rgba(0, 14, 36, .18);
+        -webkit-backdrop-filter: blur(6px);
+        backdrop-filter: blur(6px);
+    }
+
+    .home-page .hero-content .section-kicker {
+        margin-bottom: 10px;
+        font-size: .75rem;
+    }
+
+    .home-page .hero-content h1 {
+        margin-bottom: 15px;
+        font-size: clamp(2.05rem, 10vw, 2.85rem);
+        line-height: 1.05;
+        text-wrap: balance;
+    }
+
+    .home-page .hero-content p {
+        margin-bottom: 22px;
+        color: #e6eef8;
+        font-size: clamp(.95rem, 4vw, 1.05rem);
+        line-height: 1.65;
+        text-shadow: none;
+    }
+
+    .home-page .hero-content .btn {
+        display: inline-flex;
+        width: 100%;
+        min-height: 50px;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 22px;
+        border-radius: 13px;
+    }
+
+    /* Ritme vertikal dan hirarki judul dibuat konsisten. */
+    .home-page .about,
+    .home-page .blog,
+    .home-page .gallery-section,
+    .home-page .calculator,
+    .home-page .contact {
+        padding: var(--mobile-section-space) 0;
+    }
+
+    .home-page .section-header,
+    .home-page .about-content,
+    .home-page .gallery-section .section-header,
+    .home-page .gallery-intro {
+        padding-right: 0;
+        padding-left: 0;
+        text-align: left;
+    }
+
+    .home-page .section-header {
+        margin-bottom: 28px;
+    }
+
+    .home-page .section-header h2,
+    .home-page .about-content h2 {
+        margin-bottom: 12px;
+        font-size: clamp(1.75rem, 7.5vw, 2.2rem);
+        line-height: 1.16;
+        text-wrap: balance;
+    }
+
+    .home-page .section-header > p,
+    .home-page .gallery-intro,
+    .home-page .about-content > p {
+        font-size: .98rem;
+        line-height: 1.68;
+    }
+
+    /* Pencarian jelas dan tidak memicu zoom otomatis pada iPhone. */
+    .home-page .blog-search-wrapper {
+        max-width: none;
+        margin: -7px 0 20px;
+    }
+
+    .home-page #blogSearchInput {
+        min-height: 52px;
+        padding: 13px 18px;
+        border-width: 1px;
+        border-color: #ccd9e8;
+        border-radius: 14px;
+        background: #fff;
+        font-size: 16px;
+        box-shadow: 0 7px 20px rgba(10, 38, 71, .06);
+    }
+
+    /* Foto tentang kami lebih proporsional dan tidak keluar viewport. */
+    .home-page .about-container {
+        gap: 42px;
+    }
+
+    .home-page .about-img-wrapper {
+        height: clamp(330px, 100vw, 470px);
+        margin: 0;
+        padding: 0 26px 28px 0;
+    }
+
+    .home-page .about-img-1 {
+        width: 88%;
+        height: 100%;
+        border-radius: var(--mobile-radius);
+        object-position: center 28%;
+    }
+
+    .home-page .about-img-2 {
+        right: 0;
+        bottom: 0;
+        width: 55%;
+        height: 39%;
+        border-width: 5px;
+        border-radius: 15px;
+    }
+
+    .home-page .experience-badge {
+        top: 18px;
+        right: 8px;
+        width: 82px;
+        height: 82px;
+        animation: none;
+    }
+
+    .home-page .about-list {
+        display: grid;
+        gap: 12px;
+        margin: 24px 0 26px;
+    }
+
+    .home-page .about-list li {
+        margin: 0;
+        padding: 17px 17px 17px 45px;
+        cursor: default;
+        border: 1px solid #dce7f3;
+        border-radius: 15px;
+        background: rgba(246, 250, 255, .88);
+        box-shadow: 0 8px 22px rgba(10, 38, 71, .045);
+    }
+
+    .home-page .about-list li::before {
+        top: 17px;
+        left: 17px;
+    }
+
+    .home-page .about-list li:hover {
+        background: rgba(246, 250, 255, .88);
+        transform: none;
+    }
+
+    .home-page .about-list li > span {
+        font-size: .95rem;
+        line-height: 1.68;
+    }
+
+    .home-page .about-content > .btn {
+        display: inline-flex;
+        min-height: 48px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+    }
+
+    /* Program, kalkulator, dan formulir dibuat nyaman untuk jempol. */
+    .home-page .gallery-header {
+        gap: 10px;
+        margin-bottom: 18px;
+        padding-bottom: 21px;
+    }
+
+    .home-page .gallery-section .section-header h2::after {
+        left: 0;
+        transform: none;
+    }
+
+    .home-page .calculator-container {
+        gap: 25px;
+    }
+
+    .home-page .calculator-info,
+    .home-page .calculator-card {
+        min-width: 0;
+        width: 100%;
+        max-width: none;
+    }
+
+    .home-page .nishab-card,
+    .home-page .calculator-card,
+    .home-page .contact-wrapper {
+        border-radius: var(--mobile-radius);
+        box-shadow: 0 12px 34px rgba(10, 38, 71, .09);
+    }
+
+    .home-page .nishab-card {
+        padding: 21px 19px;
+    }
+
+    .home-page .calculator-card {
+        padding: 25px 19px;
+    }
+
+    .home-page .form-input,
+    .home-page .form-group input,
+    .home-page .form-group textarea {
+        min-height: 52px;
+        padding: 13px 15px;
+        border-color: #d5dfeb;
+        border-radius: 12px;
+        background: #fbfdff;
+        font-size: 16px;
+    }
+
+    .home-page .form-group textarea {
+        min-height: 138px;
+        resize: vertical;
+    }
+
+    .home-page .calc-buttons {
+        gap: 9px;
+    }
+
+    .home-page .btn-calc,
+    .home-page .btn-reset {
+        min-height: 52px;
+        padding: 12px 16px;
+        border-radius: 12px;
+        font-size: 1rem;
+    }
+
+    .home-page .btn-reset {
+        min-width: 88px;
+    }
+
+    .home-page .calc-result {
+        padding: 21px 17px;
+    }
+
+    .home-page .result-row,
+    .home-page .result-total {
+        gap: 14px;
+    }
+
+    /* Video tinggi secukupnya; hanya satu iframe dan dimuat saat mendekati viewport. */
+    .home-page .video-promo {
+        padding: 18px 0 var(--mobile-section-space);
+    }
+
+    .home-page .video-wrapper {
+        width: calc(100% - (var(--mobile-gutter) * 2));
+        min-height: 520px;
+        padding-top: 0;
+        border-radius: 22px;
+    }
+
+    .home-page .video-wrapper iframe {
+        width: 210%;
+        height: 100%;
+    }
+
+    .home-page .video-overlay {
+        background: linear-gradient(180deg, rgba(5, 28, 61, .5), rgba(4, 25, 57, .94));
+    }
+
+    .home-page .video-promo-content {
+        top: auto;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        max-width: none;
+        padding: 32px 23px 27px;
+        text-align: left;
+        transform: none;
+    }
+
+    .home-page .video-promo-content h2 {
+        margin-bottom: 13px;
+        padding: 0;
+        font-size: clamp(1.55rem, 7vw, 2rem);
+        line-height: 1.18;
+    }
+
+    .home-page .video-promo-content p {
+        margin-bottom: 20px;
+        color: #dce6f2;
+        font-size: .96rem;
+        line-height: 1.65;
+    }
+
+    .home-page .video-promo-content .btn {
+        display: inline-flex;
+        min-height: 48px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+    }
+
+    .home-page .contact-wrapper {
+        padding: 25px 19px;
+    }
+
+    .home-page .contact-form .btn {
+        width: 100%;
+        min-height: 52px;
+        border-radius: 12px;
+    }
+
+    /* Footer dan aksi mengambang aman dari home indicator perangkat. */
+    .home-page .footer {
+        padding-top: 58px;
+        padding-bottom: calc(100px + env(safe-area-inset-bottom));
+    }
+
+    .home-page .footer-grid {
+        gap: 35px;
+        margin-bottom: 36px;
+    }
+
+    .home-page .footer-logo,
+    .home-page .contact-info li,
+    .home-page .social-links {
+        justify-content: flex-start;
+    }
+
+    .home-page .whatsapp-popup {
+        right: 14px;
+        bottom: max(14px, env(safe-area-inset-bottom));
+        display: inline-flex;
+        width: auto;
+        height: 50px;
+        padding: 0 17px 0 13px;
+        gap: 8px;
+        border: 2px solid rgba(255, 255, 255, .8);
+        border-radius: 999px;
+        box-shadow: 0 10px 28px rgba(9, 68, 35, .28);
+        animation: none;
+    }
+
+    .home-page .whatsapp-popup img {
+        width: 27px;
+        height: 27px;
+    }
+
+    .home-page .whatsapp-popup__label {
+        display: inline;
+        color: #fff;
+        font-size: .9rem;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .home-page .back-to-top {
+        right: 14px;
+        bottom: calc(max(14px, env(safe-area-inset-bottom)) + 62px);
+        width: 44px;
+        height: 44px;
+        font-size: 1.05rem;
+        box-shadow: 0 8px 22px rgba(4, 25, 57, .25);
+    }
+}
+
+@media (max-width: 620px) {
+    /* Kartu menjadi deretan snap yang dapat digeser dan memperlihatkan kartu berikutnya. */
+    .home-page .mobile-swipe-hint {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 0 0 12px;
+        color: #687c96;
+        font-size: .79rem;
+        font-weight: 700;
+        letter-spacing: .015em;
+    }
+
+    .home-page .mobile-swipe-hint span {
+        color: #1e5ba8;
+        font-size: 1.1rem;
+    }
+
+    .home-page .mobile-swipe-hint.is-hidden {
+        display: none;
+    }
+
+    .home-page .gallery-grid,
+    .home-page .blog-grid {
+        display: grid;
+        margin-right: calc(var(--mobile-gutter) * -1);
+        margin-left: calc(var(--mobile-gutter) * -1);
+        padding: 3px var(--mobile-gutter) 22px;
+        grid-template-columns: none;
+        grid-auto-flow: column;
+        grid-auto-columns: min(84vw, 350px);
+        gap: 14px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scroll-padding-inline: var(--mobile-gutter);
+        scroll-snap-type: x mandatory;
+        overscroll-behavior-inline: contain;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .home-page .gallery-grid::-webkit-scrollbar,
+    .home-page .blog-grid::-webkit-scrollbar {
+        display: none;
+    }
+
+    .home-page .gallery-grid > *,
+    .home-page .blog-grid > * {
+        width: 100%;
+        scroll-snap-align: start;
+        scroll-snap-stop: normal;
+    }
+
+    .home-page .program-card,
+    .home-page .blog-card {
+        min-height: 100%;
+        margin: 0;
+        border-radius: 18px;
+    }
+
+    .home-page .program-card-media,
+    .home-page .blog-img {
+        aspect-ratio: 16 / 10;
+    }
+
+    .home-page .program-card-body,
+    .home-page .blog-content {
+        padding: 19px 18px 21px;
+    }
+
+    .home-page .pagination-container {
+        margin-top: 18px;
+    }
+}
+
+@media (max-width: 380px) {
+    .home-page .hero-content {
+        padding: 21px 18px 20px;
+    }
+
+    .home-page .logo {
+        font-size: .88rem;
+    }
+
+    .home-page .logo img {
+        width: 35px;
+        height: 35px;
+        flex-basis: 35px;
+    }
+
+    .home-page .calc-buttons {
+        flex-direction: column;
+    }
+
+    .home-page .btn-reset {
+        width: 100%;
+    }
+
+    .home-page .result-row,
+    .home-page .result-total {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 768px) and (orientation: landscape), (max-width: 768px) and (max-height: 540px) {
+    .home-page .hero {
+        min-height: 560px;
+        padding-top: 100px;
+        padding-bottom: 34px;
+    }
+
+    .home-page .nav-links {
+        padding-top: 72px;
+        gap: 3px;
+    }
+
+    .home-page .nav-links > a {
+        min-height: 38px;
+        padding-top: 5px;
+        padding-bottom: 7px;
+    }
+}
+
+@media (hover: none) and (pointer: coarse) {
+    .home-page .program-card:hover,
+    .home-page .blog-card:hover,
+    .home-page .whatsapp-popup:hover,
+    .home-page .back-to-top:hover {
+        transform: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .home-page .page-progress span {
+        transition: none;
+    }
+
+    .home-page .gallery-grid,
+    .home-page .blog-grid {
+        scroll-behavior: auto;
+    }
+}
