@@ -102,7 +102,7 @@
             .toolbar button, .toolbar select { flex: 1 1 auto; }
         }
     </style>
-    <link rel="stylesheet" href="admin.css?v=20260916-1">
+    <link rel="stylesheet" href="admin.css?v=20260917-1">
 </head>
 <body class="admin-page">
     <!-- Login Section tetap berada di tengah -->
@@ -809,20 +809,36 @@
                                 </div>
                             </section>
 
-                            <aside class="homepage-live-preview" aria-labelledby="homepage-preview-title">
+                            <aside class="homepage-live-preview" data-preview-mode="mobile" aria-labelledby="homepage-preview-title">
                                 <div class="homepage-preview-heading">
-                                    <h3 id="homepage-preview-title">Preview Mobile</h3>
-                                    <span>Rasio ponsel</span>
+                                    <div>
+                                        <h3 id="homepage-preview-title">Preview Homepage</h3>
+                                        <span id="homepage-preview-size">Mobile &middot; rasio 9:16</span>
+                                    </div>
+                                    <div class="homepage-preview-toggle" role="group" aria-label="Pilih ukuran preview homepage">
+                                        <button type="button" class="is-active" data-homepage-preview-mode="mobile" aria-pressed="true">Mobile</button>
+                                        <button type="button" data-homepage-preview-mode="desktop" aria-pressed="false">Desktop</button>
+                                    </div>
                                 </div>
-                                <div class="homepage-phone-frame">
+                                <div class="homepage-preview-stage">
+                                  <div class="homepage-phone-frame" id="homepage-preview-viewport">
                                     <div id="homepage-preview-photo" class="homepage-preview-photo"></div>
                                     <div class="homepage-preview-shade"></div>
+                                    <div class="homepage-preview-navbar" aria-hidden="true">
+                                        <div class="homepage-preview-brand">
+                                            <img src="../halaman-utama/asset/logo-dompet-dana-umat-256.png" alt="">
+                                            <strong>Dompet Dana Umat</strong>
+                                        </div>
+                                        <div class="homepage-preview-links"><span>Home</span><span>Artikel</span><span>About</span><span>Program</span><span>Contact</span></div>
+                                        <div class="homepage-preview-menu"><i></i><i></i><i></i></div>
+                                    </div>
                                     <div class="homepage-preview-copy">
                                         <small id="homepage-preview-kicker">PROFIL</small>
                                         <strong id="homepage-preview-main-title">Dompet Dana Umat Daarul Uluum</strong>
                                         <p id="homepage-preview-description"></p>
                                         <span id="homepage-preview-button">Selengkapnya →</span>
                                     </div>
+                                  </div>
                                 </div>
                             </aside>
                         </div>
@@ -849,15 +865,15 @@
                             <div class="homepage-media-heading">
                                 <div>
                                     <h3 id="homepage-mobile-title">Foto Khusus Mobile</h3>
-                                    <p>Unggah versi vertikal dengan urutan yang sama. Rekomendasi 1080 × 1440 piksel agar foto tampil utuh dan fokus objek tetap terlihat.</p>
+                                    <p>Unggah versi vertikal dengan urutan yang sama. Rekomendasi 1080 × 1920 piksel agar sesuai dengan bidang hero ponsel.</p>
                                 </div>
-                                <span>3:4</span>
+                                <span>9:16</span>
                             </div>
                             <input type="hidden" id="homepage-mobile-images" value="[]">
                             <div id="homepage-mobile-drop-zone" class="drop-zone homepage-image-drop-zone" role="button" tabindex="0" aria-label="Unggah foto hero mobile">
                                 <input type="file" id="homepage-mobile-files" accept="image/jpeg,image/png,image/webp" multiple hidden>
                                 <strong>+ Pilih Foto Mobile</strong>
-                                <p>Jika dikosongkan, foto desktop tetap ditampilkan utuh dengan latar pengisi otomatis.</p>
+                                <p>Jika dikosongkan, foto desktop akan memenuhi hero mobile dan sebagian sisi foto dapat terpotong.</p>
                             </div>
                             <p id="homepage-mobile-status" class="homepage-upload-status" aria-live="polite"></p>
                             <div id="homepage-mobile-preview" class="homepage-image-list homepage-image-list--mobile"></div>
@@ -901,6 +917,6 @@
         </form>
     </dialog>
 
-    <script type="module" src="admin.js?v=20260916-1"></script>
+    <script type="module" src="admin.js?v=20260917-1"></script>
 </body>
 </html>

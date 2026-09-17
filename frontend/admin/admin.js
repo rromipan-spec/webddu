@@ -879,14 +879,44 @@ function setHomepageImages(kind, images) {
     updateHomepagePreview();
 }
 
+function setHomepagePreviewMode(mode) {
+    const normalizedMode = mode === 'desktop' ? 'desktop' : 'mobile';
+    const preview = document.querySelector('.homepage-live-preview');
+    const grid = preview?.closest('.homepage-settings-grid');
+    const size = document.getElementById('homepage-preview-size');
+    if (!preview) return;
+
+    preview.dataset.previewMode = normalizedMode;
+    grid?.classList.toggle('is-desktop-preview', normalizedMode === 'desktop');
+    preview.querySelectorAll('[data-homepage-preview-mode]').forEach(button => {
+        const active = button.dataset.homepagePreviewMode === normalizedMode;
+        button.classList.toggle('is-active', active);
+        button.setAttribute('aria-pressed', String(active));
+    });
+    if (size) size.textContent = normalizedMode === 'desktop' ? 'Desktop · rasio 16:9' : 'Mobile · rasio 9:16';
+    updateHomepagePreview();
+}
+
+function setupHomepagePreviewModes() {
+    const preview = document.querySelector('.homepage-live-preview');
+    if (!preview) return;
+    preview.querySelectorAll('[data-homepage-preview-mode]').forEach(button => {
+        button.addEventListener('click', () => setHomepagePreviewMode(button.dataset.homepagePreviewMode));
+    });
+    setHomepagePreviewMode(preview.dataset.previewMode);
+}
+
 function updateHomepagePreview() {
     const mobileImages = homepageImages('mobile');
     const desktopImages = homepageImages('desktop');
+    const mode = document.querySelector('.homepage-live-preview')?.dataset.previewMode === 'desktop' ? 'desktop' : 'mobile';
     const photo = document.getElementById('homepage-preview-photo');
-    const imageUrl = mobileImages[0] || desktopImages[0] || '';
+    const imageUrl = mode === 'desktop'
+        ? (desktopImages[0] || mobileImages[0] || '')
+        : (mobileImages[0] || desktopImages[0] || '');
     if (photo) {
         photo.style.backgroundImage = imageUrl ? `url("${imageUrl.replace(/["\\]/g, '\\$&')}")` : '';
-        photo.classList.toggle('is-desktop-fallback', !mobileImages.length && Boolean(desktopImages.length));
+        photo.classList.toggle('is-desktop-fallback', mode === 'mobile' && !mobileImages.length && Boolean(desktopImages.length));
     }
     const values = {
         'homepage-preview-kicker': document.getElementById('homepage-kicker')?.value || 'PROFIL',
@@ -1824,6 +1854,7 @@ async function init() {
     setupDonationQrUpload('prog');
     setupSeoImageUpload('post');
     setupSeoImageUpload('prog');
+    setupHomepagePreviewModes();
     setupHomepageImageUpload('desktop', 'hero');
     setupHomepageImageUpload('mobile', 'hero_mobile');
     ['homepage-kicker', 'homepage-title', 'homepage-description', 'homepage-button-label'].forEach(id => {
