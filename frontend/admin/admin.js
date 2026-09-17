@@ -918,16 +918,24 @@ function updateHomepagePreview() {
         photo.style.backgroundImage = imageUrl ? `url("${imageUrl.replace(/["\\]/g, '\\$&')}")` : '';
         photo.classList.toggle('is-desktop-fallback', mode === 'mobile' && !mobileImages.length && Boolean(desktopImages.length));
     }
+    const buttonLabel = document.getElementById('homepage-button-label')?.value.trim() || '';
+    const buttonUrl = document.getElementById('homepage-button-url')?.value.trim() || '';
     const values = {
-        'homepage-preview-kicker': document.getElementById('homepage-kicker')?.value || 'PROFIL',
-        'homepage-preview-main-title': document.getElementById('homepage-title')?.value || 'Dompet Dana Umat Daarul Uluum',
-        'homepage-preview-description': document.getElementById('homepage-description')?.value || '',
-        'homepage-preview-button': document.getElementById('homepage-button-label')?.value || 'Selengkapnya →'
+        'homepage-preview-kicker': document.getElementById('homepage-kicker')?.value.trim() || '',
+        'homepage-preview-main-title': document.getElementById('homepage-title')?.value.trim() || '',
+        'homepage-preview-description': document.getElementById('homepage-description')?.value.trim() || '',
+        'homepage-preview-button': buttonLabel && buttonUrl ? buttonLabel : ''
     };
+    let visibleItems = 0;
     Object.entries(values).forEach(([id, value]) => {
         const element = document.getElementById(id);
-        if (element) element.textContent = value;
+        if (!element) return;
+        element.textContent = value;
+        element.hidden = !value;
+        if (value) visibleItems += 1;
     });
+    const copy = document.querySelector('.homepage-preview-copy');
+    if (copy) copy.hidden = visibleItems === 0;
 }
 
 function setupHomepageImageUpload(kind, variant) {
@@ -1031,6 +1039,10 @@ async function saveHomepageSettings(event) {
     };
     if (!payload.desktop_images.length) {
         alert('Tambahkan minimal satu foto hero desktop.');
+        return;
+    }
+    if (Boolean(payload.button_label) !== Boolean(payload.button_url)) {
+        alert('Isi tulisan tombol dan tujuan tombol bersamaan, atau kosongkan keduanya.');
         return;
     }
     button.disabled = true;
@@ -1857,7 +1869,7 @@ async function init() {
     setupHomepagePreviewModes();
     setupHomepageImageUpload('desktop', 'hero');
     setupHomepageImageUpload('mobile', 'hero_mobile');
-    ['homepage-kicker', 'homepage-title', 'homepage-description', 'homepage-button-label'].forEach(id => {
+    ['homepage-kicker', 'homepage-title', 'homepage-description', 'homepage-button-label', 'homepage-button-url'].forEach(id => {
         document.getElementById(id)?.addEventListener('input', updateHomepagePreview);
     });
     setupContentPhotoUpload('post');

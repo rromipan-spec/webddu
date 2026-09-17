@@ -806,8 +806,8 @@ function saveHomepageSettings(array $body): never
     $values = [];
     foreach ($limits as $key => $limit) {
         $value = trim((string) ($body[$key] ?? ''));
-        if ($value === '' || mb_strlen($value) > $limit) {
-            Http::json(['ok' => false, 'message' => "Kolom {$key} wajib diisi dan maksimal {$limit} karakter."], 422);
+        if (mb_strlen($value) > $limit) {
+            Http::json(['ok' => false, 'message' => "Kolom {$key} maksimal {$limit} karakter."], 422);
         }
         $values[$key] = $value;
     }
@@ -817,8 +817,11 @@ function saveHomepageSettings(array $body): never
     $isRelativeUrl = preg_match('~^(?!//)(?:[a-z0-9][a-z0-9._/-]*|/[^\s]*)?(?:#[a-z0-9_-]+)?$~i', $buttonUrl) === 1;
     $isRemoteUrl = filter_var($buttonUrl, FILTER_VALIDATE_URL)
         && in_array(strtolower((string) parse_url($buttonUrl, PHP_URL_SCHEME)), ['http', 'https'], true);
-    if ($buttonUrl === '' || (!$isRelativeUrl && !$isRemoteUrl)) {
+    if ($buttonUrl !== '' && !$isRelativeUrl && !$isRemoteUrl) {
         Http::json(['ok' => false, 'message' => 'Tautan tombol hero tidak valid.'], 422);
+    }
+    if (($values['button_label'] === '') !== ($buttonUrl === '')) {
+        Http::json(['ok' => false, 'message' => 'Tulisan tombol dan tujuan tombol harus diisi bersamaan atau sama-sama dikosongkan.'], 422);
     }
     $values['button_url'] = $buttonUrl;
     $values['desktop_images'] = validateHomepageImages($body['desktop_images'] ?? [], 'desktop');

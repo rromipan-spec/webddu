@@ -67,6 +67,14 @@ request 200 -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" -H 'Content-Type: applicat
   --data "$HOMEPAGE_PAYLOAD" "$BASE_URL/api/index.php?resource=homepage"
 request 200 "$BASE_URL/api/index.php?resource=homepage"
 assert_json '.data.title == "Hero Integration Test" and .data.mobile_images[0] == "https://example.com/hero-mobile.jpg"'
+HOMEPAGE_OPTIONAL_PAYLOAD='{"kicker":"","title":"","description":"","button_label":"","button_url":"","desktop_images":["https://example.com/hero-only-desktop.jpg"],"mobile_images":["https://example.com/hero-only-mobile.jpg"]}'
+request 200 -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" -H 'Content-Type: application/json' \
+  --data "$HOMEPAGE_OPTIONAL_PAYLOAD" "$BASE_URL/api/index.php?resource=homepage"
+request 200 "$BASE_URL/api/index.php?resource=homepage"
+assert_json '.data.kicker == "" and .data.title == "" and .data.description == "" and .data.button_label == "" and .data.button_url == "" and (.data.desktop_images | length) == 1 and (.data.mobile_images | length) == 1'
+HOMEPAGE_INCOMPLETE_BUTTON_PAYLOAD='{"kicker":"","title":"","description":"","button_label":"Buka halaman","button_url":"","desktop_images":["https://example.com/hero-only-desktop.jpg"],"mobile_images":[]}'
+request 422 -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" -H 'Content-Type: application/json' \
+  --data "$HOMEPAGE_INCOMPLETE_BUTTON_PAYLOAD" "$BASE_URL/api/index.php?resource=homepage"
 
 echo '[4/14] Profil akun dan reset password oleh super admin'
 request 200 -b "$COOKIE_JAR" "$BASE_URL/api/index.php?resource=profile"

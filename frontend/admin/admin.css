@@ -37,6 +37,10 @@ body.admin-page {
     display: none !important;
 }
 
+.admin-page [hidden] {
+    display: none !important;
+}
+
 /* Login */
 #login-section {
     width: min(calc(100% - 32px), 480px);
@@ -329,6 +333,19 @@ body.admin-page {
     color: #063B9E;
     font-size: .9rem;
     font-weight: 750;
+}
+
+.admin-page .field-optional {
+    color: var(--admin-muted);
+    font-size: .82em;
+    font-weight: 500;
+}
+
+.admin-page .field-help {
+    margin: -2px 0 0;
+    color: var(--admin-muted);
+    font-size: .86rem;
+    line-height: 1.55;
 }
 
 .admin-page .form-group input,
