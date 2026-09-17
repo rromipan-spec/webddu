@@ -256,8 +256,7 @@ a:hover { color: var(--ddu-deep); }
 .program-donation-cta > span,
 .about-hero .eyebrow,
 .credibility-hero .eyebrow,
-.vision-card--primary .card-kicker,
-.transparency-section .eyebrow {
+.vision-card--primary .card-kicker {
     color: var(--ddu-warm) !important;
 }
 
@@ -369,9 +368,7 @@ body .main-header > .container {
 .blog-card,
 .calculator-card,
 .contact-wrapper,
-.gallery-item,
-.home-proof__card,
-.home-process__steps li {
+.gallery-item {
     border-color: rgba(7, 86, 214, .15);
     background: var(--ddu-warm);
     box-shadow: 0 16px 42px rgba(23, 32, 51, .08);
@@ -380,20 +377,17 @@ body .main-header > .container {
 .gallery-item:hover { box-shadow: 0 20px 48px rgba(7, 86, 214, .14); }
 .blog-date,
 .calculator-note,
-.gallery-intro,
-.about-content p { color: rgba(23, 32, 51, .7); }
+.gallery-intro { color: rgba(23, 32, 51, .7); }
 .blog-content h3,
 .blog-content h3 a,
 .program-card-title,
 .calculator-info h3 { color: var(--ddu-charcoal); }
 .read-more,
-.gallery-text h4,
-.about-list strong { color: var(--ddu-primary); }
+.gallery-text h4 { color: var(--ddu-primary); }
 .gallery-overlay { background: linear-gradient(180deg, transparent 25%, rgba(6, 59, 158, .92)); }
 .gallery-text h4,
 .gallery-text p { color: var(--ddu-warm); }
 .gallery-text h4::after { background: var(--ddu-gold); }
-.about-list li::before,
 .result-total strong,
 .result-row strong { color: var(--ddu-primary); }
 
@@ -505,38 +499,21 @@ body .main-header > .container {
 .eyebrow--light { color: var(--ddu-warm); }
 .about-hero .eyebrow { color: var(--ddu-warm) !important; }
 .about-btn--ghost { color: var(--ddu-warm); border-color: rgba(250, 250, 247, .5); background: rgba(250, 250, 247, .08); }
-.about-btn--light { color: var(--ddu-deep); background: var(--ddu-warm); }
 .trust-item,
 .vision-card--mission,
-.value-card,
-.program-focus__grid article,
-.process-section,
-.about-cta { background: var(--ddu-warm); }
+.value-card { background: var(--ddu-warm); }
 .trust-item,
 .vision-card--mission,
-.value-card,
-.program-focus__grid,
-.program-focus__grid article { border-color: rgba(7, 86, 214, .16); }
-.trust-item__number,
-.program-focus__grid span { color: var(--ddu-primary); }
+.value-card { border-color: rgba(7, 86, 214, .16); }
+.trust-item__number { color: var(--ddu-primary); }
 .focus-box,
-.vision-section,
-.program-focus { background: var(--ddu-pale); }
+.vision-section { background: var(--ddu-pale); }
 .focus-box { border-color: var(--ddu-primary); }
-.vision-card--primary,
-.transparency-section { background: linear-gradient(145deg, var(--ddu-deep), var(--ddu-primary)); }
+.vision-card--primary { background: linear-gradient(145deg, var(--ddu-deep), var(--ddu-primary)); }
 .vision-card--primary h2,
-.vision-card--primary p,
-.transparency-copy h2,
-.transparency-copy p,
-.transparency-panel h3,
-.transparency-panel strong,
-.transparency-panel small { color: var(--ddu-warm); }
-.vision-card--primary .card-kicker,
-.transparency-panel li > span { color: var(--ddu-warm); }
-.value-card__icon,
-.process-list article > span { color: var(--ddu-warm); background: var(--ddu-primary); }
-.transparency-panel { border-color: rgba(250, 250, 247, .16); background: rgba(250, 250, 247, .08); }
+.vision-card--primary p { color: var(--ddu-warm); }
+.vision-card--primary .card-kicker { color: var(--ddu-warm); }
+.value-card__icon { color: var(--ddu-warm); background: var(--ddu-primary); }
 
 /* Kredibilitas dan privasi. */
 .credibility-page { color: var(--ddu-charcoal); background: var(--ddu-pale); }
@@ -663,7 +640,6 @@ body.admin-page {
 /* Gold hanya menjadi aksen kecil, bukan bidang utama. */
 .section-header h2::after,
 .eyebrow::before,
-.home-process__steps span,
 .trust-warning__inner,
 .gallery-text h4::after { border-color: var(--ddu-gold); background-color: var(--ddu-gold); }
 
@@ -794,8 +770,6 @@ body main small,
 .program-card-title,
 .gallery-text h4,
 .value-card h3,
-.program-focus__grid h3,
-.process-list h3,
 .credibility-card h3,
 .related-content h3,
 .calculator-info h3 {
@@ -862,7 +836,6 @@ body main small,
 .post-donation-cta > span,
 .program-donation-cta > span,
 .vision-card--primary .card-kicker,
-.transparency-section .eyebrow,
 .admin-page .admin-workspace-header .admin-workspace-kicker {
     color: var(--ddu-gold) !important;
 }
@@ -932,8 +905,6 @@ body main small,
 .program-donation-cta h3,
 .video-promo-content h2,
 .vision-card--primary h2,
-.transparency-section h2,
-.transparency-section h3,
 .trust-warning__inner strong {
     color: var(--ddu-text-on-dark);
 }
@@ -946,8 +917,6 @@ body main small,
 .program-donation-cta p,
 .video-promo-content p,
 .vision-card--primary p,
-.transparency-section p,
-.transparency-section li,
 .trust-warning__inner p {
     color: var(--ddu-text-on-dark-muted);
 }

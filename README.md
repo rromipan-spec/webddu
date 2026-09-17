@@ -1,64 +1,153 @@
-# Website Dompet Dana Umat — PHP
+# Website Dompet Dana Umat
 
-Proyek ini dipisahkan agar file publik dan kode server tidak tercampur:
+Website resmi Dompet Dana Umat Daarul Uluum (DDU), dibangun dengan PHP, MySQL, HTML, CSS, dan JavaScript tanpa framework. Repositori ini mencakup website publik, panel admin, API, optimasi media, SEO teknis, analitik anonim, backup, monitoring, serta deployment otomatis ke Hostinger.
+
+- Website produksi: [dompetdanaumat.com](https://dompetdanaumat.com/)
+- Panel admin: [dompetdanaumat.com/admin/](https://dompetdanaumat.com/admin/)
+- Health check: [dompetdanaumat.com/health.php](https://dompetdanaumat.com/health.php)
+- Sitemap: [dompetdanaumat.com/sitemap.xml](https://dompetdanaumat.com/sitemap.xml)
+
+## Fitur utama
+
+- Artikel dan program dengan status draft, terjadwal, atau dipublikasikan.
+- Editor konten, kategori, penulis, media, hero gambar/video, QR donasi, dan WhatsApp.
+- SEO per konten, Open Graph, robots.txt, sitemap dinamis, serta halaman 404.
+- Optimasi unggahan gambar ke WebP dan beberapa ukuran tampilan.
+- Profil lembaga, legalitas, rekening resmi, laporan, dan kebijakan privasi.
+- Akun admin, peran admin/super admin, riwayat perubahan, keamanan login, dan sesi perangkat.
+- Statistik kunjungan anonim, perangkat, sumber kunjungan, halaman populer, dan klik WhatsApp.
+- Backup, health check, error log privat, integration test, dan audit Lighthouse mobile.
+
+## Struktur proyek
 
 ```text
 websiteddu/
-├── frontend/               # isi folder public_html di Hostinger
-│   ├── halaman-utama/      # halaman publik, CSS, JS, dan aset
-│   ├── admin/              # panel admin terpisah
-│   ├── api/index.php       # satu pintu API PHP bersama
-│   └── uploads/            # gambar hasil upload admin
-├── backend/                # wajib diletakkan di luar public_html
-│   ├── config/.env         # rahasia, jangan dipublikasikan
-│   ├── src/                # database, autentikasi, sanitasi
-│   └── storage/logs/
-├── database/schema.sql     # struktur database MySQL
-└── docs/                   # dokumentasi dan arsip versi Supabase
+|-- .github/workflows/       # pengujian dan deployment otomatis
+|-- backend/
+|   |-- bin/                 # backup, health check, optimasi, pemeliharaan
+|   |-- config/              # contoh konfigurasi; .env tidak masuk Git
+|   |-- src/                 # database, autentikasi, layanan, dan keamanan
+|   `-- storage/             # log, cache, backup, dan data keamanan privat
+|-- database/                # skema baru dan migrasi database
+|-- docs/                    # panduan operasional per fitur
+|-- frontend/
+|   |-- admin/               # panel pengelolaan website
+|   |-- api/                 # pintu masuk API publik/admin
+|   |-- halaman-utama/       # halaman, gaya, skrip, font, dan aset publik
+|   |-- uploads/             # media unggahan; isi produksi tidak masuk Git
+|   |-- .htaccess            # routing dan proteksi Apache
+|   `-- health.php           # endpoint pemeriksaan kesehatan publik
+|-- tests/                   # integration test HTTP dan router lokal
+|-- deploy.cmd               # pintasan deployment untuk Windows
+`-- deploy.ps1               # pemeriksaan, commit, dan push deployment
 ```
 
-Panduan pemasangan lengkap ada di [docs/DEPLOY-HOSTINGER.md](docs/DEPLOY-HOSTINGER.md).
-Panduan menambah dan mengubah akun admin ada di [docs/ADMIN-MYSQL.md](docs/ADMIN-MYSQL.md).
-Panduan deployment otomatis tersedia di [docs/GITHUB-HOSTINGER.md](docs/GITHUB-HOSTINGER.md).
-Panduan backup harian dan pemulihan tersedia di [docs/BACKUP-RESTORE.md](docs/BACKUP-RESTORE.md).
-Panduan optimasi dan migrasi gambar tersedia di [docs/IMAGE-OPTIMIZATION.md](docs/IMAGE-OPTIMIZATION.md).
-Panduan SEO teknis dan Google Search Console tersedia di [docs/GOOGLE-SEARCH-CONSOLE.md](docs/GOOGLE-SEARCH-CONSOLE.md).
-Panduan draft, jadwal tayang, preview, kategori, dan riwayat admin tersedia di [docs/PUBLICATION-SYSTEM.md](docs/PUBLICATION-SYSTEM.md).
-Panduan legalitas, rekening resmi, transparansi, dan kebijakan privasi tersedia di [docs/CREDIBILITY-PROFILE.md](docs/CREDIBILITY-PROFILE.md).
-Panduan error log privat dan pemeriksaan kesehatan website tersedia di [docs/MONITORING.md](docs/MONITORING.md).
-Panduan integration test dengan database MySQL sementara tersedia di [docs/AUTOMATED-TESTS.md](docs/AUTOMATED-TESTS.md).
-Panduan analitik pengunjung anonim dan perangkat login admin tersedia di [docs/ANALYTICS.md](docs/ANALYTICS.md).
+Folder `docs/legacy/` hanya menyimpan referensi migrasi Supabase lama. Berkas tersebut bukan bagian dari aplikasi produksi dan tidak ikut disalin oleh workflow deployment.
 
-Setelah GitHub Secrets selesai dikonfigurasi, deploy perubahan dari terminal VS Code dengan:
+## Persyaratan
+
+- PHP 8.1 atau lebih baru.
+- MySQL 8 atau MariaDB yang kompatibel.
+- Ekstensi PHP: PDO MySQL, mbstring, DOM, fileinfo, GD dengan WebP, dan ZIP.
+- Node.js untuk pemeriksaan sintaks JavaScript dan audit Lighthouse.
+- Apache dengan `mod_rewrite` untuk URL produksi.
+
+## Instalasi lokal
+
+1. Salin `backend/config/.env.example` menjadi `backend/config/.env`.
+2. Isi `APP_URL`, kredensial database, `ADMIN_SETUP_KEY`, dan `ANALYTICS_HASH_KEY` dengan nilai lokal yang aman.
+3. Buat database lalu import `database/schema.sql`.
+4. Siapkan admin pertama mengikuti [panduan akun MySQL](docs/ADMIN-MYSQL.md). Aktifkan `ADMIN_SETUP_ENABLED` hanya saat proses setup, kemudian kembalikan ke `false`.
+5. Jalankan server lokal dari root repositori:
+
+```powershell
+php -S 127.0.0.1:8000 -t frontend tests/router.php
+```
+
+6. Buka `http://127.0.0.1:8000/` dan panel admin di `http://127.0.0.1:8000/admin/`.
+
+Server bawaan PHP tidak membaca `.htaccess`; `tests/router.php` menyediakan routing lokal yang setara untuk kebutuhan pengembangan. Jangan commit `backend/config/.env`, isi `frontend/uploads/`, log, atau backup produksi.
+
+## Database dan migrasi
+
+Gunakan `database/schema.sql` untuk instalasi baru. File `database/add_*.sql` dan migrasi bernama khusus dipertahankan untuk memperbarui instalasi lama. Sebelum menjalankan migrasi pada produksi:
+
+1. Buat backup database dan uploads.
+2. Baca migrasi yang akan dijalankan.
+3. Jalankan hanya migrasi yang belum pernah diterapkan.
+4. Jalankan health check setelah migrasi.
+
+## Pengujian
+
+GitHub Actions menjalankan pemeriksaan sintaks seluruh JavaScript dan PHP, menyiapkan database MySQL sementara, menjalankan integration test HTTP, lalu mencoba audit Lighthouse mobile. Deployment hanya dimulai jika pengujian wajib berhasil.
+
+Pengujian lengkap paling mudah dijalankan melalui workflow. Untuk pemeriksaan lokal dasar:
+
+```powershell
+Get-ChildItem frontend -Recurse -Filter *.js | ForEach-Object { node --check $_.FullName }
+php backend/bin/health-check.php
+```
+
+Integration test memerlukan Bash, `curl`, `jq`, server PHP, serta database uji yang sudah disiapkan. Detailnya tersedia di [docs/AUTOMATED-TESTS.md](docs/AUTOMATED-TESTS.md).
+
+## Deployment ke Hostinger
+
+Deployment produksi berjalan melalui `.github/workflows/deploy-hostinger.yml`: test, validasi sumber, sinkronisasi lewat SSH, verifikasi health endpoint, dan audit pascadeploy.
+
+Dari PowerShell di root repositori:
 
 ```powershell
 .\deploy.cmd "Jelaskan perubahan yang dibuat"
 ```
 
-Script akan memeriksa file rahasia dan sintaks JavaScript, membuat commit, push ke branch `main`, lalu GitHub Actions meneruskan perubahan ke Hostinger.
+Perintah tersebut memeriksa repository, sintaks JavaScript, whitespace Git, membuat commit, lalu push ke branch `main`. Pantau hasilnya pada tab **Actions** di GitHub. Konfigurasi awal SSH dan GitHub Secrets dijelaskan di [docs/GITHUB-HOSTINGER.md](docs/GITHUB-HOSTINGER.md).
 
-## Keamanan yang sudah diterapkan
+## Operasional server
 
-- PDO dengan prepared statement; tidak ada query input mentah.
-- Login memakai `password_hash`/`password_verify`, session HttpOnly, SameSite Strict, dan rotasi session ID.
-- Batas lima percobaan login lalu dikunci selama 15 menit.
-- CSRF token untuk simpan, hapus, upload, dan logout.
-- Validasi slug, panjang input, nomor WhatsApp, serta URL gambar.
-- HTML artikel disaring dengan allowlist di server untuk mengurangi XSS.
-- Upload hanya JPG/PNG/WebP maksimal 5 MB dengan nama acak; eksekusi PHP di folder upload diblokir.
-- Pesan error produksi tidak membocorkan detail server; detail masuk ke log privat.
-- Warning, exception, dan fatal error dicatat dengan kode kejadian; log lama diputar otomatis.
-- Endpoint `/health.php` memeriksa PHP, database, tabel penting, uploads, dan penyimpanan log tanpa membocorkan detail internal.
-- File `.env`, log, SQL, directory listing, dan akses langsung ke backend diblokir.
+Contoh berikut memakai lokasi produksi saat ini:
 
-## Menjalankan secara lokal
+```bash
+/usr/bin/php /home/u706044810/domains/dompetdanaumat.com/backend/bin/health-check.php
+/usr/bin/php /home/u706044810/domains/dompetdanaumat.com/backend/bin/backup.php
+/usr/bin/php /home/u706044810/domains/dompetdanaumat.com/backend/bin/optimize-existing-images.php
+/usr/bin/php /home/u706044810/domains/dompetdanaumat.com/backend/bin/prune-analytics.php
+```
 
-Butuh PHP 8.1+ dengan ekstensi PDO MySQL, mbstring, DOM, fileinfo, GD/WebP, dan zip, serta MySQL/MariaDB.
+Jangan memindahkan `backend/config/.env`, `backend/storage/`, atau `frontend/uploads/` ke area publik lain. Workflow mempertahankan data produksi tersebut saat deployment.
 
-1. Salin `backend/config/.env.example` menjadi `backend/config/.env`.
-2. Isi kredensial MySQL dan hash password admin.
-3. Import `database/schema.sql`.
-4. Dari folder proyek, jalankan `php -S localhost:8000 -t frontend`.
-5. Buka `http://localhost:8000/halaman-utama/`; admin berada di `http://localhost:8000/admin/`.
+## Dokumentasi
 
-Catatan: server bawaan PHP tidak membaca `.htaccess`. Di Apache/Hostinger, halaman publik otomatis tampil langsung dari root domain tanpa memperlihatkan nama folder `halaman-utama`.
+- [Deployment Hostinger](docs/DEPLOY-HOSTINGER.md)
+- [GitHub Actions dan Hostinger](docs/GITHUB-HOSTINGER.md)
+- [Akun dan database admin](docs/ADMIN-MYSQL.md)
+- [Keamanan akun admin](docs/ADMIN-ACCOUNT-SECURITY.md)
+- [Keamanan aplikasi](docs/SECURITY.md)
+- [Sistem publikasi](docs/PUBLICATION-SYSTEM.md)
+- [Optimasi gambar](docs/IMAGE-OPTIMIZATION.md)
+- [Hero video artikel](docs/ARTICLE-HERO-VIDEO.md)
+- [Hero video program](docs/PROGRAM-HERO-VIDEO.md)
+- [QR dan CTA donasi](docs/DONATION-QR-CTA.md)
+- [Profil dan kredibilitas](docs/CREDIBILITY-PROFILE.md)
+- [Google Search Console](docs/GOOGLE-SEARCH-CONSOLE.md)
+- [Analitik anonim](docs/ANALYTICS.md)
+- [Monitoring dan health check](docs/MONITORING.md)
+- [Backup dan pemulihan](docs/BACKUP-RESTORE.md)
+- [Pengujian otomatis](docs/AUTOMATED-TESTS.md)
+- [Audit Lighthouse](docs/LIGHTHOUSE.md)
+
+## Prinsip keamanan
+
+- Password disimpan sebagai hash dan tidak dapat dibaca kembali, termasuk oleh super admin; super admin hanya dapat melakukan reset.
+- Query database menggunakan prepared statement.
+- Operasi admin dilindungi sesi, CSRF token, validasi input, pembatasan login, dan pencatatan kejadian keamanan.
+- HTML konten disaring dengan allowlist untuk mengurangi risiko XSS.
+- Upload dibatasi berdasarkan tipe dan ukuran, dinamai acak, serta tidak boleh mengeksekusi PHP.
+- Detail error produksi masuk ke log privat dan tidak ditampilkan kepada pengunjung.
+- File rahasia, SQL, log, backup, directory listing, dan akses langsung ke backend diblokir.
+
+## Aturan kontribusi
+
+- Jangan commit kredensial, private key, dump database, backup, atau media produksi.
+- Pertahankan URL dan kontrak API yang sudah digunakan halaman publik dan panel admin.
+- Jalankan pemeriksaan sintaks dan `git diff --check` sebelum deployment.
+- Tambahkan dokumentasi saat mengubah konfigurasi, skema database, proses deployment, atau prosedur operasional.

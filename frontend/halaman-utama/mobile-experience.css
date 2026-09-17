@@ -266,7 +266,6 @@
     }
 
     .home-page .section-header,
-    .home-page .about-content,
     .home-page .gallery-section .section-header,
     .home-page .gallery-intro {
         padding-right: 0;
@@ -278,8 +277,7 @@
         margin-bottom: 28px;
     }
 
-    .home-page .section-header h2,
-    .home-page .about-content h2 {
+    .home-page .section-header h2 {
         margin-bottom: 12px;
         font-size: clamp(1.75rem, 7.5vw, 2.2rem);
         line-height: 1.16;
@@ -287,8 +285,7 @@
     }
 
     .home-page .section-header > p,
-    .home-page .gallery-intro,
-    .home-page .about-content > p {
+    .home-page .gallery-intro {
         font-size: .98rem;
         line-height: 1.68;
     }
@@ -343,45 +340,6 @@
         width: 82px;
         height: 82px;
         animation: none;
-    }
-
-    .home-page .about-list {
-        display: grid;
-        gap: 12px;
-        margin: 24px 0 26px;
-    }
-
-    .home-page .about-list li {
-        margin: 0;
-        padding: 17px 17px 17px 45px;
-        cursor: default;
-        border: 1px solid #EAF2FF;
-        border-radius: 15px;
-        background: rgba(234, 242, 255, .88);
-        box-shadow: 0 8px 22px rgba(6, 59, 158, .045);
-    }
-
-    .home-page .about-list li::before {
-        top: 17px;
-        left: 17px;
-    }
-
-    .home-page .about-list li:hover {
-        background: rgba(234, 242, 255, .88);
-        transform: none;
-    }
-
-    .home-page .about-list li > span {
-        font-size: .95rem;
-        line-height: 1.68;
-    }
-
-    .home-page .about-content > .btn {
-        display: inline-flex;
-        min-height: 48px;
-        align-items: center;
-        justify-content: center;
-        border-radius: 12px;
     }
 
     /* Program, kalkulator, dan formulir dibuat nyaman untuk jempol. */
