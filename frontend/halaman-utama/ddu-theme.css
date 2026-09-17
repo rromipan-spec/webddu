@@ -11,6 +11,26 @@
     --ddu-charcoal: #172033;
     --ddu-gold: #D4A84F;
 
+    /* Hierarki tipografi DDU: satu skala untuk seluruh halaman publik dan admin. */
+    --ddu-text-heading: var(--ddu-deep);
+    --ddu-text-subheading: var(--ddu-charcoal);
+    --ddu-text-body: rgba(23, 32, 51, .82);
+    --ddu-text-muted: rgba(23, 32, 51, .64);
+    --ddu-text-soft: rgba(23, 32, 51, .52);
+    --ddu-text-on-dark: var(--ddu-warm);
+    --ddu-text-on-dark-muted: rgba(250, 250, 247, .82);
+
+    --font-xs: clamp(.74rem, .72rem + .08vw, .8rem);
+    --font-sm: clamp(.86rem, .83rem + .12vw, .94rem);
+    --font-body: clamp(1rem, .96rem + .16vw, 1.08rem);
+    --font-lead: clamp(1.08rem, 1rem + .34vw, 1.28rem);
+    --font-h4: clamp(1.08rem, 1rem + .35vw, 1.28rem);
+    --font-h3: clamp(1.28rem, 1.12rem + .68vw, 1.62rem);
+    --font-h2: clamp(1.85rem, 1.5rem + 1.55vw, 2.8rem);
+    --font-display: clamp(2.45rem, 1.85rem + 3vw, 4.75rem);
+    --line-body: 1.72;
+    --line-heading: 1.14;
+
     --about-navy: var(--ddu-deep);
     --about-blue: var(--ddu-primary);
     --about-sky: var(--ddu-pale);
@@ -50,9 +70,11 @@ body.article-page,
 body.program-page,
 body.credibility-page {
     font-family: var(--ddu-font);
+    font-size: var(--font-body);
     font-weight: 400;
-    letter-spacing: -.006em;
-    color: var(--ddu-charcoal);
+    line-height: var(--line-body);
+    letter-spacing: -.003em;
+    color: var(--ddu-text-body);
     background: var(--ddu-warm);
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
@@ -76,7 +98,7 @@ blockquote,
 .post-full-content,
 .program-page .mock-content {
     letter-spacing: 0;
-    line-height: 1.72;
+    line-height: var(--line-body);
 }
 
 ::selection {
@@ -644,3 +666,369 @@ body.admin-page {
 .home-process__steps span,
 .trust-warning__inner,
 .gallery-text h4::after { border-color: var(--ddu-gold); background-color: var(--ddu-gold); }
+
+/* ========================================================================== */
+/* SISTEM HIERARKI TIPOGRAFI DDU                                               */
+/* ========================================================================== */
+
+body h1,
+body h2,
+body h3,
+body h4,
+body h5,
+body h6 {
+    margin-block-start: 0;
+    font-family: var(--ddu-font);
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+}
+
+body h1 {
+    color: var(--ddu-text-heading);
+    font-size: var(--font-display);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -.045em;
+}
+
+body h2 {
+    color: var(--ddu-text-heading);
+    font-size: var(--font-h2);
+    font-weight: 700;
+    line-height: var(--line-heading);
+    letter-spacing: -.032em;
+}
+
+body h3 {
+    color: var(--ddu-text-subheading);
+    font-size: var(--font-h3);
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -.022em;
+}
+
+body h4,
+body h5,
+body h6 {
+    color: var(--ddu-text-subheading);
+    font-size: var(--font-h4);
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: -.012em;
+}
+
+body main p,
+body main li,
+body main dd,
+body main blockquote {
+    color: var(--ddu-text-body);
+    font-weight: 400;
+    text-wrap: pretty;
+}
+
+body main small,
+.blog-date,
+.related-date,
+.post-meta,
+.post-hero-meta,
+.gold-price-meta,
+.calculator-note,
+.admin-page .helper-text,
+.admin-page .field-help,
+.admin-page .admin-account-meta {
+    color: var(--ddu-text-muted);
+    font-size: var(--font-sm);
+    font-weight: 500;
+    line-height: 1.55;
+}
+
+.section-kicker,
+.eyebrow,
+.card-kicker,
+.post-category,
+.post-section-heading > span,
+.post-summary > span,
+.post-donation-cta > span,
+.program-donation-cta > span,
+.donation-method-label,
+.admin-workspace-kicker,
+.admin-eyebrow,
+.admin-section-eyebrow,
+.sidebar-label {
+    color: var(--ddu-primary);
+    font-size: var(--font-xs);
+    font-weight: 700;
+    line-height: 1.35;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+}
+
+.section-header h2,
+.section-heading h2,
+.section-intro h2,
+.post-section-heading h2,
+.credibility-heading h2,
+.policy-content h2 {
+    color: var(--ddu-text-heading);
+    font-size: var(--font-h2);
+    font-weight: 700;
+    line-height: var(--line-heading);
+    letter-spacing: -.032em;
+}
+
+.section-header > p,
+.section-heading > p,
+.gallery-intro,
+.profile-copy .lead,
+.hero-content > p,
+.credibility-hero > p,
+.credibility-hero .container > p {
+    font-size: var(--font-lead);
+    font-weight: 400;
+    line-height: 1.65;
+    letter-spacing: -.008em;
+}
+
+.blog-content h3,
+.blog-content h3 a,
+.program-card-title,
+.gallery-text h4,
+.value-card h3,
+.program-focus__grid h3,
+.process-list h3,
+.credibility-card h3,
+.related-content h3,
+.calculator-info h3 {
+    font-size: var(--font-h4);
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: -.018em;
+}
+
+.logo,
+.nav-links a,
+.btn,
+.about-btn,
+.btn-calc,
+.btn-reset,
+.btn-whatsapp-minimal,
+.read-more,
+.related-read-more,
+.admin-page button {
+    font-weight: 600;
+    letter-spacing: -.006em;
+}
+
+.nav-links a {
+    font-size: clamp(.9rem, .86rem + .14vw, 1rem);
+}
+
+.btn,
+.about-btn,
+.btn-calc,
+.btn-reset,
+.btn-whatsapp-minimal {
+    font-size: clamp(.92rem, .88rem + .12vw, 1rem);
+    line-height: 1.2;
+}
+
+/* Judul display pada hero memiliki bahasa visual yang sama di semua halaman. */
+.home-page .hero-content h1,
+.about-page .about-hero h1,
+.article-page .post-hero h1,
+.program-page .detail-program-hero h1,
+.credibility-page .credibility-hero h1 {
+    color: var(--ddu-text-on-dark) !important;
+    font-size: var(--font-display);
+    font-weight: 800;
+    line-height: 1.04;
+    letter-spacing: -.048em;
+}
+
+.home-page .hero-content > p,
+.about-page .about-hero p,
+.article-page .post-hero-meta,
+.program-page .detail-program-hero .hero-content p,
+.credibility-page .credibility-hero p {
+    color: var(--ddu-text-on-dark-muted) !important;
+}
+
+.home-page .hero-content .section-kicker,
+.about-page .about-hero .eyebrow,
+.article-page .post-hero .post-category,
+.program-page .detail-program-hero .section-kicker,
+.credibility-page .credibility-hero .eyebrow,
+.cta-minimal .section-kicker,
+.post-donation-cta > span,
+.program-donation-cta > span,
+.vision-card--primary .card-kicker,
+.transparency-section .eyebrow,
+.admin-page .admin-workspace-header .admin-workspace-kicker {
+    color: var(--ddu-gold) !important;
+}
+
+/* Konten panjang dibuat nyaman dibaca dan konsisten dengan editor admin. */
+.article-page .post-full-content,
+.policy-content {
+    color: var(--ddu-text-body);
+    font-size: var(--font-body) !important;
+    line-height: 1.75 !important;
+}
+
+.program-page .mock-content {
+    color: var(--ddu-text-body);
+    font-size: var(--font-body) !important;
+    line-height: 1.6 !important;
+}
+
+.article-page .post-full-content p,
+.article-page .post-full-content li,
+.program-page .mock-content p,
+.program-page .mock-content li,
+.policy-content p,
+.policy-content li {
+    color: var(--ddu-text-body);
+}
+
+.article-page .post-full-content h1,
+.article-page .post-full-content h2,
+.program-page .mock-content h1,
+.program-page .mock-content h2,
+.policy-content h2 {
+    color: var(--ddu-text-heading);
+    font-weight: 700;
+    letter-spacing: -.028em;
+}
+
+.article-page .post-full-content h3,
+.article-page .post-full-content h4,
+.program-page .mock-content h3,
+.program-page .mock-content h4,
+.policy-content h3 {
+    color: var(--ddu-text-subheading);
+    font-weight: 700;
+    letter-spacing: -.018em;
+}
+
+.article-page .post-full-content a,
+.program-page .mock-content a,
+.policy-content a {
+    color: var(--ddu-primary);
+    font-weight: 600;
+    text-decoration-color: rgba(7, 86, 214, .42);
+    text-decoration-thickness: .08em;
+    text-underline-offset: .18em;
+}
+
+/* Teks di bidang gelap selalu memakai kontras terang yang terkontrol. */
+.footer h2,
+.footer h3,
+.footer h4,
+.footer .footer-heading,
+.cta-minimal h2,
+.post-donation-cta h2,
+.post-donation-cta h3,
+.program-donation-cta h2,
+.program-donation-cta h3,
+.video-promo-content h2,
+.vision-card--primary h2,
+.transparency-section h2,
+.transparency-section h3,
+.trust-warning__inner strong {
+    color: var(--ddu-text-on-dark);
+}
+
+.footer p,
+.footer li,
+.footer a,
+.cta-minimal p,
+.post-donation-cta p,
+.program-donation-cta p,
+.video-promo-content p,
+.vision-card--primary p,
+.transparency-section p,
+.transparency-section li,
+.trust-warning__inner p {
+    color: var(--ddu-text-on-dark-muted);
+}
+
+/* Panel admin mengikuti hirarki yang sama, tetapi warna status tetap dipertahankan. */
+.admin-page .admin-workspace-header h1 {
+    color: var(--ddu-text-on-dark);
+    font-size: clamp(1.9rem, 1.55rem + 1.4vw, 2.8rem);
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -.038em;
+}
+
+.admin-page .admin-workspace-header h1 + p,
+.admin-page .admin-workspace-meta span,
+.admin-page .admin-workspace-meta a {
+    color: var(--ddu-text-on-dark-muted);
+}
+
+.admin-page .card h2,
+.admin-page .card h3,
+.admin-page .homepage-settings-panel h2,
+.admin-page .homepage-media-section h2,
+.admin-page .admin-dialog-card h2 {
+    color: var(--ddu-text-heading);
+}
+
+.admin-page label {
+    color: var(--ddu-text-subheading);
+    font-size: var(--font-sm);
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.admin-page input,
+.admin-page textarea,
+.admin-page select,
+.admin-page .visual-editor {
+    color: var(--ddu-text-body);
+    font-size: .96rem;
+    font-weight: 400;
+    line-height: 1.6;
+    letter-spacing: 0;
+}
+
+.admin-page input::placeholder,
+.admin-page textarea::placeholder {
+    color: var(--ddu-text-soft);
+}
+
+@media (max-width: 768px) {
+    :root {
+        --font-display: clamp(2.15rem, 9vw, 3.15rem);
+        --font-h2: clamp(1.65rem, 6.4vw, 2.2rem);
+        --font-h3: clamp(1.2rem, 4.8vw, 1.48rem);
+        --font-body: clamp(.98rem, 3.8vw, 1.04rem);
+        --font-lead: clamp(1.02rem, 4.1vw, 1.14rem);
+    }
+
+    body h1,
+    .home-page .hero-content h1,
+    .about-page .about-hero h1,
+    .article-page .post-hero h1,
+    .program-page .detail-program-hero h1,
+    .credibility-page .credibility-hero h1 {
+        line-height: 1.08;
+        letter-spacing: -.04em;
+    }
+
+    body main p,
+    body main li,
+    .article-page .post-full-content {
+        line-height: 1.68 !important;
+    }
+
+    .program-page .mock-content {
+        line-height: 1.58 !important;
+    }
+
+    .program-page .mock-content p,
+    .program-page .mock-content li {
+        line-height: 1.58 !important;
+    }
+}
