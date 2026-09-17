@@ -31,8 +31,8 @@
 
     body.home-page {
         overflow-x: clip;
-        background: #f3f7fc;
-        -webkit-tap-highlight-color: rgba(30, 91, 168, .15);
+        background: #EAF2FF;
+        -webkit-tap-highlight-color: rgba(7, 86, 214, .15);
     }
 
     .home-page :where(a, button, input, textarea) {
@@ -40,7 +40,7 @@
     }
 
     .home-page :where(a, button, input, textarea):focus-visible {
-        outline: 3px solid rgba(70, 151, 238, .55);
+        outline: 3px solid rgba(23, 105, 245, .55);
         outline-offset: 3px;
     }
 
@@ -66,7 +66,7 @@
         display: block;
         height: 3px;
         overflow: hidden;
-        background: rgba(255, 255, 255, .18);
+        background: rgba(250, 250, 247, .18);
         pointer-events: none;
     }
 
@@ -74,8 +74,8 @@
         display: block;
         width: 100%;
         height: 100%;
-        background: linear-gradient(90deg, #47a7ff, #76d6ff);
-        box-shadow: 0 0 12px rgba(71, 167, 255, .65);
+        background: linear-gradient(90deg, #1769F5, #EAF2FF);
+        box-shadow: 0 0 12px rgba(23, 105, 245, .65);
         transform: scaleX(var(--page-progress, 0));
         transform-origin: left center;
         will-change: transform;
@@ -86,18 +86,18 @@
         top: max(8px, env(safe-area-inset-top));
         left: 10px;
         width: calc(100% - 20px);
-        border: 1px solid rgba(255, 255, 255, .1);
+        border: 1px solid rgba(250, 250, 247, .1);
         border-radius: 16px;
-        background: rgba(5, 28, 62, .9);
-        box-shadow: 0 10px 30px rgba(1, 18, 42, .2);
+        background: rgba(6, 59, 158, .9);
+        box-shadow: 0 10px 30px rgba(6, 59, 158, .2);
         transform: none;
         -webkit-backdrop-filter: blur(16px) saturate(125%);
         backdrop-filter: blur(16px) saturate(125%);
     }
 
     .home-page .main-header.scrolled {
-        background: rgba(5, 28, 62, .97);
-        box-shadow: 0 10px 30px rgba(1, 18, 42, .3);
+        background: rgba(6, 59, 158, .97);
+        box-shadow: 0 10px 30px rgba(6, 59, 158, .3);
     }
 
     .home-page .main-header .container {
@@ -141,9 +141,9 @@
         align-items: center;
         justify-content: center;
         gap: 5px;
-        border: 1px solid rgba(255, 255, 255, .14);
+        border: 1px solid rgba(250, 250, 247, .14);
         border-radius: 13px;
-        background: rgba(255, 255, 255, .07);
+        background: rgba(250, 250, 247, .07);
     }
 
     .home-page .menu-toggle .bar {
@@ -161,8 +161,8 @@
         gap: 6px;
         border-radius: 20px;
         background:
-            radial-gradient(circle at 90% 0%, rgba(59, 139, 226, .24), transparent 35%),
-            linear-gradient(160deg, rgba(7, 32, 70, .998), rgba(3, 18, 42, .998));
+            radial-gradient(circle at 90% 0%, rgba(23, 105, 245, .24), transparent 35%),
+            linear-gradient(160deg, rgba(6, 59, 158, .998), rgba(6, 59, 158, .998));
     }
 
     .home-page .nav-links::before {
@@ -211,17 +211,17 @@
     }
 
     .home-page .hero-overlay {
-        background: linear-gradient(180deg, rgba(4, 23, 51, .24) 0%, rgba(5, 28, 62, .38) 48%, rgba(4, 24, 55, .78) 100%);
+        background: linear-gradient(180deg, rgba(6, 59, 158, .24) 0%, rgba(6, 59, 158, .38) 48%, rgba(6, 59, 158, .78) 100%);
     }
 
     .home-page .hero-content {
         max-width: 560px;
         padding: 24px 22px 23px;
         text-align: left;
-        border: 1px solid rgba(255, 255, 255, .13);
+        border: 1px solid rgba(250, 250, 247, .13);
         border-radius: 22px;
-        background: rgba(6, 31, 68, .48);
-        box-shadow: 0 20px 45px rgba(0, 14, 36, .18);
+        background: rgba(6, 59, 158, .48);
+        box-shadow: 0 20px 45px rgba(23, 32, 51, .18);
         -webkit-backdrop-filter: blur(6px);
         backdrop-filter: blur(6px);
     }
@@ -240,7 +240,7 @@
 
     .home-page .hero-content p {
         margin-bottom: 22px;
-        color: #e6eef8;
+        color: #EAF2FF;
         font-size: clamp(.95rem, 4vw, 1.05rem);
         line-height: 1.65;
         text-shadow: none;
@@ -303,11 +303,11 @@
         min-height: 52px;
         padding: 13px 18px;
         border-width: 1px;
-        border-color: #ccd9e8;
+        border-color: #EAF2FF;
         border-radius: 14px;
-        background: #fff;
+        background: #FAFAF7;
         font-size: 16px;
-        box-shadow: 0 7px 20px rgba(10, 38, 71, .06);
+        box-shadow: 0 7px 20px rgba(6, 59, 158, .06);
     }
 
     /* Foto tentang kami lebih proporsional dan tidak keluar viewport. */
@@ -355,10 +355,10 @@
         margin: 0;
         padding: 17px 17px 17px 45px;
         cursor: default;
-        border: 1px solid #dce7f3;
+        border: 1px solid #EAF2FF;
         border-radius: 15px;
-        background: rgba(246, 250, 255, .88);
-        box-shadow: 0 8px 22px rgba(10, 38, 71, .045);
+        background: rgba(234, 242, 255, .88);
+        box-shadow: 0 8px 22px rgba(6, 59, 158, .045);
     }
 
     .home-page .about-list li::before {
@@ -367,7 +367,7 @@
     }
 
     .home-page .about-list li:hover {
-        background: rgba(246, 250, 255, .88);
+        background: rgba(234, 242, 255, .88);
         transform: none;
     }
 
@@ -411,7 +411,7 @@
     .home-page .calculator-card,
     .home-page .contact-wrapper {
         border-radius: var(--mobile-radius);
-        box-shadow: 0 12px 34px rgba(10, 38, 71, .09);
+        box-shadow: 0 12px 34px rgba(6, 59, 158, .09);
     }
 
     .home-page .nishab-card {
@@ -427,9 +427,9 @@
     .home-page .form-group textarea {
         min-height: 52px;
         padding: 13px 15px;
-        border-color: #d5dfeb;
+        border-color: #EAF2FF;
         border-radius: 12px;
-        background: #fbfdff;
+        background: #FAFAF7;
         font-size: 16px;
     }
 
@@ -481,7 +481,7 @@
     }
 
     .home-page .video-overlay {
-        background: linear-gradient(180deg, rgba(5, 28, 61, .5), rgba(4, 25, 57, .94));
+        background: linear-gradient(180deg, rgba(6, 59, 158, .5), rgba(6, 59, 158, .94));
     }
 
     .home-page .video-promo-content {
@@ -504,7 +504,7 @@
 
     .home-page .video-promo-content p {
         margin-bottom: 20px;
-        color: #dce6f2;
+        color: #EAF2FF;
         font-size: .96rem;
         line-height: 1.65;
     }
@@ -552,7 +552,7 @@
         height: 50px;
         padding: 0 17px 0 13px;
         gap: 8px;
-        border: 2px solid rgba(255, 255, 255, .8);
+        border: 2px solid rgba(250, 250, 247, .8);
         border-radius: 999px;
         box-shadow: 0 10px 28px rgba(9, 68, 35, .28);
         animation: none;
@@ -565,7 +565,7 @@
 
     .home-page .whatsapp-popup__label {
         display: inline;
-        color: #fff;
+        color: #FAFAF7;
         font-size: .9rem;
         font-weight: 800;
         line-height: 1;
@@ -577,7 +577,7 @@
         width: 44px;
         height: 44px;
         font-size: 1.05rem;
-        box-shadow: 0 8px 22px rgba(4, 25, 57, .25);
+        box-shadow: 0 8px 22px rgba(6, 59, 158, .25);
     }
 }
 
@@ -588,14 +588,14 @@
         align-items: center;
         justify-content: space-between;
         margin: 0 0 12px;
-        color: #687c96;
+        color: #0756D6;
         font-size: .79rem;
         font-weight: 700;
         letter-spacing: .015em;
     }
 
     .home-page .mobile-swipe-hint span {
-        color: #1e5ba8;
+        color: #0756D6;
         font-size: 1.1rem;
     }
 

@@ -1,0 +1,511 @@
+/* Sistem warna resmi Dompet Dana Umat.
+   Komposisi visual: 50% Warm White, 25% DDU Blue, 10% Pale Blue,
+   7% Deep Blue, 5% Charcoal, dan 3% Soft Gold. */
+:root {
+    --ddu-primary: #0756D6;
+    --ddu-deep: #063B9E;
+    --ddu-action: #1769F5;
+    --ddu-pale: #EAF2FF;
+    --ddu-warm: #FAFAF7;
+    --ddu-charcoal: #172033;
+    --ddu-gold: #D4A84F;
+
+    --about-navy: var(--ddu-deep);
+    --about-blue: var(--ddu-primary);
+    --about-sky: var(--ddu-pale);
+    --about-gold: var(--ddu-gold);
+    --about-ink: var(--ddu-charcoal);
+    --about-muted: rgba(23, 32, 51, .72);
+    --about-line: rgba(7, 86, 214, .16);
+
+    --cred-navy: var(--ddu-deep);
+    --cred-blue: var(--ddu-primary);
+    --cred-pale: var(--ddu-pale);
+    --cred-text: rgba(23, 32, 51, .74);
+
+    --admin-navy: var(--ddu-deep);
+    --admin-blue: var(--ddu-primary);
+    --admin-blue-dark: var(--ddu-deep);
+    --admin-blue-soft: var(--ddu-pale);
+    --admin-ink: var(--ddu-charcoal);
+    --admin-muted: rgba(23, 32, 51, .68);
+    --admin-line: rgba(7, 86, 214, .16);
+    --admin-surface: var(--ddu-warm);
+    --admin-bg: var(--ddu-pale);
+    --admin-shadow: 0 12px 36px rgba(23, 32, 51, .09);
+}
+
+html {
+    color: var(--ddu-charcoal);
+    background: var(--ddu-warm);
+    scrollbar-color: var(--ddu-primary) var(--ddu-pale);
+}
+
+body,
+body.home-page,
+body.about-page,
+body.article-page,
+body.program-page,
+body.credibility-page {
+    color: var(--ddu-charcoal);
+    background: var(--ddu-warm);
+}
+
+::selection {
+    color: var(--ddu-warm);
+    background: var(--ddu-primary);
+}
+
+::-webkit-scrollbar-track { background: var(--ddu-pale); }
+::-webkit-scrollbar-thumb { background: var(--ddu-primary); border-color: var(--ddu-pale); }
+::-webkit-scrollbar-thumb:hover { background: var(--ddu-deep); }
+
+h1, h2, h3, h4, h5, h6,
+.section-header h2,
+.calculator-info h3,
+.post-full-content h1,
+.post-full-content h2,
+.post-full-content h3,
+.post-full-content h4,
+.program-page .mock-content h1,
+.program-page .mock-content h2,
+.program-page .mock-content h3,
+.program-page .mock-content h4 {
+    color: var(--ddu-charcoal);
+}
+
+a { color: var(--ddu-primary); }
+a:hover { color: var(--ddu-deep); }
+
+:where(a, button, input, textarea, select):focus-visible {
+    outline-color: var(--ddu-gold) !important;
+}
+
+.btn-primary,
+.about-btn--primary,
+.official-contact a,
+.pagination-button.active,
+.pagination-button:hover,
+.btn-reset,
+.admin-page .btn-primary {
+    color: var(--ddu-warm);
+    border-color: var(--ddu-action);
+    background: var(--ddu-action);
+}
+
+.btn-primary:hover,
+.about-btn--primary:hover,
+.official-contact a:hover,
+.admin-page .btn-primary:hover {
+    color: var(--ddu-warm);
+    border-color: var(--ddu-primary);
+    background: var(--ddu-primary);
+}
+
+.btn-secondary,
+.admin-page .btn-secondary {
+    color: var(--ddu-primary);
+    border-color: rgba(7, 86, 214, .34);
+    background: var(--ddu-warm);
+}
+
+.btn-secondary:hover,
+.admin-page .btn-secondary:hover {
+    color: var(--ddu-warm);
+    border-color: var(--ddu-primary);
+    background: var(--ddu-primary);
+}
+
+.section-kicker,
+.eyebrow,
+.card-kicker,
+.post-category,
+.post-section-heading > span,
+.post-summary > span,
+.post-donation-cta > span,
+.donation-method-label,
+.credibility-hero .eyebrow,
+.credibility-section .eyebrow,
+.admin-workspace-kicker,
+.admin-eyebrow {
+    color: var(--ddu-primary) !important;
+}
+
+.home-page .hero-content .section-kicker,
+.post-hero .post-category,
+.detail-program-hero .section-kicker,
+.cta-minimal .section-kicker,
+.post-donation-cta > span,
+.program-donation-cta > span,
+.about-hero .eyebrow,
+.credibility-hero .eyebrow,
+.vision-card--primary .card-kicker,
+.transparency-section .eyebrow {
+    color: var(--ddu-warm) !important;
+}
+
+/* Navigasi dan footer memakai porsi Deep Blue. */
+.main-header,
+.main-header.scrolled,
+.about-page .main-header,
+.article-page .main-header,
+.article-page .main-header.scrolled,
+.credibility-page .main-header {
+    background: rgba(6, 59, 158, .96);
+    box-shadow: 0 10px 30px rgba(23, 32, 51, .16);
+}
+
+.navbar { border-color: rgba(250, 250, 247, .2); }
+.logo,
+.logo:hover,
+.logo:focus,
+.logo:visited,
+.nav-links a,
+.close-menu-btn,
+.mobile-socials__label { color: var(--ddu-warm); }
+.nav-links a:hover,
+.nav-links a.active { color: var(--ddu-warm); }
+.nav-links a::after { background: var(--ddu-gold); }
+.menu-toggle { border-color: rgba(250, 250, 247, .18); background: rgba(250, 250, 247, .08); }
+.menu-toggle .bar { background: var(--ddu-warm); }
+
+@media (max-width: 768px) {
+    .nav-links,
+    .home-page .nav-links,
+    .about-page .nav-links {
+        background:
+            radial-gradient(circle at 92% 2%, rgba(212, 168, 79, .16), transparent 34%),
+            linear-gradient(155deg, var(--ddu-deep), var(--ddu-primary));
+    }
+}
+
+.footer {
+    color: var(--ddu-pale);
+    background: var(--ddu-deep);
+}
+.footer::before { background: var(--ddu-gold); }
+.footer .footer-logo,
+.footer .footer-heading,
+.footer .footer-col > .footer-heading { color: var(--ddu-warm); }
+.footer .footer-col > p,
+.footer .contact-info,
+.footer .footer-bottom p,
+.footer .footer-policy-links a { color: var(--ddu-pale); }
+.footer .social-icon { border-color: rgba(250, 250, 247, .2); background: rgba(250, 250, 247, .08); }
+.footer-bottom { border-color: rgba(250, 250, 247, .16); }
+
+/* Homepage: Warm White menjadi bidang utama, Pale Blue sebagai pemisah. */
+.home-page .hero { background: var(--ddu-deep); }
+.home-page .hero-overlay {
+    background: linear-gradient(100deg, rgba(6, 59, 158, .9), rgba(7, 86, 214, .63) 58%, rgba(23, 32, 51, .48));
+}
+.home-page .hero-content h1,
+.home-page .hero-content p { color: var(--ddu-warm); }
+.home-page .hero-content .section-kicker { color: var(--ddu-warm) !important; }
+
+.home-page .blog,
+.home-page .gallery-section,
+.home-page .contact { background: var(--ddu-warm); }
+.home-page .about,
+.home-page .about--photos,
+.home-page .calculator { background: var(--ddu-pale); }
+.home-page .video-promo { background: var(--ddu-deep); }
+.home-page .video-overlay { background: linear-gradient(90deg, rgba(6, 59, 158, .92), rgba(7, 86, 214, .54)); }
+.home-page .video-promo-content h2,
+.home-page .video-promo-content p { color: var(--ddu-warm); }
+
+.blog-card,
+.calculator-card,
+.contact-wrapper,
+.gallery-item,
+.home-proof__card,
+.home-process__steps li {
+    border-color: rgba(7, 86, 214, .15);
+    background: var(--ddu-warm);
+    box-shadow: 0 16px 42px rgba(23, 32, 51, .08);
+}
+.blog-card:hover,
+.gallery-item:hover { box-shadow: 0 20px 48px rgba(7, 86, 214, .14); }
+.blog-date,
+.calculator-note,
+.gallery-intro,
+.about-content p { color: rgba(23, 32, 51, .7); }
+.blog-content h3,
+.blog-content h3 a,
+.program-card-title,
+.calculator-info h3 { color: var(--ddu-charcoal); }
+.read-more,
+.gallery-text h4,
+.about-list strong { color: var(--ddu-primary); }
+.gallery-overlay { background: linear-gradient(180deg, transparent 25%, rgba(6, 59, 158, .92)); }
+.gallery-text h4,
+.gallery-text p { color: var(--ddu-warm); }
+.gallery-text h4::after { background: var(--ddu-gold); }
+.about-list li::before,
+.result-total strong,
+.result-row strong { color: var(--ddu-primary); }
+
+.form-group input,
+.form-group textarea,
+.form-group select,
+.calculator-card input,
+.calculator-card select,
+.blog-search-input {
+    color: var(--ddu-charcoal);
+    border-color: rgba(7, 86, 214, .2);
+    background: var(--ddu-warm);
+}
+.form-group input::placeholder,
+.form-group textarea::placeholder,
+.blog-search-input::placeholder,
+.admin-page input::placeholder,
+.admin-page textarea::placeholder {
+    color: rgba(23, 32, 51, .52);
+    opacity: 1;
+}
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus,
+.calculator-card input:focus,
+.calculator-card select:focus,
+.blog-search-input:focus {
+    border-color: var(--ddu-action);
+    box-shadow: 0 0 0 3px rgba(23, 105, 245, .13);
+}
+
+/* Artikel dan program. */
+.article-page,
+.program-page { background: var(--ddu-warm); }
+.post-hero,
+.detail-program-hero {
+    background: linear-gradient(135deg, var(--ddu-deep), var(--ddu-primary));
+}
+.post-hero-overlay,
+.detail-program-hero .hero-overlay {
+    background: linear-gradient(110deg, rgba(6, 59, 158, .93), rgba(7, 86, 214, .72)) !important;
+}
+.post-hero h1,
+.detail-program-hero h1,
+.post-hero-meta strong,
+.detail-program-hero .hero-content p { color: var(--ddu-warm) !important; }
+.post-breadcrumb,
+.post-breadcrumb a,
+.post-hero-meta { color: rgba(250, 250, 247, .82); }
+.post-page-layout,
+.program-page #program-container > .container { background: var(--ddu-warm); }
+.post-full,
+.related-card {
+    color: var(--ddu-charcoal);
+    border-color: rgba(7, 86, 214, .14);
+    background: var(--ddu-warm);
+    box-shadow: 0 20px 54px rgba(23, 32, 51, .08);
+}
+.post-summary,
+.post-full-content blockquote,
+.dalil-box {
+    border-color: var(--ddu-primary);
+    background: var(--ddu-pale);
+}
+.post-full-content,
+.post-summary ul,
+.post-full-content blockquote,
+.program-page .mock-content,
+.program-page .mock-content p { color: var(--ddu-charcoal); }
+.post-full-content a,
+.related-read-more,
+.related-content h3 a { color: var(--ddu-primary); }
+.post-share { border-color: rgba(7, 86, 214, .16); }
+.post-share > span:first-child,
+.related-content h3 a { color: var(--ddu-charcoal); }
+.post-share-buttons a:not(:first-child),
+.post-share-buttons button { background: var(--ddu-primary); }
+.related-section { border-color: rgba(7, 86, 214, .14); }
+.related-img-wrapper { background: var(--ddu-pale); }
+
+.cta-minimal,
+.post-donation-cta,
+.program-donation-cta {
+    color: var(--ddu-warm);
+    background:
+        radial-gradient(circle at 92% 0, rgba(212, 168, 79, .2), transparent 30%),
+        linear-gradient(140deg, var(--ddu-deep), var(--ddu-primary));
+}
+.cta-minimal h2,
+.post-donation-cta h2,
+.program-donation-cta h2,
+.donation-method h3 { color: var(--ddu-warm); }
+.cta-minimal p,
+.post-donation-cta p,
+.program-donation-cta p,
+.donation-method small { color: var(--ddu-pale); }
+.donation-method { color: var(--ddu-warm); background: rgba(250, 250, 247, .08); }
+.donation-whatsapp-number { color: var(--ddu-gold); }
+.donation-method--qr a { background: var(--ddu-warm); }
+.btn-whatsapp-minimal { color: var(--ddu-warm); }
+.back-to-top { color: var(--ddu-warm); background: var(--ddu-action); }
+
+/* About. */
+.about-page { background: var(--ddu-warm); }
+.about-hero { background-color: var(--ddu-deep); }
+.about-hero__overlay { background: linear-gradient(90deg, rgba(6, 59, 158, .96), rgba(7, 86, 214, .74) 58%, rgba(23, 32, 51, .38)); }
+.about-hero h1,
+.about-hero p,
+.eyebrow--light { color: var(--ddu-warm); }
+.about-hero .eyebrow { color: var(--ddu-warm) !important; }
+.about-btn--ghost { color: var(--ddu-warm); border-color: rgba(250, 250, 247, .5); background: rgba(250, 250, 247, .08); }
+.about-btn--light { color: var(--ddu-deep); background: var(--ddu-warm); }
+.trust-item,
+.vision-card--mission,
+.value-card,
+.program-focus__grid article,
+.process-section,
+.about-cta { background: var(--ddu-warm); }
+.trust-item,
+.vision-card--mission,
+.value-card,
+.program-focus__grid,
+.program-focus__grid article { border-color: rgba(7, 86, 214, .16); }
+.trust-item__number,
+.program-focus__grid span { color: var(--ddu-primary); }
+.focus-box,
+.vision-section,
+.program-focus { background: var(--ddu-pale); }
+.focus-box { border-color: var(--ddu-primary); }
+.vision-card--primary,
+.transparency-section { background: linear-gradient(145deg, var(--ddu-deep), var(--ddu-primary)); }
+.vision-card--primary h2,
+.vision-card--primary p,
+.transparency-copy h2,
+.transparency-copy p,
+.transparency-panel h3,
+.transparency-panel strong,
+.transparency-panel small { color: var(--ddu-warm); }
+.vision-card--primary .card-kicker,
+.transparency-panel li > span { color: var(--ddu-warm); }
+.value-card__icon,
+.process-list article > span { color: var(--ddu-warm); background: var(--ddu-primary); }
+.transparency-panel { border-color: rgba(250, 250, 247, .16); background: rgba(250, 250, 247, .08); }
+
+/* Kredibilitas dan privasi. */
+.credibility-page { color: var(--ddu-charcoal); background: var(--ddu-pale); }
+.credibility-hero { color: var(--ddu-warm); background: linear-gradient(135deg, var(--ddu-deep), var(--ddu-primary)); }
+.credibility-hero h1,
+.credibility-hero p { color: var(--ddu-warm); }
+.trust-warning__inner { color: var(--ddu-warm); border-color: var(--ddu-gold); background: var(--ddu-deep); }
+.trust-warning__inner p { color: var(--ddu-pale); }
+.credibility-section { background: var(--ddu-pale); }
+.credibility-section--white { background: var(--ddu-warm); }
+.credibility-card,
+.policy-content { border-color: rgba(7, 86, 214, .14); background: var(--ddu-warm); box-shadow: 0 14px 38px rgba(23, 32, 51, .07); }
+.credibility-heading h2,
+.credibility-card h3,
+.policy-content h2 { color: var(--ddu-charcoal); }
+.credibility-heading p,
+.credibility-card p,
+.credibility-card li,
+.policy-content p,
+.policy-content li { color: rgba(23, 32, 51, .74); }
+.credibility-list a,
+.policy-content a { color: var(--ddu-primary); }
+.empty-information { background: var(--ddu-pale); }
+
+/* Panel admin memakai sistem warna yang sama tanpa menghilangkan warna status. */
+body.admin-page {
+    color: var(--ddu-charcoal);
+    background:
+        radial-gradient(circle at 100% 0, rgba(7, 86, 214, .11), transparent 30rem),
+        var(--ddu-pale);
+}
+.admin-page .sidebar-card,
+.admin-page .card,
+.admin-page .homepage-settings-panel,
+.admin-page .homepage-live-preview,
+.admin-page .homepage-media-section,
+.admin-page .admin-dialog-card {
+    border-color: rgba(7, 86, 214, .15);
+    background: var(--ddu-warm);
+    box-shadow: 0 12px 36px rgba(23, 32, 51, .09);
+}
+.admin-page h1,
+.admin-page h2,
+.admin-page h3,
+.admin-page h4,
+.admin-page label,
+.admin-page .admin-brand,
+.admin-page .login-brand strong { color: var(--ddu-charcoal); }
+.admin-page .sidebar-nav button { color: rgba(23, 32, 51, .72); }
+.admin-page .sidebar-nav button.active,
+.admin-page .sidebar-nav button:hover {
+    color: var(--ddu-primary);
+    background: var(--ddu-pale);
+}
+.admin-page .sidebar-nav button.active .nav-symbol,
+.admin-page .nav-symbol { border-color: rgba(7, 86, 214, .2); }
+.admin-page .sidebar-nav button.active .nav-symbol { color: var(--ddu-warm); background: var(--ddu-primary); }
+.admin-page .sidebar-label,
+.admin-page .admin-section-eyebrow,
+.admin-page .login-heading .admin-eyebrow { color: var(--ddu-primary); }
+.admin-page input,
+.admin-page textarea,
+.admin-page select,
+.admin-page .visual-editor,
+.admin-page .toolbar button,
+.admin-page .toolbar select,
+.admin-page .drop-zone {
+    color: var(--ddu-charcoal);
+    border-color: rgba(7, 86, 214, .2);
+    background: var(--ddu-warm);
+}
+.admin-page input:focus,
+.admin-page textarea:focus,
+.admin-page select:focus,
+.admin-page .visual-editor:focus {
+    border-color: var(--ddu-action);
+    box-shadow: 0 0 0 3px rgba(23, 105, 245, .12);
+}
+.admin-page .drop-zone:hover,
+.admin-page .drop-zone.dragover,
+.admin-page .publication-settings,
+.admin-page .seo-settings,
+.admin-page .homepage-settings-panel {
+    border-color: rgba(7, 86, 214, .22);
+    background: var(--ddu-pale);
+}
+.admin-page .toolbar button:hover,
+.admin-page .toolbar button.active { color: var(--ddu-warm); border-color: var(--ddu-primary); background: var(--ddu-primary); }
+.admin-page button:disabled,
+.admin-page .admin-pagination button:disabled {
+    color: rgba(23, 32, 51, .46);
+    border-color: rgba(7, 86, 214, .12);
+    background: var(--ddu-pale);
+}
+.admin-page .stat-card-admin,
+.admin-page .analytics-summary-card,
+.admin-page .analytics-card { border-color: rgba(7, 86, 214, .14); background: var(--ddu-warm); }
+.admin-page .stat-card-admin { border-left-color: var(--ddu-primary); }
+.admin-page .stat-card-admin .number,
+.admin-page .analytics-summary-card strong { color: var(--ddu-primary); }
+.admin-page .analytics-bar-fill,
+.admin-page .analytics-chart-bar { background: linear-gradient(90deg, var(--ddu-primary), var(--ddu-action)); }
+.admin-page .homepage-mobile-priority,
+.admin-page .homepage-media-heading > span,
+.admin-page #homepage-preview-size {
+    color: var(--ddu-deep);
+    border-color: rgba(212, 168, 79, .42);
+    background: rgba(212, 168, 79, .14);
+}
+.admin-page .homepage-preview-toggle button.is-active { color: var(--ddu-warm); background: var(--ddu-primary); }
+.admin-page .homepage-preview-stage { border-color: rgba(7, 86, 214, .16); background: var(--ddu-pale); }
+.admin-page .homepage-preview-navbar { background: rgba(6, 59, 158, .94); }
+.admin-page .homepage-preview-shade { background: linear-gradient(180deg, rgba(6, 59, 158, .18), rgba(6, 59, 158, .78)); }
+.admin-page .homepage-preview-copy { background: rgba(6, 59, 158, .56); }
+.admin-page .homepage-preview-copy small { color: var(--ddu-warm); }
+.admin-page .homepage-preview-copy span { color: var(--ddu-warm); background: var(--ddu-action); }
+.admin-page .homepage-live-preview[data-preview-mode="desktop"] .homepage-preview-shade { background: rgba(6, 59, 158, .76); }
+
+/* Gold hanya menjadi aksen kecil, bukan bidang utama. */
+.section-header h2::after,
+.eyebrow::before,
+.home-process__steps span,
+.trust-warning__inner,
+.gallery-text h4::after { border-color: var(--ddu-gold); background-color: var(--ddu-gold); }

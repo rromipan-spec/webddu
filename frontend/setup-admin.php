@@ -78,7 +78,7 @@ function e(string $value): string
     <meta name="robots" content="noindex,nofollow">
     <title>Setup/Reset Admin DDU</title>
     <style>
-        body{font-family:Arial,sans-serif;background:#f1f5f9;margin:0;padding:40px 16px;color:#172033}.card{max-width:480px;margin:40px auto;background:#fff;padding:30px;border-radius:14px;box-shadow:0 12px 35px #0f172a1a}label{display:block;font-weight:700;margin:16px 0 6px}input{box-sizing:border-box;width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:8px}button{width:100%;padding:13px;margin-top:22px;border:0;border-radius:8px;background:#164e9b;color:#fff;font-weight:700;cursor:pointer}.message{padding:12px;border-radius:8px;background:#fff3cd;margin-bottom:16px}.success{background:#dcfce7}small{color:#64748b;line-height:1.5;display:block;margin-top:15px}
+        body{font-family:Arial,sans-serif;background:#EAF2FF;margin:0;padding:40px 16px;color:#172033}.card{max-width:480px;margin:40px auto;background:#FAFAF7;padding:30px;border:1px solid rgba(7, 86, 214, .16);border-radius:14px;box-shadow:0 12px 35px rgba(23, 32, 51, .1)}label{display:block;font-weight:700;margin:16px 0 6px}input{box-sizing:border-box;width:100%;padding:12px;border:1px solid rgba(7, 86, 214, .22);border-radius:8px;background:#FAFAF7;color:#172033}button{width:100%;padding:13px;margin-top:22px;border:0;border-radius:8px;background:#1769F5;color:#FAFAF7;font-weight:700;cursor:pointer}.message{padding:12px;border-radius:8px;border-left:4px solid #D4A84F;background:#EAF2FF;margin-bottom:16px}.success{border-left-color:#0756D6;background:#EAF2FF}small{color:rgba(23, 32, 51, .7);line-height:1.5;display:block;margin-top:15px}
     </style>
 </head>
 <body><main class="card"><h1>Setup/Reset Super Admin</h1>

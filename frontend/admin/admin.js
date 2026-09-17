@@ -576,7 +576,7 @@ function updatePreview() {
     if (pImage) { pImage.src = managedImageVariant(image, 'thumb'); pImage.style.display = image ? 'block' : 'none'; }
     if (pHero) {
         const heroImage = article ? (parseGalleryImages(document.getElementById('post-hero-images')?.value, 10)[0] || '') : image;
-        pHero.style.backgroundImage = heroImage ? `linear-gradient(rgba(10, 38, 71, .76), rgba(10, 38, 71, .76)), url("${heroImage.replace(/["\\]/g, '\\$&')}")` : '';
+        pHero.style.backgroundImage = heroImage ? `linear-gradient(rgba(6, 59, 158, .76), rgba(6, 59, 158, .76)), url("${heroImage.replace(/["\\]/g, '\\$&')}")` : '';
     }
     if (pBody) pBody.innerHTML = content || 'Mulai mengetik untuk melihat hasil...';
 }

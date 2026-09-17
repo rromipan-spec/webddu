@@ -136,11 +136,11 @@ document.addEventListener('DOMContentLoaded', function() {
             if (netIncome >= nishabMonthly) {
                 zakatMonthly = netIncome * 0.025;
                 nishabStatusText = "Mencapai Estimasi Nishab";
-                nishabStatusColor = "#27ae60"; // Hijau
+                nishabStatusColor = "#27AE60"; // Hijau
             } else {
                 zakatMonthly = 0;
                 nishabStatusText = "Belum Mencapai Estimasi Nishab";
-                nishabStatusColor = "#d35400"; // Oranye
+                nishabStatusColor = "#D4A84F"; // Oranye
             }
 
             // Hitung Zakat Tahunan (Jika pendapatan setahun mencapai nishab tahunan)
