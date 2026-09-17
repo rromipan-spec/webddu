@@ -1,0 +1,49 @@
+/* Metropolis by Chris Simpson - SIL Open Font License 1.1.
+   Font files are self-hosted for stable rendering and better privacy. */
+@font-face {
+    font-family: "Metropolis";
+    src: url("asset/fonts/metropolis/Metropolis-Regular.woff2") format("woff2");
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Metropolis";
+    src: url("asset/fonts/metropolis/Metropolis-RegularItalic.woff2") format("woff2");
+    font-style: italic;
+    font-weight: 400;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Metropolis";
+    src: url("asset/fonts/metropolis/Metropolis-Medium.woff2") format("woff2");
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Metropolis";
+    src: url("asset/fonts/metropolis/Metropolis-SemiBold.woff2") format("woff2");
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Metropolis";
+    src: url("asset/fonts/metropolis/Metropolis-Bold.woff2") format("woff2");
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Metropolis";
+    src: url("asset/fonts/metropolis/Metropolis-ExtraBold.woff2") format("woff2");
+    font-style: normal;
+    font-weight: 800;
+    font-display: swap;
+}

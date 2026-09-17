@@ -2,6 +2,7 @@
    Komposisi visual: 50% Warm White, 25% DDU Blue, 10% Pale Blue,
    7% Deep Blue, 5% Charcoal, dan 3% Soft Gold. */
 :root {
+    --ddu-font: "Metropolis", "Segoe UI", Arial, sans-serif;
     --ddu-primary: #0756D6;
     --ddu-deep: #063B9E;
     --ddu-action: #1769F5;
@@ -36,6 +37,7 @@
 }
 
 html {
+    font-family: var(--ddu-font);
     color: var(--ddu-charcoal);
     background: var(--ddu-warm);
     scrollbar-color: var(--ddu-primary) var(--ddu-pale);
@@ -47,8 +49,34 @@ body.about-page,
 body.article-page,
 body.program-page,
 body.credibility-page {
+    font-family: var(--ddu-font);
+    font-weight: 400;
+    letter-spacing: -.006em;
     color: var(--ddu-charcoal);
     background: var(--ddu-warm);
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+button,
+input,
+textarea,
+select,
+option,
+.visual-editor,
+[contenteditable="true"] {
+    font-family: var(--ddu-font);
+}
+
+p,
+li,
+dd,
+blockquote,
+.post-full-content,
+.program-page .mock-content {
+    letter-spacing: 0;
+    line-height: 1.72;
 }
 
 ::selection {
@@ -71,7 +99,74 @@ h1, h2, h3, h4, h5, h6,
 .program-page .mock-content h2,
 .program-page .mock-content h3,
 .program-page .mock-content h4 {
+    font-family: var(--ddu-font);
+    font-weight: 700;
+    letter-spacing: -.025em;
     color: var(--ddu-charcoal);
+}
+
+h1,
+.post-hero h1,
+.detail-program-hero h1,
+.about-hero h1,
+.admin-page h1 {
+    font-weight: 800;
+    letter-spacing: -.042em;
+    line-height: 1.08;
+}
+
+h2,
+.section-header h2,
+.admin-page h2 {
+    font-weight: 700;
+    letter-spacing: -.032em;
+    line-height: 1.16;
+}
+
+h3,
+h4,
+.admin-page h3,
+.admin-page h4 {
+    font-weight: 700;
+    letter-spacing: -.02em;
+    line-height: 1.28;
+}
+
+.logo,
+.nav-links a,
+.btn,
+button,
+label,
+strong,
+.read-more,
+.related-read-more {
+    font-family: var(--ddu-font);
+    font-weight: 600;
+}
+
+.logo,
+.admin-brand,
+.login-brand strong {
+    font-weight: 700;
+    letter-spacing: -.022em;
+}
+
+.section-kicker,
+.eyebrow,
+.card-kicker,
+.post-category,
+.sidebar-label,
+.admin-eyebrow {
+    font-family: var(--ddu-font);
+    font-weight: 700;
+    letter-spacing: .135em;
+}
+
+.stat-card-admin .number,
+.analytics-summary-card strong,
+.analytics-stat-value {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -.025em;
 }
 
 a { color: var(--ddu-primary); }
