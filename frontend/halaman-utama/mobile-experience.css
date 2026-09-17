@@ -186,7 +186,8 @@
 
     /* Hero: gambar tetap dominan, teks selalu terbaca di berbagai tinggi ponsel. */
     .home-page .hero {
-        min-height: clamp(620px, 100svh, 780px);
+        min-height: 100vh;
+        min-height: 100svh;
         padding: 118px 0 54px;
         align-items: flex-end;
     }
@@ -199,19 +200,10 @@
         background-position: center center;
     }
 
-    .home-page .slide-backdrop {
-        display: none;
-    }
-
     /* Foto memenuhi seluruh hero. Gunakan foto mobile vertikal agar objek utama tidak terpotong. */
-    .home-page .slide picture img,
-    .home-page .slide.has-mobile-image picture img {
+    .home-page .slide picture img {
         object-fit: cover;
         object-position: center center;
-    }
-
-    .home-page .hero-overlay {
-        background: linear-gradient(180deg, rgba(6, 59, 158, .24) 0%, rgba(6, 59, 158, .38) 48%, rgba(6, 59, 158, .78) 100%);
     }
 
     .home-page .hero-content {
@@ -646,7 +638,8 @@
 
 @media (max-width: 768px) and (orientation: landscape), (max-width: 768px) and (max-height: 540px) {
     .home-page .hero {
-        min-height: 560px;
+        min-height: 100vh;
+        min-height: 100svh;
         padding-top: 100px;
         padding-bottom: 34px;
     }

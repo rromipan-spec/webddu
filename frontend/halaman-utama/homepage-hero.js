@@ -26,10 +26,6 @@
         }
     }
 
-    function cssImageUrl(url) {
-        return `url("${String(url).replace(/["\\\n\r]/g, '\\$&')}")`;
-    }
-
     function createSlide(url, index, linkUrl, linkLabel) {
         const slide = document.createElement(linkUrl ? 'a' : 'div');
         slide.className = `slide${index === 0 ? ' is-active' : ''}${linkUrl ? ' is-linked' : ''}`;
@@ -38,11 +34,6 @@
             slide.href = linkUrl;
             slide.setAttribute('aria-label', linkLabel);
         }
-
-        const backdrop = document.createElement('div');
-        backdrop.className = 'slide-backdrop';
-        backdrop.style.setProperty('--hero-desktop-backdrop', cssImageUrl(url));
-        backdrop.style.setProperty('--hero-mobile-backdrop', cssImageUrl(url));
 
         const picture = document.createElement('picture');
         const image = document.createElement('img');
@@ -53,7 +44,7 @@
         if (index === 0) image.fetchPriority = 'high';
         picture.appendChild(image);
 
-        slide.append(backdrop, picture);
+        slide.append(picture);
         return slide;
     }
 
@@ -93,9 +84,7 @@
         const label = String(settings.button_label || settings.title || 'Buka halaman tujuan').trim();
 
         stopRotation();
-        slider.classList.add('is-managed');
         slider.replaceChildren(...activeImages.map((url, index) => createSlide(url, index, destinationUrl, label)));
-        slider.classList.toggle('has-multiple-slides', activeImages.length > 1);
         startRotation();
     }
 
@@ -139,7 +128,6 @@
         else if (currentSettings) startRotation();
     });
 
-    slider.classList.add('is-managed');
     startRotation();
     fetch('../api/index.php?resource=homepage', { credentials: 'same-origin' })
         .then(response => response.ok ? response.json() : Promise.reject(new Error('Pengaturan hero tidak tersedia.')))

@@ -336,9 +336,6 @@ body .main-header > .container {
 
 /* Homepage: Warm White menjadi bidang utama, Pale Blue sebagai pemisah. */
 .home-page .hero { background: var(--ddu-deep); }
-.home-page .hero-overlay {
-    display: none !important;
-}
 .home-page .hero-content h1,
 .home-page .hero-content p {
     color: var(--ddu-warm);
