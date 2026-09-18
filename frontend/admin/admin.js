@@ -1287,12 +1287,16 @@ async function saveHomepageSettings(event) {
     const mobileButtonLabels = homepageButtonLabels('mobile', mobileImages.length);
     const desktopShowButtons = homepageShowButtons('desktop', desktopImages.length);
     const mobileShowButtons = homepageShowButtons('mobile', mobileImages.length);
-    const invalidDesktop = desktopLinks.findIndex((link, index) => link && desktopShowButtons[index] && !desktopButtonLabels[index]);
-    const invalidMobile = mobileLinks.findIndex((link, index) => link && mobileShowButtons[index] && !mobileButtonLabels[index]);
+    const invalidDesktop = desktopLinks.findIndex((link, index) => (
+        desktopShowButtons[index] && Boolean(link) !== Boolean(desktopButtonLabels[index])
+    ));
+    const invalidMobile = mobileLinks.findIndex((link, index) => (
+        mobileShowButtons[index] && Boolean(link) !== Boolean(mobileButtonLabels[index])
+    ));
     if (invalidDesktop >= 0 || invalidMobile >= 0) {
         const device = invalidDesktop >= 0 ? 'desktop' : 'mobile';
         const index = invalidDesktop >= 0 ? invalidDesktop : invalidMobile;
-        alert(`Isi tulisan tombol untuk foto ${device} ${index + 1}.`);
+        alert(`Tujuan dan tulisan tombol foto ${device} ${index + 1} harus diisi bersamaan.`);
         return;
     }
     const firstLink = [...desktopLinks, ...mobileLinks].find(Boolean) || '';

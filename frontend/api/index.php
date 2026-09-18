@@ -972,12 +972,14 @@ function saveHomepageSettings(array $body): never
         $values["{$device}_button_labels"] = validateHomepageButtonLabels($labelInput, $imageCount, $device);
         $values["{$device}_show_buttons"] = validateHomepageButtonModes($modeInput, $imageCount, $device);
         for ($index = 0; $index < $imageCount; $index++) {
-            if (
-                $values["{$device}_show_buttons"][$index]
-                && $values["{$device}_links"][$index] !== ''
-                && $values["{$device}_button_labels"][$index] === ''
-            ) {
-                Http::json(['ok' => false, 'message' => 'Tulisan tombol foto ' . ($index + 1) . " ({$device}) wajib diisi."], 422);
+            if (!$values["{$device}_show_buttons"][$index]) continue;
+            $hasDestination = $values["{$device}_links"][$index] !== '';
+            $hasButtonLabel = $values["{$device}_button_labels"][$index] !== '';
+            if ($hasDestination !== $hasButtonLabel) {
+                Http::json([
+                    'ok' => false,
+                    'message' => 'Tujuan dan tulisan tombol foto ' . ($index + 1) . " ({$device}) harus diisi bersamaan.",
+                ], 422);
             }
         }
     }
