@@ -8,7 +8,8 @@
 
     let rotationTimer = 0;
     let currentSettings = null;
-    let destinationUrl = safeDestinationUrl(document.getElementById('homepage-hero-button')?.getAttribute('href'));
+    let destinationUrl = '';
+    let readyTimer = 0;
 
     function normalizeImages(value) {
         return Array.isArray(value)
@@ -86,6 +87,28 @@
         stopRotation();
         slider.replaceChildren(...activeImages.map((url, index) => createSlide(url, index, destinationUrl, label)));
         startRotation();
+        return slider.querySelector('.slide.is-active img');
+    }
+
+    function markHeroReady(image) {
+        window.clearTimeout(readyTimer);
+        let finished = false;
+        const finish = () => {
+            if (finished) return;
+            finished = true;
+            window.clearTimeout(readyTimer);
+            hero.classList.remove('is-settings-pending');
+            hero.removeAttribute('aria-busy');
+        };
+
+        if (!image || image.complete) {
+            window.requestAnimationFrame(finish);
+            return;
+        }
+
+        image.addEventListener('load', finish, { once: true });
+        image.addEventListener('error', finish, { once: true });
+        readyTimer = window.setTimeout(finish, 3000);
     }
 
     function applySettings(settings) {
@@ -107,7 +130,7 @@
         const content = hero.querySelector('.hero-content');
         if (content) content.hidden = !(hasKicker || hasTitle || hasDescription || hasButton);
         hero.classList.toggle('has-photo-link', hasButton);
-        renderSlides(settings);
+        return renderSlides(settings);
     }
 
     hero.addEventListener('click', event => {
@@ -117,10 +140,11 @@
         window.location.assign(destinationUrl);
     });
 
-    hero.classList.toggle('has-photo-link', Boolean(destinationUrl));
-
     mobileQuery.addEventListener?.('change', () => {
-        if (currentSettings) renderSlides(currentSettings);
+        if (!currentSettings) return;
+        hero.classList.add('is-settings-pending');
+        hero.setAttribute('aria-busy', 'true');
+        markHeroReady(renderSlides(currentSettings));
     });
 
     document.addEventListener('visibilitychange', () => {
@@ -128,13 +152,14 @@
         else if (currentSettings) startRotation();
     });
 
-    startRotation();
-    fetch('../api/index.php?resource=homepage', { credentials: 'same-origin' })
+    fetch('../api/index.php?resource=homepage', { credentials: 'same-origin', cache: 'no-store' })
         .then(response => response.ok ? response.json() : Promise.reject(new Error('Pengaturan hero tidak tersedia.')))
         .then(result => {
-            if (result?.ok && result.data) applySettings(result.data);
+            if (!result?.ok || !result.data) throw new Error('Pengaturan hero tidak valid.');
+            markHeroReady(applySettings(result.data));
         })
         .catch(() => {
-            // Hero bawaan di HTML tetap digunakan jika koneksi API terganggu.
+            // Jangan munculkan konfigurasi lama ketika API tidak dapat dijangkau.
+            markHeroReady(null);
         });
 })();

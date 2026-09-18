@@ -276,6 +276,18 @@ p {
     z-index: 1;
 }
 
+/* Cegah konfigurasi hero lama terlihat sebelum data terbaru selesai dimuat. */
+.home-page .hero-slider,
+.home-page .hero-container {
+    transition: opacity .35s ease, visibility .35s ease;
+}
+
+.home-page .hero.is-settings-pending .hero-slider,
+.home-page .hero.is-settings-pending .hero-container {
+    opacity: 0;
+    visibility: hidden;
+}
+
 .slide {
     position: absolute;
     top: 0;
