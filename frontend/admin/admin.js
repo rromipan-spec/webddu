@@ -2,6 +2,9 @@ const API = '../api/index.php';
 let csrfToken = '';
 let currentRole = '';
 let currentAdminId = 0;
+let homepageOfficialWhatsapp = '';
+let homepageOfficialWhatsappLabel = '';
+let homepagePrograms = [];
 const contentListState = {
     posts: { prefix: 'post', page: 1, perPage: 10, searchTimer: null, requestId: 0 },
     programs: { prefix: 'program', page: 1, perPage: 10, searchTimer: null, requestId: 0 }
@@ -919,7 +922,7 @@ function updateHomepagePreview() {
         photo.classList.toggle('is-desktop-fallback', mode === 'mobile' && !mobileImages.length && Boolean(desktopImages.length));
     }
     const buttonLabel = document.getElementById('homepage-button-label')?.value.trim() || '';
-    const buttonUrl = document.getElementById('homepage-button-url')?.value.trim() || '';
+    const buttonUrl = homepageDestinationUrl();
     const values = {
         'homepage-preview-kicker': document.getElementById('homepage-kicker')?.value.trim() || '',
         'homepage-preview-main-title': document.getElementById('homepage-title')?.value.trim() || '',
@@ -936,6 +939,131 @@ function updateHomepagePreview() {
     });
     const copy = document.querySelector('.homepage-preview-copy');
     if (copy) copy.hidden = visibleItems === 0;
+}
+
+function normalizeWhatsappNumber(value) {
+    let digits = String(value || '').replace(/\D+/g, '');
+    if (digits.startsWith('0')) digits = `62${digits.slice(1)}`;
+    if (digits.startsWith('8')) digits = `62${digits}`;
+    return /^\d{8,16}$/.test(digits) ? digits : '';
+}
+
+function homepageDestinationUrl() {
+    const type = document.getElementById('homepage-button-destination')?.value || '';
+    if (type === 'program') {
+        const slug = document.getElementById('homepage-button-program')?.value || '';
+        return slug ? `/${slug}` : '';
+    }
+    if (type === 'whatsapp') {
+        if (!homepageOfficialWhatsapp) return '';
+        const message = 'Assalamualaikum, saya ingin mendapatkan informasi lebih lanjut mengenai Dompet Dana Umat.';
+        return `https://wa.me/${homepageOfficialWhatsapp}?text=${encodeURIComponent(message)}`;
+    }
+    if (type === 'about') return 'about.html';
+    if (type === 'articles') return '/#blog';
+    if (type === 'programs') return '/#programs';
+    if (type === 'custom') return document.getElementById('homepage-button-url')?.value.trim() || '';
+    return '';
+}
+
+function populateHomepageProgramDestinations(programs) {
+    homepagePrograms = (Array.isArray(programs) ? programs : []).map(program => {
+        const scheduledTime = program?.published_at
+            ? Date.parse(`${String(program.published_at).replace(' ', 'T')}Z`)
+            : 0;
+        const scheduled = program?.status === 'published' && Number.isFinite(scheduledTime) && scheduledTime > Date.now();
+        return {
+            ...program,
+            destination_status: program?.status !== 'published' ? 'Draft' : (scheduled ? 'Terjadwal' : 'Dipublikasikan'),
+            destination_available: program?.status === 'published' && !scheduled
+        };
+    });
+    const select = document.getElementById('homepage-button-program');
+    if (!select) return;
+    select.replaceChildren(new Option(
+        homepagePrograms.length ? 'Pilih program yang sudah dipublikasikan' : 'Belum ada program',
+        ''
+    ));
+    homepagePrograms.forEach(program => {
+        if (!program?.slug || !program?.title) return;
+        const option = new Option(`${program.title} — ${program.destination_status}`, program.slug);
+        option.disabled = !program.destination_available;
+        select.add(option);
+    });
+}
+
+function setHomepageDestinationFields(type, existingUrl = '') {
+    const destination = document.getElementById('homepage-button-destination');
+    const programFields = document.getElementById('homepage-program-destination-fields');
+    const whatsappFields = document.getElementById('homepage-whatsapp-destination-fields');
+    const customFields = document.getElementById('homepage-custom-destination-fields');
+    const whatsappOption = destination?.querySelector('option[value="whatsapp"]');
+    const whatsappNumber = document.getElementById('homepage-whatsapp-number');
+    const label = document.getElementById('homepage-button-label');
+
+    if (destination) destination.value = type;
+    programFields?.classList.toggle('hidden', type !== 'program');
+    whatsappFields?.classList.toggle('hidden', type !== 'whatsapp');
+    customFields?.classList.toggle('hidden', type !== 'custom');
+    if (whatsappOption) {
+        whatsappOption.disabled = !homepageOfficialWhatsapp;
+        whatsappOption.textContent = homepageOfficialWhatsappLabel
+            ? `WhatsApp resmi — ${homepageOfficialWhatsappLabel}`
+            : 'WhatsApp resmi — nomor belum diisi';
+    }
+    if (whatsappNumber) whatsappNumber.textContent = homepageOfficialWhatsappLabel || 'Belum terdaftar';
+
+    if (type === 'custom' && existingUrl) {
+        const customUrl = document.getElementById('homepage-button-url');
+        if (customUrl) customUrl.value = existingUrl;
+    }
+    if (label && !label.value.trim()) {
+        const suggestedLabels = {
+            program: 'Lihat Program',
+            whatsapp: 'Hubungi via WhatsApp',
+            about: 'Selengkapnya',
+            articles: 'Baca Artikel',
+            programs: 'Lihat Program'
+        };
+        if (suggestedLabels[type]) label.value = suggestedLabels[type];
+    }
+    updateHomepagePreview();
+}
+
+function inferHomepageDestination(url) {
+    const value = String(url || '').trim();
+    if (!value) return { type: '', value: '' };
+    if (/^https?:\/\/(?:api\.)?wa\.me\//i.test(value) || /^https?:\/\/(?:www\.)?whatsapp\.com\//i.test(value)) {
+        return { type: 'whatsapp', value: '' };
+    }
+    if (['about.html', '/about.html'].includes(value)) return { type: 'about', value: '' };
+    if (['#blog', '/#blog'].includes(value)) return { type: 'articles', value: '' };
+    if (['#programs', '/#programs'].includes(value)) return { type: 'programs', value: '' };
+
+    let pathname = value;
+    let hash = '';
+    try {
+        const parsed = new URL(value, window.location.origin);
+        pathname = parsed.pathname;
+        hash = parsed.hash;
+    } catch (error) {
+        pathname = value.split(/[?#]/, 1)[0];
+    }
+    if (pathname === '/about.html') return { type: 'about', value: '' };
+    if (hash === '#blog') return { type: 'articles', value: '' };
+    if (hash === '#programs') return { type: 'programs', value: '' };
+    const slug = pathname.replace(/^\/+|\/+$/g, '');
+    if (homepagePrograms.some(program => program.slug === slug && program.destination_available)) {
+        return { type: 'program', value: slug };
+    }
+    return { type: 'custom', value };
+}
+
+function setupHomepageDestination(url) {
+    const inferred = inferHomepageDestination(url);
+    const programSelect = document.getElementById('homepage-button-program');
+    if (programSelect && inferred.type === 'program') programSelect.value = inferred.value;
+    setHomepageDestinationFields(inferred.type, inferred.type === 'custom' ? inferred.value : '');
 }
 
 function setupHomepageImageUpload(kind, variant) {
@@ -1010,12 +1138,21 @@ function setupHomepageImageUpload(kind, variant) {
 
 async function loadHomepageSettings() {
     try {
-        const result = await api('homepage');
+        const [result, programsResult, institutionResult] = await Promise.all([
+            api('homepage'),
+            api('programs&admin=1&page=1&per_page=50&sort=created_desc').catch(() => ({ data: [] })),
+            api('institution').catch(() => ({ data: {} }))
+        ]);
         const data = result.data || {};
-        ['kicker', 'title', 'description', 'button_label', 'button_url'].forEach(key => {
+        ['kicker', 'title', 'description', 'button_label'].forEach(key => {
             const element = document.getElementById(`homepage-${key.replaceAll('_', '-')}`);
             if (element) element.value = data[key] || '';
         });
+        const officialPhone = institutionResult.data?.official_phone || '';
+        homepageOfficialWhatsapp = normalizeWhatsappNumber(officialPhone);
+        homepageOfficialWhatsappLabel = officialPhone || homepageOfficialWhatsapp;
+        populateHomepageProgramDestinations(programsResult.data || []);
+        setupHomepageDestination(data.button_url || '');
         setHomepageImages('desktop', data.desktop_images || []);
         setHomepageImages('mobile', data.mobile_images || []);
         updateHomepagePreview();
@@ -1028,21 +1165,36 @@ async function saveHomepageSettings(event) {
     event.preventDefault();
     const form = event.currentTarget;
     const button = form.querySelector('button[type="submit"]');
+    const destinationType = document.getElementById('homepage-button-destination')?.value || '';
+    const destinationUrl = homepageDestinationUrl();
+    const buttonLabel = document.getElementById('homepage-button-label')?.value.trim() || '';
+    if (destinationType === 'program' && !document.getElementById('homepage-button-program')?.value) {
+        alert('Pilih program tujuan terlebih dahulu.');
+        return;
+    }
+    if (destinationType === 'whatsapp' && !homepageOfficialWhatsapp) {
+        alert('Nomor WhatsApp resmi belum tersedia. Isi melalui menu Kredibilitas terlebih dahulu.');
+        return;
+    }
+    if (destinationType && !destinationUrl) {
+        alert('Lengkapi tujuan tombol terlebih dahulu.');
+        return;
+    }
+    if (destinationUrl && !buttonLabel) {
+        alert('Isi tulisan tombol untuk mengaktifkan tujuan tombol dan tautan foto hero.');
+        return;
+    }
     const payload = {
         kicker: document.getElementById('homepage-kicker')?.value.trim() || '',
         title: document.getElementById('homepage-title')?.value.trim() || '',
         description: document.getElementById('homepage-description')?.value.trim() || '',
-        button_label: document.getElementById('homepage-button-label')?.value.trim() || '',
-        button_url: document.getElementById('homepage-button-url')?.value.trim() || '',
+        button_label: destinationUrl ? buttonLabel : '',
+        button_url: destinationUrl,
         desktop_images: homepageImages('desktop'),
         mobile_images: homepageImages('mobile')
     };
     if (!payload.desktop_images.length) {
         alert('Tambahkan minimal satu foto hero desktop.');
-        return;
-    }
-    if (Boolean(payload.button_label) !== Boolean(payload.button_url)) {
-        alert('Isi tulisan tombol dan tujuan tombol bersamaan, atau kosongkan keduanya.');
         return;
     }
     button.disabled = true;
@@ -1872,6 +2024,10 @@ async function init() {
     ['homepage-kicker', 'homepage-title', 'homepage-description', 'homepage-button-label', 'homepage-button-url'].forEach(id => {
         document.getElementById(id)?.addEventListener('input', updateHomepagePreview);
     });
+    document.getElementById('homepage-button-destination')?.addEventListener('change', event => {
+        setHomepageDestinationFields(event.currentTarget.value);
+    });
+    document.getElementById('homepage-button-program')?.addEventListener('change', updateHomepagePreview);
     setupContentPhotoUpload('post');
     setupContentPhotoUpload('prog');
     ['post', 'prog'].forEach(prefix => {

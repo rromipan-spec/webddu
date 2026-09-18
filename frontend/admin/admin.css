@@ -2009,6 +2009,50 @@ body.admin-page {
     margin-bottom: 18px;
 }
 
+.admin-page .homepage-destination-settings {
+    display: grid;
+    gap: 13px;
+    margin-top: 4px;
+    padding: 16px;
+    border: 1px solid #C9DBF8;
+    border-radius: 14px;
+    background: rgba(250, 250, 247, .78);
+}
+
+.admin-page .homepage-destination-settings .form-group {
+    margin: 0;
+}
+
+.admin-page .homepage-destination-note {
+    display: grid;
+    gap: 4px;
+    padding: 13px 14px;
+    border: 1px solid #B9E4CE;
+    border-radius: 12px;
+    background: #ECFBF3;
+}
+
+.admin-page .homepage-destination-note > span {
+    color: #17603E;
+    font-size: .72rem;
+    font-weight: 850;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.admin-page .homepage-destination-note > strong {
+    color: #155939;
+    font-size: 1rem;
+}
+
+.admin-page .homepage-destination-note > small,
+.admin-page .homepage-destination-settings .field-help {
+    margin: 0;
+    color: var(--admin-muted);
+    font-size: .78rem;
+    line-height: 1.5;
+}
+
 .admin-page .homepage-preview-heading {
     align-items: flex-start;
 }

@@ -27,6 +27,15 @@
         }
     }
 
+    function isWhatsappUrl(value) {
+        try {
+            const host = new URL(value, window.location.href).hostname.toLowerCase();
+            return host === 'wa.me' || host === 'api.whatsapp.com' || host === 'www.whatsapp.com' || host === 'whatsapp.com';
+        } catch (error) {
+            return false;
+        }
+    }
+
     function createSlide(url, index, linkUrl, linkLabel) {
         const slide = document.createElement(linkUrl ? 'a' : 'div');
         slide.className = `slide${index === 0 ? ' is-active' : ''}${linkUrl ? ' is-linked' : ''}`;
@@ -34,6 +43,10 @@
         if (linkUrl) {
             slide.href = linkUrl;
             slide.setAttribute('aria-label', linkLabel);
+            if (isWhatsappUrl(linkUrl)) {
+                slide.target = '_blank';
+                slide.rel = 'noopener noreferrer';
+            }
         }
 
         const picture = document.createElement('picture');
@@ -125,6 +138,13 @@
             button.textContent = buttonLabel;
             button.href = hasButton ? destinationUrl : '#';
             button.hidden = !hasButton;
+            if (hasButton && isWhatsappUrl(destinationUrl)) {
+                button.target = '_blank';
+                button.rel = 'noopener noreferrer';
+            } else {
+                button.removeAttribute('target');
+                button.removeAttribute('rel');
+            }
         }
 
         const content = hero.querySelector('.hero-content');

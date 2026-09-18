@@ -104,7 +104,7 @@
             .toolbar button, .toolbar select { flex: 1 1 auto; }
         }
     </style>
-    <link rel="stylesheet" href="admin.css?v=20260917-3">
+    <link rel="stylesheet" href="admin.css?v=20260918-1">
     <link rel="stylesheet" href="../halaman-utama/ddu-theme.css?v=20260917-6">
 </head>
 <body class="admin-page">
@@ -800,17 +800,41 @@
                                     <label for="homepage-description">Deskripsi <span class="field-optional">(opsional)</span></label>
                                     <textarea id="homepage-description" rows="5" maxlength="500"></textarea>
                                 </div>
-                                <div class="publication-grid">
+                                <div class="form-group">
+                                    <label for="homepage-button-label">Tulisan tombol <span class="field-optional">(opsional)</span></label>
+                                    <input id="homepage-button-label" maxlength="80" placeholder="Contoh: Lihat Program">
+                                </div>
+                                <div class="homepage-destination-settings">
                                     <div class="form-group">
-                                        <label for="homepage-button-label">Tulisan tombol <span class="field-optional">(opsional)</span></label>
-                                        <input id="homepage-button-label" maxlength="80">
+                                        <label for="homepage-button-destination">Tujuan tombol dan foto <span class="field-optional">(opsional)</span></label>
+                                        <select id="homepage-button-destination">
+                                            <option value="">Tanpa tujuan</option>
+                                            <option value="program">Pilih program</option>
+                                            <option value="whatsapp">WhatsApp resmi</option>
+                                            <option value="about">Halaman About</option>
+                                            <option value="articles">Bagian Artikel</option>
+                                            <option value="programs">Bagian Program</option>
+                                            <option value="custom">Tautan lainnya</option>
+                                        </select>
                                     </div>
-                                    <div class="form-group">
-                                        <label for="homepage-button-url">Tujuan tombol <span class="field-optional">(opsional)</span></label>
-                                        <input id="homepage-button-url" maxlength="500" placeholder="about.html">
+                                    <div class="form-group hidden" id="homepage-program-destination-fields">
+                                        <label for="homepage-button-program">Program tujuan</label>
+                                        <select id="homepage-button-program">
+                                            <option value="">Pilih program yang sudah dipublikasikan</option>
+                                        </select>
+                                        <small class="field-help">Semua program ditampilkan. Program Draft atau Terjadwal diberi penanda dan baru dapat dipilih setelah tayang.</small>
+                                    </div>
+                                    <div class="homepage-destination-note hidden" id="homepage-whatsapp-destination-fields">
+                                        <span>WhatsApp resmi</span>
+                                        <strong id="homepage-whatsapp-number">Belum terdaftar</strong>
+                                        <small>Nomor diambil dari menu Kredibilitas → Telepon/WhatsApp.</small>
+                                    </div>
+                                    <div class="form-group hidden" id="homepage-custom-destination-fields">
+                                        <label for="homepage-button-url">Tautan tujuan</label>
+                                        <input id="homepage-button-url" maxlength="500" placeholder="https://contoh.com atau /halaman">
                                     </div>
                                 </div>
-                                <p class="field-help">Tombol dan tautan pada foto hanya aktif jika tulisan tombol serta tujuan tombol diisi bersamaan.</p>
+                                <p class="field-help">Jika tujuan dipilih, isi tulisan tombol. Tombol dan seluruh foto hero akan menuju ke tujuan yang sama.</p>
                             </section>
 
                             <aside class="homepage-live-preview" data-preview-mode="mobile" aria-labelledby="homepage-preview-title">
@@ -921,6 +945,6 @@
         </form>
     </dialog>
 
-    <script type="module" src="admin.js?v=20260917-3"></script>
+    <script type="module" src="admin.js?v=20260918-1"></script>
 </body>
 </html>
