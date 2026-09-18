@@ -327,7 +327,9 @@ p {
 
 .hero.has-photo-link,
 .hero-slider .slide.is-linked { cursor: pointer; }
-.hero.has-photo-link .hero-content { cursor: auto; }
+.hero.has-photo-link .hero-container {
+    pointer-events: none;
+}
 
 .hero-overlay {
     position: absolute;

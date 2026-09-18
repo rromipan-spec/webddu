@@ -725,12 +725,19 @@ function homepageSettingsDefaults(): array
         'description' => 'Menjadi lembaga amil zakat yang amanah, profesional, dan terpercaya dalam mengelola dana umat untuk mewujudkan kesejahteraan masyarakat.',
         'button_label' => 'Selengkapnya →',
         'button_url' => 'about.html',
+        'show_button' => true,
         'desktop_images' => [
             'https://lh3.googleusercontent.com/d/1kuC0kI5fPd_FA0emvuSlRcFSpXQb0KGE',
             'https://lh3.googleusercontent.com//d/1YgCHGRGZVYz-gpj4umxp4sxx7jIPPMR_',
             'https://lh3.googleusercontent.com/d/1ZEtIlPw4eOKxu5izFi197otsnkPHrdRf',
         ],
+        'desktop_links' => ['about.html', 'about.html', 'about.html'],
+        'desktop_button_labels' => ['Selengkapnya →', 'Selengkapnya →', 'Selengkapnya →'],
+        'desktop_show_buttons' => [true, true, true],
         'mobile_images' => [],
+        'mobile_links' => [],
+        'mobile_button_labels' => [],
+        'mobile_show_buttons' => [],
     ];
 }
 
@@ -742,8 +749,15 @@ function homepageProfileKeys(): array
         'description' => 'homepage_hero_description',
         'button_label' => 'homepage_hero_button_label',
         'button_url' => 'homepage_hero_button_url',
+        'show_button' => 'homepage_hero_show_button',
         'desktop_images' => 'homepage_hero_desktop_images',
+        'desktop_links' => 'homepage_hero_desktop_links',
+        'desktop_button_labels' => 'homepage_hero_desktop_button_labels',
+        'desktop_show_buttons' => 'homepage_hero_desktop_show_buttons',
         'mobile_images' => 'homepage_hero_mobile_images',
+        'mobile_links' => 'homepage_hero_mobile_links',
+        'mobile_button_labels' => 'homepage_hero_mobile_button_labels',
+        'mobile_show_buttons' => 'homepage_hero_mobile_show_buttons',
     ];
 }
 
@@ -766,12 +780,65 @@ function serveHomepageSettings(): never
     }
     foreach ($keys as $name => $profileKey) {
         if (!array_key_exists($profileKey, $stored)) continue;
-        if (in_array($name, ['desktop_images', 'mobile_images'], true)) {
+        if (in_array($name, [
+            'desktop_images',
+            'desktop_links',
+            'desktop_button_labels',
+            'desktop_show_buttons',
+            'mobile_images',
+            'mobile_links',
+            'mobile_button_labels',
+            'mobile_show_buttons',
+        ], true)) {
             $decoded = json_decode($stored[$profileKey], true);
             if (is_array($decoded)) $settings[$name] = array_values(array_slice($decoded, 0, 3));
             continue;
         }
+        if ($name === 'show_button') {
+            $settings[$name] = filter_var($stored[$profileKey], FILTER_VALIDATE_BOOLEAN);
+            continue;
+        }
         $settings[$name] = $stored[$profileKey];
+    }
+    if (!array_key_exists($keys['desktop_links'], $stored)) {
+        $settings['desktop_links'] = array_fill(0, count($settings['desktop_images']), (string) $settings['button_url']);
+    }
+    if (!array_key_exists($keys['mobile_links'], $stored)) {
+        $settings['mobile_links'] = array_fill(0, count($settings['mobile_images']), (string) $settings['button_url']);
+    }
+    if (!array_key_exists($keys['desktop_button_labels'], $stored)) {
+        $settings['desktop_button_labels'] = array_fill(0, count($settings['desktop_images']), (string) $settings['button_label']);
+    }
+    if (!array_key_exists($keys['mobile_button_labels'], $stored)) {
+        $settings['mobile_button_labels'] = array_fill(0, count($settings['mobile_images']), (string) $settings['button_label']);
+    }
+    if (!array_key_exists($keys['desktop_show_buttons'], $stored)) {
+        $settings['desktop_show_buttons'] = array_fill(0, count($settings['desktop_images']), (bool) $settings['show_button']);
+    }
+    if (!array_key_exists($keys['mobile_show_buttons'], $stored)) {
+        $settings['mobile_show_buttons'] = array_fill(0, count($settings['mobile_images']), (bool) $settings['show_button']);
+    }
+    $settings['desktop_links'] = array_pad(
+        array_slice($settings['desktop_links'], 0, count($settings['desktop_images'])),
+        count($settings['desktop_images']),
+        ''
+    );
+    $settings['mobile_links'] = array_pad(
+        array_slice($settings['mobile_links'], 0, count($settings['mobile_images'])),
+        count($settings['mobile_images']),
+        ''
+    );
+    foreach (['desktop', 'mobile'] as $device) {
+        $imageCount = count($settings["{$device}_images"]);
+        $settings["{$device}_button_labels"] = array_pad(
+            array_slice($settings["{$device}_button_labels"], 0, $imageCount),
+            $imageCount,
+            ''
+        );
+        $settings["{$device}_show_buttons"] = array_map(
+            static fn(mixed $value): bool => filter_var($value, FILTER_VALIDATE_BOOLEAN),
+            array_pad(array_slice($settings["{$device}_show_buttons"], 0, $imageCount), $imageCount, true)
+        );
     }
     Http::json(['ok' => true, 'data' => $settings, 'updated_at' => $updatedAt]);
 }
@@ -800,6 +867,63 @@ function validateHomepageImages(mixed $input, string $label): array
     return $images;
 }
 
+function isValidHomepageDestination(string $url): bool
+{
+    if ($url === '') return true;
+    // Gunakan delimiter ~ karena karakter # juga sah sebagai anchor URL (contoh: /#programs).
+    $isRelativeUrl = preg_match('~^(?!//)(?:[a-z0-9][a-z0-9._/-]*|/[^\s]*)?(?:#[a-z0-9_-]+)?$~i', $url) === 1;
+    $isRemoteUrl = filter_var($url, FILTER_VALIDATE_URL)
+        && in_array(strtolower((string) parse_url($url, PHP_URL_SCHEME)), ['http', 'https'], true);
+    return $isRelativeUrl || $isRemoteUrl;
+}
+
+function validateHomepageLinks(mixed $input, int $imageCount, string $label): array
+{
+    if (is_string($input)) {
+        $decoded = json_decode($input, true);
+        $input = is_array($decoded) ? $decoded : [];
+    }
+    if (!is_array($input)) {
+        Http::json(['ok' => false, 'message' => "Daftar tujuan foto {$label} tidak valid."], 422);
+    }
+    $links = [];
+    for ($index = 0; $index < $imageCount; $index++) {
+        $url = trim((string) ($input[$index] ?? ''));
+        if (!isValidHomepageDestination($url)) {
+            Http::json(['ok' => false, 'message' => 'Tujuan foto ' . ($index + 1) . " ({$label}) tidak valid."], 422);
+        }
+        $links[] = $url;
+    }
+    return $links;
+}
+
+function validateHomepageButtonLabels(mixed $input, int $imageCount, string $label): array
+{
+    if (!is_array($input)) {
+        Http::json(['ok' => false, 'message' => "Daftar tulisan tombol foto {$label} tidak valid."], 422);
+    }
+    $labels = [];
+    for ($index = 0; $index < $imageCount; $index++) {
+        $value = trim((string) ($input[$index] ?? ''));
+        if (mb_strlen($value) > 80) {
+            Http::json(['ok' => false, 'message' => 'Tulisan tombol foto ' . ($index + 1) . " ({$label}) maksimal 80 karakter."], 422);
+        }
+        $labels[] = $value;
+    }
+    return $labels;
+}
+
+function validateHomepageButtonModes(mixed $input, int $imageCount, string $label): array
+{
+    if (!is_array($input)) {
+        Http::json(['ok' => false, 'message' => "Pilihan tombol foto {$label} tidak valid."], 422);
+    }
+    return array_map(
+        static fn(mixed $value): bool => filter_var($value, FILTER_VALIDATE_BOOLEAN),
+        array_slice(array_pad($input, $imageCount, true), 0, $imageCount)
+    );
+}
+
 function saveHomepageSettings(array $body): never
 {
     $limits = ['kicker' => 60, 'title' => 180, 'description' => 500, 'button_label' => 80];
@@ -813,22 +937,54 @@ function saveHomepageSettings(array $body): never
     }
 
     $buttonUrl = trim((string) ($body['button_url'] ?? ''));
-    // Gunakan delimiter ~ karena karakter # juga sah sebagai anchor URL (contoh: /#programs).
-    $isRelativeUrl = preg_match('~^(?!//)(?:[a-z0-9][a-z0-9._/-]*|/[^\s]*)?(?:#[a-z0-9_-]+)?$~i', $buttonUrl) === 1;
-    $isRemoteUrl = filter_var($buttonUrl, FILTER_VALIDATE_URL)
-        && in_array(strtolower((string) parse_url($buttonUrl, PHP_URL_SCHEME)), ['http', 'https'], true);
-    if ($buttonUrl !== '' && !$isRelativeUrl && !$isRemoteUrl) {
+    if (!isValidHomepageDestination($buttonUrl)) {
         Http::json(['ok' => false, 'message' => 'Tautan tombol hero tidak valid.'], 422);
     }
-    if (($values['button_label'] === '') !== ($buttonUrl === '')) {
-        Http::json(['ok' => false, 'message' => 'Tulisan tombol dan tujuan tombol harus diisi bersamaan atau sama-sama dikosongkan.'], 422);
-    }
-    $values['button_url'] = $buttonUrl;
     $values['desktop_images'] = validateHomepageImages($body['desktop_images'] ?? [], 'desktop');
     $values['mobile_images'] = validateHomepageImages($body['mobile_images'] ?? [], 'mobile');
     if ($values['desktop_images'] === []) {
         Http::json(['ok' => false, 'message' => 'Tambahkan minimal satu foto hero desktop.'], 422);
     }
+    $usesPerImageLinks = array_key_exists('desktop_links', $body) || array_key_exists('mobile_links', $body);
+    $desktopLinkInput = $usesPerImageLinks
+        ? ($body['desktop_links'] ?? [])
+        : array_fill(0, count($values['desktop_images']), $buttonUrl);
+    $mobileLinkInput = $usesPerImageLinks
+        ? ($body['mobile_links'] ?? [])
+        : array_fill(0, count($values['mobile_images']), $buttonUrl);
+    $values['desktop_links'] = validateHomepageLinks($desktopLinkInput, count($values['desktop_images']), 'desktop');
+    $values['mobile_links'] = validateHomepageLinks($mobileLinkInput, count($values['mobile_images']), 'mobile');
+    $showButton = array_key_exists('show_button', $body)
+        ? filter_var($body['show_button'], FILTER_VALIDATE_BOOLEAN)
+        : true;
+    $usesPerImageButtons = array_key_exists('desktop_button_labels', $body)
+        || array_key_exists('desktop_show_buttons', $body)
+        || array_key_exists('mobile_button_labels', $body)
+        || array_key_exists('mobile_show_buttons', $body);
+    foreach (['desktop', 'mobile'] as $device) {
+        $imageCount = count($values["{$device}_images"]);
+        $labelInput = $usesPerImageButtons
+            ? ($body["{$device}_button_labels"] ?? [])
+            : array_fill(0, $imageCount, $values['button_label']);
+        $modeInput = $usesPerImageButtons
+            ? ($body["{$device}_show_buttons"] ?? [])
+            : array_fill(0, $imageCount, $showButton);
+        $values["{$device}_button_labels"] = validateHomepageButtonLabels($labelInput, $imageCount, $device);
+        $values["{$device}_show_buttons"] = validateHomepageButtonModes($modeInput, $imageCount, $device);
+        for ($index = 0; $index < $imageCount; $index++) {
+            if (
+                $values["{$device}_show_buttons"][$index]
+                && $values["{$device}_links"][$index] !== ''
+                && $values["{$device}_button_labels"][$index] === ''
+            ) {
+                Http::json(['ok' => false, 'message' => 'Tulisan tombol foto ' . ($index + 1) . " ({$device}) wajib diisi."], 422);
+            }
+        }
+    }
+    $allLinks = array_values(array_filter(array_merge($values['desktop_links'], $values['mobile_links'])));
+    $values['button_url'] = $allLinks[0] ?? '';
+    $values['button_label'] = $values['desktop_button_labels'][0] ?? ($values['mobile_button_labels'][0] ?? '');
+    $values['show_button'] = $values['desktop_show_buttons'][0] ?? ($values['mobile_show_buttons'][0] ?? true);
 
     $profileKeys = homepageProfileKeys();
     $db = Database::connection();
@@ -842,7 +998,7 @@ function saveHomepageSettings(array $body): never
         foreach ($values as $key => $value) {
             $storedValue = is_array($value)
                 ? json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
-                : $value;
+                : (is_bool($value) ? ($value ? '1' : '0') : $value);
             $statement->execute([
                 'profile_key' => $profileKeys[$key],
                 'profile_value' => $storedValue,

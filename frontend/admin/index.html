@@ -104,7 +104,7 @@
             .toolbar button, .toolbar select { flex: 1 1 auto; }
         }
     </style>
-    <link rel="stylesheet" href="admin.css?v=20260918-1">
+    <link rel="stylesheet" href="admin.css?v=20260918-2">
     <link rel="stylesheet" href="../halaman-utama/ddu-theme.css?v=20260917-6">
 </head>
 <body class="admin-page">
@@ -800,41 +800,7 @@
                                     <label for="homepage-description">Deskripsi <span class="field-optional">(opsional)</span></label>
                                     <textarea id="homepage-description" rows="5" maxlength="500"></textarea>
                                 </div>
-                                <div class="form-group">
-                                    <label for="homepage-button-label">Tulisan tombol <span class="field-optional">(opsional)</span></label>
-                                    <input id="homepage-button-label" maxlength="80" placeholder="Contoh: Lihat Program">
-                                </div>
-                                <div class="homepage-destination-settings">
-                                    <div class="form-group">
-                                        <label for="homepage-button-destination">Tujuan tombol dan foto <span class="field-optional">(opsional)</span></label>
-                                        <select id="homepage-button-destination">
-                                            <option value="">Tanpa tujuan</option>
-                                            <option value="program">Pilih program</option>
-                                            <option value="whatsapp">WhatsApp resmi</option>
-                                            <option value="about">Halaman About</option>
-                                            <option value="articles">Bagian Artikel</option>
-                                            <option value="programs">Bagian Program</option>
-                                            <option value="custom">Tautan lainnya</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group hidden" id="homepage-program-destination-fields">
-                                        <label for="homepage-button-program">Program tujuan</label>
-                                        <select id="homepage-button-program">
-                                            <option value="">Pilih program yang sudah dipublikasikan</option>
-                                        </select>
-                                        <small class="field-help">Semua program ditampilkan. Program Draft atau Terjadwal diberi penanda dan baru dapat dipilih setelah tayang.</small>
-                                    </div>
-                                    <div class="homepage-destination-note hidden" id="homepage-whatsapp-destination-fields">
-                                        <span>WhatsApp resmi</span>
-                                        <strong id="homepage-whatsapp-number">Belum terdaftar</strong>
-                                        <small>Nomor diambil dari menu Kredibilitas → Telepon/WhatsApp.</small>
-                                    </div>
-                                    <div class="form-group hidden" id="homepage-custom-destination-fields">
-                                        <label for="homepage-button-url">Tautan tujuan</label>
-                                        <input id="homepage-button-url" maxlength="500" placeholder="https://contoh.com atau /halaman">
-                                    </div>
-                                </div>
-                                <p class="field-help">Jika tujuan dipilih, isi tulisan tombol. Tombol dan seluruh foto hero akan menuju ke tujuan yang sama.</p>
+                                <p class="field-help">Tujuan, tulisan tombol, dan perilaku klik diatur secara terpisah pada setiap foto.</p>
                             </section>
 
                             <aside class="homepage-live-preview" data-preview-mode="mobile" aria-labelledby="homepage-preview-title">
@@ -880,6 +846,9 @@
                                 <span>16:9</span>
                             </div>
                             <input type="hidden" id="homepage-desktop-images" value="[]">
+                            <input type="hidden" id="homepage-desktop-links" value="[]">
+                            <input type="hidden" id="homepage-desktop-button-labels" value="[]">
+                            <input type="hidden" id="homepage-desktop-show-buttons" value="[]">
                             <div id="homepage-desktop-drop-zone" class="drop-zone homepage-image-drop-zone" role="button" tabindex="0" aria-label="Unggah foto hero desktop">
                                 <input type="file" id="homepage-desktop-files" accept="image/jpeg,image/png,image/webp" multiple hidden>
                                 <strong>+ Pilih Foto Desktop</strong>
@@ -898,6 +867,9 @@
                                 <span>9:16</span>
                             </div>
                             <input type="hidden" id="homepage-mobile-images" value="[]">
+                            <input type="hidden" id="homepage-mobile-links" value="[]">
+                            <input type="hidden" id="homepage-mobile-button-labels" value="[]">
+                            <input type="hidden" id="homepage-mobile-show-buttons" value="[]">
                             <div id="homepage-mobile-drop-zone" class="drop-zone homepage-image-drop-zone" role="button" tabindex="0" aria-label="Unggah foto hero mobile">
                                 <input type="file" id="homepage-mobile-files" accept="image/jpeg,image/png,image/webp" multiple hidden>
                                 <strong>+ Pilih Foto Mobile</strong>
@@ -945,6 +917,6 @@
         </form>
     </dialog>
 
-    <script type="module" src="admin.js?v=20260918-1"></script>
+    <script type="module" src="admin.js?v=20260918-2"></script>
 </body>
 </html>

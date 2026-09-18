@@ -866,19 +866,141 @@ function homepageImages(kind) {
     return parseGalleryImages(document.getElementById(`homepage-${kind}-images`)?.value, 3);
 }
 
-function setHomepageImages(kind, images) {
-    const normalized = [...new Set((images || []).filter(Boolean))].slice(0, 3);
-    const input = document.getElementById(`homepage-${kind}-images`);
+function homepageLinks(kind, imageCount = homepageImages(kind).length) {
+    try {
+        const parsed = JSON.parse(document.getElementById(`homepage-${kind}-links`)?.value || '[]');
+        if (!Array.isArray(parsed)) return Array(imageCount).fill('');
+        return Array.from({ length: imageCount }, (_, index) => String(parsed[index] || '').trim());
+    } catch (error) {
+        return Array(imageCount).fill('');
+    }
+}
+
+function homepageButtonLabels(kind, imageCount = homepageImages(kind).length) {
+    try {
+        const parsed = JSON.parse(document.getElementById(`homepage-${kind}-button-labels`)?.value || '[]');
+        if (!Array.isArray(parsed)) return Array(imageCount).fill('');
+        return Array.from({ length: imageCount }, (_, index) => String(parsed[index] || '').trim());
+    } catch (error) {
+        return Array(imageCount).fill('');
+    }
+}
+
+function homepageShowButtons(kind, imageCount = homepageImages(kind).length) {
+    try {
+        const parsed = JSON.parse(document.getElementById(`homepage-${kind}-show-buttons`)?.value || '[]');
+        if (!Array.isArray(parsed)) return Array(imageCount).fill(true);
+        return Array.from({ length: imageCount }, (_, index) => parsed[index] !== false && parsed[index] !== '0');
+    } catch (error) {
+        return Array(imageCount).fill(true);
+    }
+}
+
+function whatsappHomepageDestination() {
+    if (!homepageOfficialWhatsapp) return '';
+    const message = 'Assalamualaikum, saya ingin mendapatkan informasi lebih lanjut mengenai Dompet Dana Umat.';
+    return `https://wa.me/${homepageOfficialWhatsapp}?text=${encodeURIComponent(message)}`;
+}
+
+function homepageDestinationChoice(url) {
+    const value = String(url || '').trim();
+    if (!value) return '';
+    if (/^https?:\/\/(?:api\.)?wa\.me\//i.test(value) || /^https?:\/\/(?:www\.)?whatsapp\.com\//i.test(value)) {
+        return '__whatsapp__';
+    }
+    if (['about.html', '/about.html'].includes(value)) return 'about.html';
+    if (['#blog', '/#blog'].includes(value)) return '/#blog';
+    if (['#programs', '/#programs'].includes(value)) return '/#programs';
+    const program = homepagePrograms.find(item => `/${item.slug}` === value && item.destination_available);
+    return program ? value : '__custom__';
+}
+
+function homepageDestinationOptions(selectedUrl) {
+    const selected = homepageDestinationChoice(selectedUrl);
+    const option = (value, label, disabled = false) => `<option value="${escapeHtml(value)}"${selected === value ? ' selected' : ''}${disabled ? ' disabled' : ''}>${escapeHtml(label)}</option>`;
+    const general = [
+        option('', 'Tanpa tujuan'),
+        option('__whatsapp__', homepageOfficialWhatsappLabel ? `WhatsApp resmi — ${homepageOfficialWhatsappLabel}` : 'WhatsApp resmi — nomor belum diisi', !homepageOfficialWhatsapp),
+        option('about.html', 'Halaman About'),
+        option('/#blog', 'Bagian Artikel'),
+        option('/#programs', 'Bagian Program')
+    ].join('');
+    const programs = homepagePrograms.length
+        ? `<optgroup label="Program">${homepagePrograms.map(program => option(
+            `/${program.slug}`,
+            `${program.title} — ${program.destination_status}`,
+            !program.destination_available
+        )).join('')}</optgroup>`
+        : '';
+    return `${general}${programs}${option('__custom__', 'Tautan lainnya')}`;
+}
+
+function homepageDestinationStatus(url, showButton) {
+    if (!url) return 'Tidak ada tautan untuk foto ini.';
+    return showButton
+        ? 'Tautan digunakan oleh tombol saat foto ini aktif.'
+        : 'Seluruh bidang foto ini dapat diklik.';
+}
+
+function renderHomepageImageList(kind) {
+    const images = homepageImages(kind);
+    const links = homepageLinks(kind, images.length);
+    const buttonLabels = homepageButtonLabels(kind, images.length);
+    const showButtons = homepageShowButtons(kind, images.length);
     const preview = document.getElementById(`homepage-${kind}-preview`);
-    if (input) input.value = JSON.stringify(normalized);
-    if (preview) {
-        preview.innerHTML = normalized.map((url, index) => `
+    if (!preview) return;
+    preview.innerHTML = images.map((url, index) => {
+        const link = links[index] || '';
+        const buttonText = buttonLabels[index] || '';
+        const showButton = showButtons[index];
+        const custom = homepageDestinationChoice(link) === '__custom__';
+        return `
             <article class="homepage-image-item">
                 <img src="${escapeHtml(url)}" alt="Foto hero ${kind === 'mobile' ? 'mobile' : 'desktop'} ${index + 1}">
-                <div><strong>Foto ${index + 1}</strong><small>${index === 0 ? 'Tampil pertama' : `Slide ${index + 1}`}</small></div>
+                <div class="homepage-image-meta"><strong>Foto ${index + 1}</strong><small>${index === 0 ? 'Tampil pertama' : `Slide ${index + 1}`}</small></div>
+                <div class="homepage-image-destination">
+                    <label for="homepage-${kind}-destination-${index}">Tujuan foto ${index + 1}</label>
+                    <select id="homepage-${kind}-destination-${index}" data-homepage-image-destination data-kind="${escapeHtml(kind)}" data-index="${index}">${homepageDestinationOptions(link)}</select>
+                    <input class="${custom ? '' : 'hidden'}" data-homepage-custom-destination data-kind="${escapeHtml(kind)}" data-index="${index}" maxlength="500" value="${custom ? escapeHtml(link) : ''}" placeholder="https://contoh.com atau /halaman">
+                    <label class="homepage-image-button-mode">
+                        <input type="checkbox" data-homepage-show-button data-kind="${escapeHtml(kind)}" data-index="${index}"${showButton ? ' checked' : ''}>
+                        <span>Tampilkan tombol pada foto ini</span>
+                    </label>
+                    <input class="homepage-image-button-label${showButton ? '' : ' hidden'}" data-homepage-button-label data-kind="${escapeHtml(kind)}" data-index="${index}" maxlength="80" value="${escapeHtml(buttonText)}" placeholder="Tulisan tombol, misalnya Lihat Program">
+                    <small class="homepage-image-destination-status">${escapeHtml(homepageDestinationStatus(link, showButton))}</small>
+                </div>
                 <button type="button" data-remove-homepage-image="${escapeHtml(kind)}" data-index="${index}" aria-label="Hapus foto ${index + 1}">×</button>
-            </article>`).join('');
-    }
+            </article>`;
+    }).join('');
+}
+
+function setHomepageImages(
+    kind,
+    images,
+    links = homepageLinks(kind, (images || []).length),
+    buttonLabels = homepageButtonLabels(kind, (images || []).length),
+    showButtons = homepageShowButtons(kind, (images || []).length)
+) {
+    const normalizedImages = [];
+    const normalizedLinks = [];
+    const normalizedButtonLabels = [];
+    const normalizedShowButtons = [];
+    (images || []).forEach((url, index) => {
+        if (!url || normalizedImages.includes(url) || normalizedImages.length >= 3) return;
+        normalizedImages.push(url);
+        normalizedLinks.push(String(links[index] || '').trim());
+        normalizedButtonLabels.push(String(buttonLabels[index] || '').trim());
+        normalizedShowButtons.push(showButtons[index] !== false && showButtons[index] !== '0');
+    });
+    const input = document.getElementById(`homepage-${kind}-images`);
+    const linkInput = document.getElementById(`homepage-${kind}-links`);
+    const buttonLabelInput = document.getElementById(`homepage-${kind}-button-labels`);
+    const showButtonInput = document.getElementById(`homepage-${kind}-show-buttons`);
+    if (input) input.value = JSON.stringify(normalizedImages);
+    if (linkInput) linkInput.value = JSON.stringify(normalizedLinks);
+    if (buttonLabelInput) buttonLabelInput.value = JSON.stringify(normalizedButtonLabels);
+    if (showButtonInput) showButtonInput.value = JSON.stringify(normalizedShowButtons);
+    renderHomepageImageList(kind);
     updateHomepagePreview();
 }
 
@@ -912,6 +1034,12 @@ function setupHomepagePreviewModes() {
 function updateHomepagePreview() {
     const mobileImages = homepageImages('mobile');
     const desktopImages = homepageImages('desktop');
+    const mobileLinks = homepageLinks('mobile', mobileImages.length);
+    const desktopLinks = homepageLinks('desktop', desktopImages.length);
+    const mobileButtonLabels = homepageButtonLabels('mobile', mobileImages.length);
+    const desktopButtonLabels = homepageButtonLabels('desktop', desktopImages.length);
+    const mobileShowButtons = homepageShowButtons('mobile', mobileImages.length);
+    const desktopShowButtons = homepageShowButtons('desktop', desktopImages.length);
     const mode = document.querySelector('.homepage-live-preview')?.dataset.previewMode === 'desktop' ? 'desktop' : 'mobile';
     const photo = document.getElementById('homepage-preview-photo');
     const imageUrl = mode === 'desktop'
@@ -921,13 +1049,14 @@ function updateHomepagePreview() {
         photo.style.backgroundImage = imageUrl ? `url("${imageUrl.replace(/["\\]/g, '\\$&')}")` : '';
         photo.classList.toggle('is-desktop-fallback', mode === 'mobile' && !mobileImages.length && Boolean(desktopImages.length));
     }
-    const buttonLabel = document.getElementById('homepage-button-label')?.value.trim() || '';
-    const buttonUrl = homepageDestinationUrl();
+    const activeLink = mode === 'mobile' && mobileImages.length ? (mobileLinks[0] || '') : (desktopLinks[0] || '');
+    const showButton = mode === 'mobile' && mobileImages.length ? mobileShowButtons[0] : desktopShowButtons[0];
+    const buttonLabel = mode === 'mobile' && mobileImages.length ? mobileButtonLabels[0] : desktopButtonLabels[0];
     const values = {
         'homepage-preview-kicker': document.getElementById('homepage-kicker')?.value.trim() || '',
         'homepage-preview-main-title': document.getElementById('homepage-title')?.value.trim() || '',
         'homepage-preview-description': document.getElementById('homepage-description')?.value.trim() || '',
-        'homepage-preview-button': buttonLabel && buttonUrl ? buttonLabel : ''
+        'homepage-preview-button': showButton && buttonLabel && activeLink ? buttonLabel : ''
     };
     let visibleItems = 0;
     Object.entries(values).forEach(([id, value]) => {
@@ -948,24 +1077,6 @@ function normalizeWhatsappNumber(value) {
     return /^\d{8,16}$/.test(digits) ? digits : '';
 }
 
-function homepageDestinationUrl() {
-    const type = document.getElementById('homepage-button-destination')?.value || '';
-    if (type === 'program') {
-        const slug = document.getElementById('homepage-button-program')?.value || '';
-        return slug ? `/${slug}` : '';
-    }
-    if (type === 'whatsapp') {
-        if (!homepageOfficialWhatsapp) return '';
-        const message = 'Assalamualaikum, saya ingin mendapatkan informasi lebih lanjut mengenai Dompet Dana Umat.';
-        return `https://wa.me/${homepageOfficialWhatsapp}?text=${encodeURIComponent(message)}`;
-    }
-    if (type === 'about') return 'about.html';
-    if (type === 'articles') return '/#blog';
-    if (type === 'programs') return '/#programs';
-    if (type === 'custom') return document.getElementById('homepage-button-url')?.value.trim() || '';
-    return '';
-}
-
 function populateHomepageProgramDestinations(programs) {
     homepagePrograms = (Array.isArray(programs) ? programs : []).map(program => {
         const scheduledTime = program?.published_at
@@ -978,92 +1089,6 @@ function populateHomepageProgramDestinations(programs) {
             destination_available: program?.status === 'published' && !scheduled
         };
     });
-    const select = document.getElementById('homepage-button-program');
-    if (!select) return;
-    select.replaceChildren(new Option(
-        homepagePrograms.length ? 'Pilih program yang sudah dipublikasikan' : 'Belum ada program',
-        ''
-    ));
-    homepagePrograms.forEach(program => {
-        if (!program?.slug || !program?.title) return;
-        const option = new Option(`${program.title} — ${program.destination_status}`, program.slug);
-        option.disabled = !program.destination_available;
-        select.add(option);
-    });
-}
-
-function setHomepageDestinationFields(type, existingUrl = '') {
-    const destination = document.getElementById('homepage-button-destination');
-    const programFields = document.getElementById('homepage-program-destination-fields');
-    const whatsappFields = document.getElementById('homepage-whatsapp-destination-fields');
-    const customFields = document.getElementById('homepage-custom-destination-fields');
-    const whatsappOption = destination?.querySelector('option[value="whatsapp"]');
-    const whatsappNumber = document.getElementById('homepage-whatsapp-number');
-    const label = document.getElementById('homepage-button-label');
-
-    if (destination) destination.value = type;
-    programFields?.classList.toggle('hidden', type !== 'program');
-    whatsappFields?.classList.toggle('hidden', type !== 'whatsapp');
-    customFields?.classList.toggle('hidden', type !== 'custom');
-    if (whatsappOption) {
-        whatsappOption.disabled = !homepageOfficialWhatsapp;
-        whatsappOption.textContent = homepageOfficialWhatsappLabel
-            ? `WhatsApp resmi — ${homepageOfficialWhatsappLabel}`
-            : 'WhatsApp resmi — nomor belum diisi';
-    }
-    if (whatsappNumber) whatsappNumber.textContent = homepageOfficialWhatsappLabel || 'Belum terdaftar';
-
-    if (type === 'custom' && existingUrl) {
-        const customUrl = document.getElementById('homepage-button-url');
-        if (customUrl) customUrl.value = existingUrl;
-    }
-    if (label && !label.value.trim()) {
-        const suggestedLabels = {
-            program: 'Lihat Program',
-            whatsapp: 'Hubungi via WhatsApp',
-            about: 'Selengkapnya',
-            articles: 'Baca Artikel',
-            programs: 'Lihat Program'
-        };
-        if (suggestedLabels[type]) label.value = suggestedLabels[type];
-    }
-    updateHomepagePreview();
-}
-
-function inferHomepageDestination(url) {
-    const value = String(url || '').trim();
-    if (!value) return { type: '', value: '' };
-    if (/^https?:\/\/(?:api\.)?wa\.me\//i.test(value) || /^https?:\/\/(?:www\.)?whatsapp\.com\//i.test(value)) {
-        return { type: 'whatsapp', value: '' };
-    }
-    if (['about.html', '/about.html'].includes(value)) return { type: 'about', value: '' };
-    if (['#blog', '/#blog'].includes(value)) return { type: 'articles', value: '' };
-    if (['#programs', '/#programs'].includes(value)) return { type: 'programs', value: '' };
-
-    let pathname = value;
-    let hash = '';
-    try {
-        const parsed = new URL(value, window.location.origin);
-        pathname = parsed.pathname;
-        hash = parsed.hash;
-    } catch (error) {
-        pathname = value.split(/[?#]/, 1)[0];
-    }
-    if (pathname === '/about.html') return { type: 'about', value: '' };
-    if (hash === '#blog') return { type: 'articles', value: '' };
-    if (hash === '#programs') return { type: 'programs', value: '' };
-    const slug = pathname.replace(/^\/+|\/+$/g, '');
-    if (homepagePrograms.some(program => program.slug === slug && program.destination_available)) {
-        return { type: 'program', value: slug };
-    }
-    return { type: 'custom', value };
-}
-
-function setupHomepageDestination(url) {
-    const inferred = inferHomepageDestination(url);
-    const programSelect = document.getElementById('homepage-button-program');
-    if (programSelect && inferred.type === 'program') programSelect.value = inferred.value;
-    setHomepageDestinationFields(inferred.type, inferred.type === 'custom' ? inferred.value : '');
 }
 
 function setupHomepageImageUpload(kind, variant) {
@@ -1131,8 +1156,78 @@ function setupHomepageImageUpload(kind, variant) {
         const button = event.target.closest('[data-remove-homepage-image]');
         if (!button) return;
         const images = homepageImages(kind);
-        images.splice(Number(button.dataset.index), 1);
-        setHomepageImages(kind, images);
+        const links = homepageLinks(kind, images.length);
+        const buttonLabels = homepageButtonLabels(kind, images.length);
+        const showButtons = homepageShowButtons(kind, images.length);
+        const index = Number(button.dataset.index);
+        images.splice(index, 1);
+        links.splice(index, 1);
+        buttonLabels.splice(index, 1);
+        showButtons.splice(index, 1);
+        setHomepageImages(kind, images, links, buttonLabels, showButtons);
+    });
+    preview?.addEventListener('change', event => {
+        const mode = event.target.closest('[data-homepage-show-button]');
+        if (mode) {
+            const images = homepageImages(kind);
+            const showButtons = homepageShowButtons(kind, images.length);
+            showButtons[Number(mode.dataset.index)] = mode.checked;
+            setHomepageImages(
+                kind,
+                images,
+                homepageLinks(kind, images.length),
+                homepageButtonLabels(kind, images.length),
+                showButtons
+            );
+            return;
+        }
+        const select = event.target.closest('[data-homepage-image-destination]');
+        if (!select) return;
+        const images = homepageImages(kind);
+        const links = homepageLinks(kind, images.length);
+        const index = Number(select.dataset.index);
+        if (select.value === '__custom__') {
+            const customInput = select.parentElement?.querySelector('[data-homepage-custom-destination]');
+            links[index] = homepageDestinationChoice(links[index]) === '__custom__' ? links[index] : '';
+            const linkInput = document.getElementById(`homepage-${kind}-links`);
+            if (linkInput) linkInput.value = JSON.stringify(links);
+            customInput?.classList.remove('hidden');
+            customInput?.focus();
+            const statusText = select.parentElement?.querySelector('.homepage-image-destination-status');
+            if (statusText) statusText.textContent = homepageDestinationStatus(links[index], homepageShowButtons(kind, images.length)[index]);
+            updateHomepagePreview();
+            return;
+        } else if (select.value === '__whatsapp__') {
+            links[index] = whatsappHomepageDestination();
+        } else {
+            links[index] = select.value;
+        }
+        setHomepageImages(kind, images, links);
+    });
+    preview?.addEventListener('input', event => {
+        const buttonLabel = event.target.closest('[data-homepage-button-label]');
+        if (buttonLabel) {
+            const labels = homepageButtonLabels(kind);
+            labels[Number(buttonLabel.dataset.index)] = buttonLabel.value;
+            const labelInput = document.getElementById(`homepage-${kind}-button-labels`);
+            if (labelInput) labelInput.value = JSON.stringify(labels);
+            updateHomepagePreview();
+            return;
+        }
+        const input = event.target.closest('[data-homepage-custom-destination]');
+        if (!input) return;
+        const links = homepageLinks(kind);
+        links[Number(input.dataset.index)] = input.value.trim();
+        const linkInput = document.getElementById(`homepage-${kind}-links`);
+        if (linkInput) linkInput.value = JSON.stringify(links);
+        const statusText = input.closest('.homepage-image-destination')?.querySelector('.homepage-image-destination-status');
+        if (statusText) {
+            statusText.textContent = homepageDestinationStatus(
+                input.value.trim(),
+                homepageShowButtons(kind)[Number(input.dataset.index)]
+            );
+        }
+        updateHomepagePreview();
     });
 }
 
@@ -1152,9 +1247,28 @@ async function loadHomepageSettings() {
         homepageOfficialWhatsapp = normalizeWhatsappNumber(officialPhone);
         homepageOfficialWhatsappLabel = officialPhone || homepageOfficialWhatsapp;
         populateHomepageProgramDestinations(programsResult.data || []);
-        setupHomepageDestination(data.button_url || '');
-        setHomepageImages('desktop', data.desktop_images || []);
-        setHomepageImages('mobile', data.mobile_images || []);
+        const desktopImages = data.desktop_images || [];
+        const mobileImages = data.mobile_images || [];
+        const desktopLinks = Array.isArray(data.desktop_links)
+            ? data.desktop_links
+            : Array(desktopImages.length).fill(data.button_url || '');
+        const mobileLinks = Array.isArray(data.mobile_links)
+            ? data.mobile_links
+            : Array(mobileImages.length).fill(data.button_url || '');
+        const desktopButtonLabels = Array.isArray(data.desktop_button_labels)
+            ? data.desktop_button_labels
+            : Array(desktopImages.length).fill(data.button_label || '');
+        const mobileButtonLabels = Array.isArray(data.mobile_button_labels)
+            ? data.mobile_button_labels
+            : Array(mobileImages.length).fill(data.button_label || '');
+        const desktopShowButtons = Array.isArray(data.desktop_show_buttons)
+            ? data.desktop_show_buttons
+            : Array(desktopImages.length).fill(data.show_button !== false && data.show_button !== '0');
+        const mobileShowButtons = Array.isArray(data.mobile_show_buttons)
+            ? data.mobile_show_buttons
+            : Array(mobileImages.length).fill(data.show_button !== false && data.show_button !== '0');
+        setHomepageImages('desktop', desktopImages, desktopLinks, desktopButtonLabels, desktopShowButtons);
+        setHomepageImages('mobile', mobileImages, mobileLinks, mobileButtonLabels, mobileShowButtons);
         updateHomepagePreview();
     } catch (error) {
         alert(error.message);
@@ -1165,33 +1279,40 @@ async function saveHomepageSettings(event) {
     event.preventDefault();
     const form = event.currentTarget;
     const button = form.querySelector('button[type="submit"]');
-    const destinationType = document.getElementById('homepage-button-destination')?.value || '';
-    const destinationUrl = homepageDestinationUrl();
-    const buttonLabel = document.getElementById('homepage-button-label')?.value.trim() || '';
-    if (destinationType === 'program' && !document.getElementById('homepage-button-program')?.value) {
-        alert('Pilih program tujuan terlebih dahulu.');
+    const desktopImages = homepageImages('desktop');
+    const mobileImages = homepageImages('mobile');
+    const desktopLinks = homepageLinks('desktop', desktopImages.length);
+    const mobileLinks = homepageLinks('mobile', mobileImages.length);
+    const desktopButtonLabels = homepageButtonLabels('desktop', desktopImages.length);
+    const mobileButtonLabels = homepageButtonLabels('mobile', mobileImages.length);
+    const desktopShowButtons = homepageShowButtons('desktop', desktopImages.length);
+    const mobileShowButtons = homepageShowButtons('mobile', mobileImages.length);
+    const invalidDesktop = desktopLinks.findIndex((link, index) => link && desktopShowButtons[index] && !desktopButtonLabels[index]);
+    const invalidMobile = mobileLinks.findIndex((link, index) => link && mobileShowButtons[index] && !mobileButtonLabels[index]);
+    if (invalidDesktop >= 0 || invalidMobile >= 0) {
+        const device = invalidDesktop >= 0 ? 'desktop' : 'mobile';
+        const index = invalidDesktop >= 0 ? invalidDesktop : invalidMobile;
+        alert(`Isi tulisan tombol untuk foto ${device} ${index + 1}.`);
         return;
     }
-    if (destinationType === 'whatsapp' && !homepageOfficialWhatsapp) {
-        alert('Nomor WhatsApp resmi belum tersedia. Isi melalui menu Kredibilitas terlebih dahulu.');
-        return;
-    }
-    if (destinationType && !destinationUrl) {
-        alert('Lengkapi tujuan tombol terlebih dahulu.');
-        return;
-    }
-    if (destinationUrl && !buttonLabel) {
-        alert('Isi tulisan tombol untuk mengaktifkan tujuan tombol dan tautan foto hero.');
-        return;
-    }
+    const firstLink = [...desktopLinks, ...mobileLinks].find(Boolean) || '';
+    const firstLabel = [...desktopButtonLabels, ...mobileButtonLabels].find(Boolean) || '';
+    const firstMode = desktopShowButtons[0] ?? mobileShowButtons[0] ?? true;
     const payload = {
         kicker: document.getElementById('homepage-kicker')?.value.trim() || '',
         title: document.getElementById('homepage-title')?.value.trim() || '',
         description: document.getElementById('homepage-description')?.value.trim() || '',
-        button_label: destinationUrl ? buttonLabel : '',
-        button_url: destinationUrl,
-        desktop_images: homepageImages('desktop'),
-        mobile_images: homepageImages('mobile')
+        button_label: firstLabel,
+        button_url: firstLink,
+        show_button: firstMode,
+        desktop_images: desktopImages,
+        desktop_links: desktopLinks,
+        desktop_button_labels: desktopButtonLabels,
+        desktop_show_buttons: desktopShowButtons,
+        mobile_images: mobileImages,
+        mobile_links: mobileLinks,
+        mobile_button_labels: mobileButtonLabels,
+        mobile_show_buttons: mobileShowButtons
     };
     if (!payload.desktop_images.length) {
         alert('Tambahkan minimal satu foto hero desktop.');
@@ -2021,13 +2142,9 @@ async function init() {
     setupHomepagePreviewModes();
     setupHomepageImageUpload('desktop', 'hero');
     setupHomepageImageUpload('mobile', 'hero_mobile');
-    ['homepage-kicker', 'homepage-title', 'homepage-description', 'homepage-button-label', 'homepage-button-url'].forEach(id => {
+    ['homepage-kicker', 'homepage-title', 'homepage-description'].forEach(id => {
         document.getElementById(id)?.addEventListener('input', updateHomepagePreview);
     });
-    document.getElementById('homepage-button-destination')?.addEventListener('change', event => {
-        setHomepageDestinationFields(event.currentTarget.value);
-    });
-    document.getElementById('homepage-button-program')?.addEventListener('change', updateHomepagePreview);
     setupContentPhotoUpload('post');
     setupContentPhotoUpload('prog');
     ['post', 'prog'].forEach(prefix => {

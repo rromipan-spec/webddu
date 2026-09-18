@@ -66,7 +66,12 @@ HOMEPAGE_PAYLOAD='{"kicker":"Profil","title":"Hero Integration Test","descriptio
 request 200 -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" -H 'Content-Type: application/json' \
   --data "$HOMEPAGE_PAYLOAD" "$BASE_URL/api/index.php?resource=homepage"
 request 200 "$BASE_URL/api/index.php?resource=homepage"
-assert_json '.data.title == "Hero Integration Test" and .data.mobile_images[0] == "https://example.com/hero-mobile.jpg"'
+assert_json '.data.title == "Hero Integration Test" and .data.mobile_images[0] == "https://example.com/hero-mobile.jpg" and .data.show_button == true and .data.desktop_links[0] == "about.html" and .data.desktop_button_labels[0] == "Selengkapnya" and .data.desktop_show_buttons[0] == true'
+HOMEPAGE_PER_IMAGE_PAYLOAD='{"kicker":"","title":"Hero per foto","description":"","button_label":"","button_url":"","show_button":false,"desktop_images":["https://example.com/hero-a.jpg","https://example.com/hero-b.jpg"],"desktop_links":["about.html","/program-integration"],"desktop_button_labels":["Buka About",""],"desktop_show_buttons":[true,false],"mobile_images":["https://example.com/hero-mobile-a.jpg"],"mobile_links":["https://wa.me/6285121277046"],"mobile_button_labels":[""],"mobile_show_buttons":[false]}'
+request 200 -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" -H 'Content-Type: application/json' \
+  --data "$HOMEPAGE_PER_IMAGE_PAYLOAD" "$BASE_URL/api/index.php?resource=homepage"
+request 200 "$BASE_URL/api/index.php?resource=homepage"
+assert_json '.data.desktop_show_buttons == [true,false] and .data.desktop_button_labels[0] == "Buka About" and (.data.desktop_links | length) == 2 and .data.desktop_links[1] == "/program-integration" and (.data.mobile_links[0] | startswith("https://wa.me/")) and .data.mobile_show_buttons[0] == false'
 HOMEPAGE_OPTIONAL_PAYLOAD='{"kicker":"","title":"","description":"","button_label":"","button_url":"","desktop_images":["https://example.com/hero-only-desktop.jpg"],"mobile_images":["https://example.com/hero-only-mobile.jpg"]}'
 request 200 -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" -H 'Content-Type: application/json' \
   --data "$HOMEPAGE_OPTIONAL_PAYLOAD" "$BASE_URL/api/index.php?resource=homepage"
