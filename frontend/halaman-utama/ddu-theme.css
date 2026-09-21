@@ -357,10 +357,6 @@ body .main-header > .container {
 .home-page .about,
 .home-page .about--photos,
 .home-page .calculator { background: var(--ddu-pale); }
-.home-page .video-promo { background: var(--ddu-deep); }
-.home-page .video-overlay { background: linear-gradient(90deg, rgba(6, 59, 158, .92), rgba(7, 86, 214, .54)); }
-.home-page .video-promo-content h2,
-.home-page .video-promo-content p { color: var(--ddu-warm); }
 
 .blog-card,
 .calculator-card,
@@ -900,7 +896,6 @@ body main small,
 .post-donation-cta h3,
 .program-donation-cta h2,
 .program-donation-cta h3,
-.video-promo-content h2,
 .vision-card--primary h2,
 .trust-warning__inner strong {
     color: var(--ddu-text-on-dark);
@@ -912,7 +907,6 @@ body main small,
 .cta-minimal p,
 .post-donation-cta p,
 .program-donation-cta p,
-.video-promo-content p,
 .vision-card--primary p,
 .trust-warning__inner p {
     color: var(--ddu-text-on-dark-muted);

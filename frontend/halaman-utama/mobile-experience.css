@@ -413,60 +413,6 @@
         gap: 14px;
     }
 
-    /* Video tinggi secukupnya; hanya satu iframe dan dimuat saat mendekati viewport. */
-    .home-page .video-promo {
-        padding: 18px 0 var(--mobile-section-space);
-    }
-
-    .home-page .video-wrapper {
-        width: calc(100% - (var(--mobile-gutter) * 2));
-        min-height: 520px;
-        padding-top: 0;
-        border-radius: 22px;
-    }
-
-    .home-page .video-wrapper iframe {
-        width: 210%;
-        height: 100%;
-    }
-
-    .home-page .video-overlay {
-        background: linear-gradient(180deg, rgba(6, 59, 158, .5), rgba(6, 59, 158, .94));
-    }
-
-    .home-page .video-promo-content {
-        top: auto;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        max-width: none;
-        padding: 32px 23px 27px;
-        text-align: left;
-        transform: none;
-    }
-
-    .home-page .video-promo-content h2 {
-        margin-bottom: 13px;
-        padding: 0;
-        font-size: clamp(1.55rem, 7vw, 2rem);
-        line-height: 1.18;
-    }
-
-    .home-page .video-promo-content p {
-        margin-bottom: 20px;
-        color: #EAF2FF;
-        font-size: .96rem;
-        line-height: 1.65;
-    }
-
-    .home-page .video-promo-content .btn {
-        display: inline-flex;
-        min-height: 48px;
-        align-items: center;
-        justify-content: center;
-        border-radius: 12px;
-    }
-
     .home-page .contact-wrapper {
         padding: 25px 19px;
     }
