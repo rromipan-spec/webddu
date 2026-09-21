@@ -717,20 +717,26 @@ p {
 .btn-calc {
     flex-grow: 1;
     padding: 15px;
-    background: linear-gradient(135deg, #0756D6, #063B9E);
+    background: #1769F5;
     color: #FAFAF7;
     border: none;
     border-radius: 10px;
     font-size: 1.1rem;
     font-weight: 700;
     cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-    box-shadow: 0 10px 20px rgba(7, 86, 214, 0.2);
+    transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 8px 18px rgba(23, 105, 245, 0.22);
 }
 
 .btn-calc:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 15px 30px rgba(7, 86, 214, 0.3);
+    background: #0756D6;
+    transform: translateY(-2px);
+    box-shadow: 0 11px 24px rgba(7, 86, 214, 0.26);
+}
+
+.btn-calc:active {
+    background: #063B9E;
+    transform: translateY(0);
 }
 
 .btn-reset {
@@ -783,6 +789,27 @@ p {
     font-size: 1.2rem;
     color: #0756D6;
     align-items: center;
+}
+
+.result-yearly {
+    margin-top: 14px;
+    margin-bottom: 0;
+    padding: 14px 0 2px;
+    border-top: 1px solid rgba(7, 86, 214, .2);
+    color: #172033;
+    font-weight: 700;
+}
+
+.result-yearly strong {
+    color: #0756D6;
+    font-size: 1rem;
+}
+
+.result-note {
+    margin: 10px 0 0;
+    color: rgba(23, 32, 51, .7);
+    font-size: .78rem;
+    line-height: 1.5;
 }
 
 @keyframes fadeIn {
@@ -1819,6 +1846,15 @@ p {
     z-index: 1000;
     transition: all 0.3s ease;
     animation: pulse 2s infinite;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.whatsapp-popup:visited,
+.whatsapp-popup:hover,
+.whatsapp-popup:active {
+    color: #FAFAF7;
+    text-decoration: none;
 }
 
 .whatsapp-popup:hover {

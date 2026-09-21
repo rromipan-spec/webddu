@@ -90,10 +90,10 @@
     <link rel="preload" href="asset/fonts/metropolis/Metropolis-Regular.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="asset/fonts/metropolis/Metropolis-ExtraBold.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="metropolis.css?v=20260917-1">
-    <link rel="stylesheet" href="style.css?v=20260921-2">
+    <link rel="stylesheet" href="style.css?v=20260921-3">
     <link rel="stylesheet" href="navbar-mobile.css?v=20260917-2">
     <link rel="stylesheet" href="footer-shared.css?v=20260917-2">
-    <link rel="stylesheet" href="mobile-experience.css?v=20260919-1">
+    <link rel="stylesheet" href="mobile-experience.css?v=20260921-1">
     <link rel="stylesheet" href="ddu-theme.css?v=20260919-1">
 </head>
 <body class="home-page">
@@ -222,7 +222,7 @@
                     <h3>Mengapa Berzakat?</h3>
                     <div class="nishab-card">
                         <h4><span class="icon">⚠️</span> Ketentuan Nishab</h4>
-                        <p>Nishab zakat penghasilan adalah setara dengan <strong>85 gram emas</strong> per tahun. Berdasarkan estimasi harga emas spot 24K sebesar <strong id="goldPrice">Memuat...</strong>, nishab per bulan diperkirakan sekitar <strong id="nishabValue">Memuat...</strong>.</p>
+                        <p>Nisab zakat penghasilan setara dengan <strong>85 gram emas</strong>. Berdasarkan acuan yang digunakan sistem, estimasinya adalah <strong id="nishabYearlyValue">Memuat...</strong> per tahun atau <strong id="nishabValue">Memuat...</strong> per bulan. Nilai acuan emas: <strong id="goldPrice">Memuat...</strong>.</p>
                         <p id="goldPriceMeta" class="gold-price-meta" aria-live="polite">Menyiapkan harga emas terbaru...</p>
                         <p class="calculator-note"><em>*Hasil ini merupakan estimasi. Untuk penetapan kewajiban zakat, konsultasikan dengan amil atau lembaga zakat resmi.</em></p>
                     </div>
@@ -239,7 +239,7 @@
                             </div>
                         </div>
                         <div class="input-group">
-                            <label for="bonus">Bonus / THR / Lainnya</label>
+                            <label for="bonus">Bonus / THR / Lainnya per Tahun</label>
                             <div class="input-wrapper">
                                 <input type="text" id="bonus" class="form-input" placeholder="0" inputmode="numeric" autocomplete="off">
                             </div>
@@ -273,10 +273,11 @@
                             <span>Zakat Per Bulan:</span>
                             <span id="zakatAmountMonthly">Rp 0</span>
                         </div>
-                        <div class="result-row" style="font-weight: bold; color: #172033; margin-top: 10px; border-top: 1px dashed #EAF2FF; padding-top: 10px;">
+                        <div class="result-row result-yearly">
                             <span>Zakat Per Tahun (Estimasi):</span>
-                            <span id="zakatAmountYearly">Rp 0</span>
+                            <strong id="zakatAmountYearly">Rp 0</strong>
                         </div>
+                        <p id="zakatCalculationNote" class="result-note" aria-live="polite"></p>
                     </div>
                 </div>
             </div>
@@ -300,7 +301,12 @@
                 <span class="video-promo-kicker">Dampak berkelanjutan</span>
                 <h2 id="video-promo-title">Sebaik-baiknya amal adalah yang dilakukan secara terus menerus.</h2>
                 <p>Kami berkomitmen dalam memberikan dampak dan amanah dalam pengalokasiannya untuk kepentingan pendidikan di Pesantren Daarul Uluum.</p>
-                <a href="#contact" class="btn btn-primary">Donasi Sekarang</a>
+                <a href="https://wa.me/6285121277046?text=Assalamualaikum%2C%20saya%20ingin%20berdonasi%20melalui%20Dompet%20Dana%20Umat."
+                   class="btn btn-primary"
+                   data-official-whatsapp
+                   data-whatsapp-message="Assalamualaikum, saya ingin berdonasi melalui Dompet Dana Umat."
+                   target="_blank"
+                   rel="noopener noreferrer">Donasi Sekarang</a>
             </div>
         </div>
     </section>
@@ -379,7 +385,7 @@
     <a href="#" class="back-to-top" aria-label="Kembali ke bagian atas">↑</a>
 
     <!-- WhatsApp Popup -->
-    <a href="https://wa.me/6285121277046?text=Assalamualaikum,%20saya%20ingin%20bertanya%20tentang%20Dompet%20Dana%20Umat" class="whatsapp-popup" target="_blank" rel="noopener noreferrer" aria-label="Hubungi Dompet Dana Umat melalui WhatsApp">
+    <a href="https://wa.me/6285121277046?text=Assalamualaikum,%20saya%20ingin%20bertanya%20tentang%20Dompet%20Dana%20Umat" class="whatsapp-popup" data-official-whatsapp data-whatsapp-message="Assalamualaikum, saya ingin bertanya tentang Dompet Dana Umat." target="_blank" rel="noopener noreferrer" aria-label="Hubungi Dompet Dana Umat melalui WhatsApp">
         <img src="/asset/whatsapp-phone.svg" alt="" width="24" height="24">
         <span class="whatsapp-popup__label">WhatsApp</span>
     </a>
@@ -454,9 +460,9 @@
         }
 
     </script>
-    <script src="calculator.js?v=20260917-2"></script>
+    <script src="calculator.js?v=20260921-1"></script>
     <script type="module" src="blog.js?v=20260721-5"></script>
-    <script type="module" src="navbar.js?v=20260912-1"></script>
+    <script type="module" src="navbar.js?v=20260921-1"></script>
     <script type="module" src="programs-home.js?v=20260728-2"></script>
     <script type="module" src="site-footer.js?v=20260722-1"></script>
     <script src="homepage-hero.js?v=20260918-3"></script>

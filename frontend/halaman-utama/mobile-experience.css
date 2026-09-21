@@ -452,6 +452,8 @@
         border-radius: 999px;
         box-shadow: 0 10px 28px rgba(9, 68, 35, .28);
         animation: none;
+        text-decoration: none;
+        -webkit-tap-highlight-color: transparent;
     }
 
     .home-page .whatsapp-popup img {
@@ -465,6 +467,8 @@
         font-size: .9rem;
         font-weight: 800;
         line-height: 1;
+        border: 0;
+        text-decoration: none;
     }
 
     .home-page .back-to-top {

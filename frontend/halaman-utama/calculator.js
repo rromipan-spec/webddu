@@ -6,25 +6,28 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- PENGAMBILAN HARGA EMAS OTOMATIS ---
 
     // Acuan sementara BAZNAS 2026 digunakan sampai endpoint harga harian merespons.
-    let goldPricePerGram = Math.round(91681728 / 85);
+    let nishabYearly = 91681728;
+    let goldPricePerGram = Math.round(nishabYearly / 85);
     let nishabMonthly = 7640144;
 
     // Elemen UI untuk info nishab
     const goldPriceEl = document.getElementById('goldPrice');
     const nishabValueEl = document.getElementById('nishabValue');
+    const nishabYearlyValueEl = document.getElementById('nishabYearlyValue');
     const goldPriceMetaEl = document.getElementById('goldPriceMeta');
 
     // Helper Function Format Rupiah
     function formatRupiah(num) {
-        return 'Rp ' + num.toLocaleString('id-ID');
+        return 'Rp ' + Math.max(0, Math.round(Number(num) || 0)).toLocaleString('id-ID');
     }
 
     // Fungsi untuk memperbarui teks info nishab di HTML
-    function updateNishabInfo(price, nishab, meta = '') {
+    function updateNishabInfo(price, monthlyNishab, yearlyNishab, meta = '') {
         if (goldPriceEl && nishabValueEl) {
             goldPriceEl.textContent = `${formatRupiah(price)}/gram`;
-            nishabValueEl.textContent = formatRupiah(Math.round(nishab));
+            nishabValueEl.textContent = formatRupiah(monthlyNishab);
         }
+        if (nishabYearlyValueEl) nishabYearlyValueEl.textContent = formatRupiah(yearlyNishab);
         if (goldPriceMetaEl) goldPriceMetaEl.textContent = meta;
     }
 
@@ -39,6 +42,7 @@ document.addEventListener('DOMContentLoaded', function() {
     updateNishabInfo(
         goldPricePerGram,
         nishabMonthly,
+        nishabYearly,
         'Acuan sementara BAZNAS 2026. Sedang memuat harga emas terbaru...'
     );
 
@@ -55,24 +59,27 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = result?.data || {};
             const price = Number(data.price_per_gram);
             const monthly = Number(data.nishab_monthly);
-            if (!Number.isFinite(price) || price <= 0 || !Number.isFinite(monthly) || monthly <= 0) {
+            const yearly = Number(data.nishab_yearly);
+            if (!Number.isFinite(price) || price <= 0 || !Number.isFinite(monthly) || monthly <= 0 || !Number.isFinite(yearly) || yearly <= 0) {
                 throw new Error('Data harga emas tidak valid.');
             }
             goldPricePerGram = Math.round(price);
             nishabMonthly = Math.round(monthly);
+            nishabYearly = Math.round(yearly);
 
             const updated = formatUpdateTime(data.updated_at);
             let status = data.source || 'Sumber harga emas';
             if (data.is_fallback) status += ' (fallback)';
             if (data.is_stale) status += ' (cache terakhir)';
             if (updated) status += ` · Diperbarui ${updated} WIB`;
-            updateNishabInfo(goldPricePerGram, nishabMonthly, status);
+            updateNishabInfo(goldPricePerGram, nishabMonthly, nishabYearly, status);
         })
         .catch(error => {
             console.error('Gagal mengambil harga emas terbaru.', error);
             updateNishabInfo(
                 goldPricePerGram,
                 nishabMonthly,
+                nishabYearly,
                 'Menggunakan acuan nisab BAZNAS 2026 karena harga harian belum tersedia.'
             );
         });
@@ -121,42 +128,36 @@ document.addEventListener('DOMContentLoaded', function() {
             const bonus = parseRupiah(document.getElementById('bonus').value);
             const debt = parseRupiah(document.getElementById('debt').value);
 
-            const totalIncome = income + bonus;
-            const netIncome = totalIncome - debt;
-            
-            // Hitung Estimasi Pendapatan Bersih Setahun: (Gaji x 12) + Bonus - (Hutang x 12)
-            const annualNetIncome = (income * 12) + bonus - (debt * 12);
+            // Bonus/THR dianggap sebagai pendapatan tambahan setahun, bukan pendapatan bulanan.
+            const netIncome = Math.max(0, income - debt);
+            const annualNetIncome = Math.max(0, (netIncome * 12) + bonus);
 
             let zakatMonthly = 0;
             let zakatYearly = 0;
             let nishabStatusText = "";
             let nishabStatusColor = "";
 
-            // Cek Nishab menggunakan nilai nishabMonthly yang dinamis
+            // Estimasi bulanan mengikuti nisab bulanan yang berlaku.
             if (netIncome >= nishabMonthly) {
                 zakatMonthly = netIncome * 0.025;
-                nishabStatusText = "Mencapai Estimasi Nishab";
-                nishabStatusColor = "#27AE60"; // Hijau
-            } else {
-                zakatMonthly = 0;
-                nishabStatusText = "Belum Mencapai Estimasi Nishab";
-                nishabStatusColor = "#D4A84F"; // Oranye
             }
 
-            // Hitung Zakat Tahunan (Jika pendapatan setahun mencapai nishab tahunan)
-            const nishabYearly = nishabMonthly * 12;
+            // Estimasi tahunan selalu dihitung dari pendapatan bersih setahun.
             if (annualNetIncome >= nishabYearly) {
                 zakatYearly = annualNetIncome * 0.025;
+                nishabStatusText = "Mencapai Estimasi Nisab Tahunan";
+                nishabStatusColor = "#168451";
             } else {
-                zakatYearly = 0;
+                nishabStatusText = "Belum Mencapai Estimasi Nisab Tahunan";
+                nishabStatusColor = "#9A6B13";
             }
 
             // Tampilkan Hasil
-            document.getElementById('totalNetIncome').innerText = formatRupiah(netIncome < 0 ? 0 : netIncome);
+            document.getElementById('totalNetIncome').innerText = formatRupiah(netIncome);
             
             const annualNetIncomeEl = document.getElementById('annualNetIncome');
             if (annualNetIncomeEl) {
-                annualNetIncomeEl.innerText = formatRupiah(annualNetIncome < 0 ? 0 : annualNetIncome);
+                annualNetIncomeEl.innerText = formatRupiah(annualNetIncome);
             }
             
             const statusEl = document.getElementById('nishabStatus');
@@ -165,6 +166,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
             document.getElementById('zakatAmountMonthly').innerText = formatRupiah(zakatMonthly);
             document.getElementById('zakatAmountYearly').innerText = formatRupiah(zakatYearly);
+            const calculationNoteEl = document.getElementById('zakatCalculationNote');
+            if (calculationNoteEl) {
+                calculationNoteEl.textContent = zakatYearly > 0
+                    ? `Estimasi zakat setahun adalah 2,5% dari ${formatRupiah(annualNetIncome)}.`
+                    : `Pendapatan bersih setahun belum mencapai estimasi nisab ${formatRupiah(nishabYearly)}.`;
+            }
             
             zakatResult.classList.add('show');
             zakatResult.scrollIntoView({ behavior: 'smooth', block: 'nearest' });

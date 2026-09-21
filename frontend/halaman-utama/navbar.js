@@ -31,9 +31,43 @@ const recordStat = type => analyticsAllowed ? fetch('../api/index.php?resource=s
     })
 }).catch(() => {}) : Promise.resolve();
 
+const normalizeOfficialWhatsapp = value => {
+    let digits = String(value || '').replace(/\D+/g, '');
+    if (digits.startsWith('00')) digits = digits.slice(2);
+    if (digits.startsWith('0')) digits = `62${digits.slice(1)}`;
+    else if (digits.startsWith('8')) digits = `62${digits}`;
+    return /^\d{10,15}$/.test(digits) ? digits : '';
+};
+
+const loadOfficialWhatsapp = async () => {
+    try {
+        const response = await fetch('/api/index.php?resource=institution', {
+            credentials: 'same-origin',
+            headers: { Accept: 'application/json' }
+        });
+        if (!response.ok) return;
+        const result = await response.json();
+        const number = normalizeOfficialWhatsapp(result?.data?.official_phone);
+        if (!number) return;
+
+        document.querySelectorAll('[data-official-whatsapp]').forEach(link => {
+            const message = link.dataset.whatsappMessage || 'Assalamualaikum, saya ingin memperoleh informasi dari Dompet Dana Umat.';
+            link.href = `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+        });
+
+        const contactForm = document.querySelector('.contact-form');
+        if (contactForm) contactForm.dataset.whatsapp = number;
+    } catch (error) {
+        console.error('Nomor WhatsApp resmi belum dapat dimuat.', error);
+    }
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let pageNavigationStarted = false;
+    loadOfficialWhatsapp();
 
     window.addEventListener('pageshow', () => {
         pageNavigationStarted = false;
