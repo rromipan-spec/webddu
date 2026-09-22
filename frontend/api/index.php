@@ -88,7 +88,10 @@ if ($resource === 'stats') {
     }
     if ($method === 'POST') {
         $body = Http::body();
-        if (!in_array((string) ($body['type'] ?? ''), ['visit', 'wa_click'], true)) {
+        if (!in_array((string) ($body['type'] ?? ''), [
+            'visit', 'page_view', 'content_view', 'engaged_view', 'page_engagement', 'wa_click',
+            'hero_cta_click', 'calculator_submit', 'contact_submit', 'web_vital', 'client_error',
+        ], true)) {
             Http::json(['ok' => false, 'message' => 'Tipe statistik tidak valid.'], 422);
         }
         Analytics::record($body);
@@ -100,6 +103,11 @@ if ($resource === 'analytics' && $method === 'GET') {
     Auth::requireAdmin();
     $days = filter_var($_GET['days'] ?? 30, FILTER_VALIDATE_INT) ?: 30;
     Http::json(['ok' => true, 'data' => Analytics::report((int) $days)]);
+}
+
+if ($resource === 'system_health' && $method === 'GET') {
+    Auth::requireAdmin();
+    Http::json(['ok' => true, 'data' => SystemHealth::report()]);
 }
 
 if ($resource === 'admin_sessions') {

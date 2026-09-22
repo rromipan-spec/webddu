@@ -14,22 +14,60 @@ const anonymousId = (storage, key) => {
 
 const analyticsAllowed = navigator.doNotTrack !== '1' && navigator.globalPrivacyControl !== true;
 const visitorId = analyticsAllowed ? anonymousId(localStorage, 'ddu_anonymous_visitor') : '';
-const visitSessionId = analyticsAllowed ? anonymousId(sessionStorage, 'ddu_visit_session') : '';
+const analyticsSession = (() => {
+    if (!analyticsAllowed) return { id: '', landingPath: '/', utm: {} };
+    const key = 'ddu_analytics_session_v2';
+    const now = Date.now();
+    const params = new URLSearchParams(location.search);
+    try {
+        const stored = JSON.parse(localStorage.getItem(key) || 'null');
+        if (stored?.id && now - Number(stored.lastActivity || 0) < 30 * 60 * 1000) {
+            stored.lastActivity = now;
+            localStorage.setItem(key, JSON.stringify(stored));
+            return stored;
+        }
+        const session = {
+            id: globalThis.crypto?.randomUUID?.() || `${now.toString(36)}-${Math.random().toString(36).slice(2)}`,
+            lastActivity: now,
+            pageViews: 0,
+            landingPath: location.pathname,
+            utm: {
+                source: params.get('utm_source') || '', medium: params.get('utm_medium') || '',
+                campaign: params.get('utm_campaign') || '', content: params.get('utm_content') || ''
+            }
+        };
+        localStorage.setItem(key, JSON.stringify(session));
+        return session;
+    } catch { return { id: anonymousId(sessionStorage, 'ddu_visit_session'), landingPath: location.pathname, utm: {} }; }
+})();
+if (analyticsAllowed) {
+    analyticsSession.pageViews = Number(analyticsSession.pageViews || 0) + 1;
+    try { localStorage.setItem('ddu_analytics_session_v2', JSON.stringify(analyticsSession)); } catch {}
+}
 
-const recordStat = type => analyticsAllowed ? fetch('../api/index.php?resource=stats', {
+const recordStat = (type, details = {}) => analyticsAllowed ? fetch('../api/index.php?resource=stats', {
     method: 'POST',
     credentials: 'same-origin',
     keepalive: true,
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
+        ...details,
+        event_id: globalThis.crypto?.randomUUID?.() || '',
         type,
         page: window.location.pathname,
         referrer: document.referrer,
         screen_width: Math.round(window.screen?.width || window.innerWidth || 0),
         visitor_id: visitorId,
-        session_id: visitSessionId
+        session_id: analyticsSession.id,
+        landing_path: analyticsSession.landingPath,
+        utm_source: analyticsSession.utm?.source || '',
+        utm_medium: analyticsSession.utm?.medium || '',
+        utm_campaign: analyticsSession.utm?.campaign || '',
+        utm_content: analyticsSession.utm?.content || ''
     })
 }).catch(() => {}) : Promise.resolve();
+
+window.dduAnalytics = { track: recordStat };
 
 const normalizeOfficialWhatsapp = value => {
     let digits = String(value || '').replace(/\D+/g, '');
@@ -96,16 +134,71 @@ document.addEventListener('DOMContentLoaded', () => {
         window.history.replaceState(null, '', `${cleanPath}${window.location.search}`);
     }
 
-    const pageVisitKey = `ddu_visit_${window.location.pathname}`;
-    if (analyticsAllowed && !sessionStorage.getItem(pageVisitKey)) {
-        recordStat('visit');
-        sessionStorage.setItem(pageVisitKey, '1');
+    recordStat('page_view');
+    if (/^\/artikel\//.test(location.pathname) || (!location.pathname.includes('.') && location.pathname !== '/' && !location.pathname.startsWith('/admin'))) {
+        recordStat('content_view');
     }
     document.addEventListener('click', event => {
-        if (event.target.closest('.whatsapp-popup, .btn-whatsapp-minimal, [href*="wa.me/"], [href*="whatsapp.com/"]')) {
-            recordStat('wa_click');
+        const whatsapp = event.target.closest('.whatsapp-popup, .btn-whatsapp-minimal, [href*="wa.me/"], [href*="whatsapp.com/"]');
+        if (whatsapp) {
+            recordStat('wa_click', { cta_id: whatsapp.dataset.analyticsCta || whatsapp.id || whatsapp.className || 'whatsapp' });
         }
+        const heroCta = event.target.closest('.hero-cta, [data-hero-cta]');
+        if (heroCta) recordStat('hero_cta_click', { cta_id: heroCta.dataset.analyticsCta || 'hero' });
     });
+    document.addEventListener('submit', event => {
+        const form = event.target;
+        if (!(form instanceof HTMLFormElement)) return;
+        if (form.matches('.zakat-form, #zakat-form, [data-zakat-calculator]')) recordStat('calculator_submit', { cta_id: form.id || 'zakat-calculator' });
+        if (form.matches('.contact-form, #contact-form')) recordStat('contact_submit', { cta_id: form.id || 'contact-form' });
+    });
+    window.addEventListener('error', event => {
+        recordStat('client_error', { event_label: String(event.error?.name || 'JavaScriptError').slice(0, 120) });
+    });
+
+    let activeSince = Date.now();
+    let activeMs = 0;
+    let maxScroll = 0;
+    let engagementSent = false;
+    let lastSessionTouch = 0;
+    const updateEngagement = (finalize = false) => {
+        if (!document.hidden || finalize) {
+            activeMs += Date.now() - activeSince;
+            activeSince = Date.now();
+        }
+        const scrollable = Math.max(1, document.documentElement.scrollHeight - innerHeight);
+        maxScroll = Math.max(maxScroll, Math.min(100, Math.round(scrollY / scrollable * 100)));
+        if (Date.now() - lastSessionTouch > 10000) {
+            lastSessionTouch = Date.now();
+            analyticsSession.lastActivity = lastSessionTouch;
+            try { localStorage.setItem('ddu_analytics_session_v2', JSON.stringify(analyticsSession)); } catch {}
+        }
+        if (!engagementSent && (activeMs >= 10000 || maxScroll >= 50 || analyticsSession.pageViews >= 2)) {
+            engagementSent = true;
+            recordStat('engaged_view', { engagement_ms: activeMs, scroll_depth: maxScroll });
+        }
+    };
+    updateEngagement();
+    window.addEventListener('scroll', updateEngagement, { passive: true });
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) updateEngagement(true); else activeSince = Date.now();
+    });
+    window.setInterval(updateEngagement, 5000);
+    window.addEventListener('pagehide', () => {
+        updateEngagement(true);
+        recordStat('page_engagement', { engagement_ms: activeMs, scroll_depth: maxScroll });
+    }, { once: true });
+
+    // Sampel 20% cukup untuk tren Core Web Vitals tanpa membebani database.
+    if (analyticsAllowed && visitorId.charCodeAt(0) % 5 === 0 && 'PerformanceObserver' in window) {
+        const vitals = { LCP: 0, INP: 0, CLS: 0 };
+        try { new PerformanceObserver(list => { for (const item of list.getEntries()) vitals.LCP = item.startTime; }).observe({ type: 'largest-contentful-paint', buffered: true }); } catch {}
+        try { new PerformanceObserver(list => { for (const item of list.getEntries()) if (!item.hadRecentInput) vitals.CLS += item.value; }).observe({ type: 'layout-shift', buffered: true }); } catch {}
+        try { new PerformanceObserver(list => { for (const item of list.getEntries()) vitals.INP = Math.max(vitals.INP, item.duration || 0); }).observe({ type: 'event', buffered: true, durationThreshold: 40 }); } catch {}
+        window.addEventListener('pagehide', () => Object.entries(vitals).forEach(([metric_name, metric_value]) => {
+            if (metric_value > 0) recordStat('web_vital', { metric_name, metric_value });
+        }), { once: true });
+    }
 
     const header = document.querySelector('.main-header');
     const backToTop = document.querySelector('.back-to-top');

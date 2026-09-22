@@ -189,11 +189,17 @@ request 422 -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" \
 
 echo '[11/14] Statistik dan riwayat perubahan'
 request 201 -b "$COOKIE_JAR" -H 'Content-Type: application/json' \
+  --data '{"event_id":"11111111-1111-4111-8111-111111111111","type":"page_view","page":"/artikel/integration-test","landing_path":"/","utm_source":"integration","utm_medium":"test","referrer":"https://www.google.com/","screen_width":390,"visitor_id":"integration-visitor-123456789","session_id":"integration-session-123456789"}' "$BASE_URL/api/index.php?resource=stats"
+request 201 -b "$COOKIE_JAR" -H 'Content-Type: application/json' \
+  --data '{"event_id":"11111111-1111-4111-8111-111111111111","type":"page_view","page":"/artikel/integration-test","landing_path":"/","utm_source":"integration","utm_medium":"test","referrer":"https://www.google.com/","screen_width":390,"visitor_id":"integration-visitor-123456789","session_id":"integration-session-123456789"}' "$BASE_URL/api/index.php?resource=stats"
+request 201 -b "$COOKIE_JAR" -H 'Content-Type: application/json' \
   --data '{"type":"wa_click","page":"/artikel/integration-test","referrer":"https://www.google.com/","screen_width":390,"visitor_id":"integration-visitor-123456789","session_id":"integration-session-123456789"}' "$BASE_URL/api/index.php?resource=stats"
 request 200 -b "$COOKIE_JAR" "$BASE_URL/api/index.php?resource=stats"
 assert_json '.data.wa_click >= 1'
 request 200 -b "$COOKIE_JAR" "$BASE_URL/api/index.php?resource=analytics&days=30"
-assert_json '.data.migration_required == false and .data.summary.wa_clicks >= 1 and (.data.devices | type) == "array"'
+assert_json '.data.migration_required == false and .data.summary.page_views == 1 and .data.summary.wa_clicks >= 1 and .data.summary.sessions >= 1 and (.data.funnel | type) == "array" and (.data.campaigns | type) == "array" and .data.data_quality.advanced_schema == true'
+request 200 -b "$COOKIE_JAR" "$BASE_URL/api/index.php?resource=system_health"
+assert_json '.ok == true and (.data.checks.database.ok == true) and (.data.alerts | type) == "array" and .data.migration_required == false'
 request 200 -b "$COOKIE_JAR" "$BASE_URL/api/index.php?resource=admin_sessions"
 assert_json '.migration_required == false and (.data | length) >= 1'
 request 200 -b "$COOKIE_JAR" "$BASE_URL/api/index.php?resource=history&limit=100"

@@ -248,6 +248,7 @@ async function api(resource, options = {}) {
 
 const adminPageHeadings = {
     dashboard: ['Ringkasan Website', 'Pantau aktivitas utama dan kondisi pengelolaan website.'],
+    health: ['Kesehatan Website', 'Pantau server, backup, error, kapasitas, dan ketepatan aliran data.'],
     homepage: ['Hero Homepage', 'Atur tulisan serta foto desktop dan mobile pada tampilan pertama website.'],
     articles: ['Kelola Artikel', 'Tulis, jadwalkan, dan publikasikan informasi untuk pembaca.'],
     'programs-admin': ['Kelola Program', 'Susun program unggulan, media, dan kanal kontribusi resmi.'],
@@ -278,6 +279,7 @@ if (currentDateElement) {
 window.switchTab = tab => {
     updateAdminWorkspaceHeader(tab);
     document.getElementById('content-dashboard')?.classList.toggle('hidden', tab !== 'dashboard');
+    document.getElementById('content-health')?.classList.toggle('hidden', tab !== 'health');
     document.getElementById('content-homepage')?.classList.toggle('hidden', tab !== 'homepage');
     document.getElementById('content-articles')?.classList.toggle('hidden', tab !== 'articles');
     document.getElementById('content-programs-admin')?.classList.toggle('hidden', tab !== 'programs-admin');
@@ -285,8 +287,9 @@ window.switchTab = tab => {
     document.getElementById('content-profile')?.classList.toggle('hidden', tab !== 'profile');
     document.getElementById('content-history')?.classList.toggle('hidden', tab !== 'history');
     document.getElementById('content-institution')?.classList.toggle('hidden', tab !== 'institution');
-    document.querySelector('.preview-group')?.classList.toggle('hidden', tab === 'dashboard' || tab === 'homepage' || tab === 'admins' || tab === 'profile' || tab === 'history' || tab === 'institution');
+    document.querySelector('.preview-group')?.classList.toggle('hidden', tab === 'dashboard' || tab === 'health' || tab === 'homepage' || tab === 'admins' || tab === 'profile' || tab === 'history' || tab === 'institution');
     document.getElementById('tab-dashboard')?.classList.toggle('active', tab === 'dashboard');
+    document.getElementById('tab-health')?.classList.toggle('active', tab === 'health');
     document.getElementById('tab-homepage')?.classList.toggle('active', tab === 'homepage');
     document.getElementById('tab-articles')?.classList.toggle('active', tab === 'articles');
     document.getElementById('tab-programs-admin')?.classList.toggle('active', tab === 'programs-admin');
@@ -302,6 +305,7 @@ window.switchTab = tab => {
         }
     });
     if (tab === 'dashboard') fetchStats();
+    if (tab === 'health') fetchSystemHealth();
     if (tab === 'profile') loadProfile().then(() => loadAdminSessions('own'));
     if (tab === 'admins' && currentRole === 'super_admin') loadAdminSessions('all');
     if (tab === 'history') loadHistory();
@@ -1409,13 +1413,27 @@ function renderAnalytics(data) {
     document.getElementById('count-visits').textContent = numberLabel(summary.page_views);
     document.getElementById('count-visitors').textContent = numberLabel(summary.visitors);
     document.getElementById('count-sessions').textContent = numberLabel(summary.sessions);
+    document.getElementById('count-engaged').textContent = numberLabel(summary.engaged_sessions);
+    document.getElementById('count-engagement-rate').textContent = `${Number(summary.engagement_rate || 0).toLocaleString('id-ID')}% · rata-rata halaman ${Number(summary.average_engagement_seconds || 0).toLocaleString('id-ID')} detik`;
     document.getElementById('count-wa').textContent = numberLabel(summary.wa_clicks);
     document.getElementById('count-conversion').textContent = `${Number(summary.conversion_rate || 0).toLocaleString('id-ID')}%`;
+    document.getElementById('count-converted').textContent = `${numberLabel(summary.converted_sessions)} sesi unik`;
+    renderTrend('trend-visits', data.changes?.page_views);
+    renderTrend('trend-visitors', data.changes?.visitors);
+    renderTrend('trend-sessions', data.changes?.sessions);
+    renderTrend('trend-engaged', data.changes?.engaged_sessions);
+    renderTrend('trend-wa', data.changes?.wa_clicks);
+    renderTrend('trend-conversion', data.changes?.conversion_rate);
     document.getElementById('analytics-retention').textContent = `Retensi ${Number(data.retention_days || 90)} hari`;
+    const yearlyOption = document.querySelector('#analytics-days option[value="365"]');
+    if (yearlyOption) {
+        yearlyOption.disabled = Number(data.retention_days || 0) < 365;
+        yearlyOption.textContent = yearlyOption.disabled ? '1 tahun (butuh retensi 365)' : '1 tahun';
+    }
 
     const migrationAlert = document.getElementById('analytics-migration-alert');
     migrationAlert.innerHTML = data.migration_required
-        ? '<strong>Analitik detail belum aktif</strong>Jalankan database/add_visitor_analytics.sql melalui phpMyAdmin. Data total lama tetap dipertahankan.'
+        ? '<strong>Analitik akurat belum aktif</strong>Jalankan database/upgrade_analytics_health.sql melalui phpMyAdmin. Data lama tetap dipertahankan.'
         : '';
     migrationAlert.classList.toggle('hidden', !data.migration_required);
 
@@ -1426,8 +1444,104 @@ function renderAnalytics(data) {
     renderAnalyticsBars('analytics-os', data.operating_systems || []);
     renderAnalyticsBars('analytics-sources', data.sources || []);
     renderAnalyticsBars('analytics-screens', data.screens || []);
-    renderAnalyticsRanking('analytics-pages', data.pages || []);
+    renderPerformanceRanking('analytics-pages', data.pages || []);
     renderAnalyticsRanking('analytics-whatsapp-pages', data.whatsapp_pages || []);
+    renderAnalyticsBars('analytics-funnel', data.funnel || []);
+    renderPerformanceRanking('analytics-campaigns', data.campaigns || []);
+    renderAnalyticsRanking('analytics-ctas', data.ctas || []);
+    renderWebVitals(data.web_vitals || []);
+    renderWebVitals(data.web_vitals || [], 'health-vitals');
+    renderDataQuality(data.data_quality || {});
+}
+
+function renderTrend(id, value) {
+    const element = document.getElementById(id);
+    if (!element) return;
+    if (value === null || value === undefined) {
+        element.textContent = 'Baru pada periode ini';
+        element.className = 'trend-neutral';
+        return;
+    }
+    const number = Number(value || 0);
+    element.textContent = `${number > 0 ? '↑' : number < 0 ? '↓' : '→'} ${Math.abs(number).toLocaleString('id-ID')}% vs periode sebelumnya`;
+    element.className = number > 0 ? 'trend-up' : number < 0 ? 'trend-down' : 'trend-neutral';
+}
+
+function renderWebVitals(rows, containerId = 'analytics-vitals') {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = rows.length ? rows.map(row => {
+        const value = row.metric === 'CLS' ? Number(row.p75).toFixed(3) : `${Math.round(Number(row.p75))} ms`;
+        const state = row.status === 'good' ? 'Baik' : 'Perlu perhatian';
+        return `<div class="analytics-ranking-item"><span>${escapeHtml(row.metric)} · ${escapeHtml(row.device)} <small>${numberLabel(row.samples)} sampel</small></span><strong class="${row.status === 'good' ? 'status-good' : 'status-warning'}">${escapeHtml(value)} · ${state}</strong></div>`;
+    }).join('') : '<p class="analytics-empty">Menunggu sampel pengunjung nyata.</p>';
+}
+
+function renderDataQuality(quality) {
+    const container = document.getElementById('analytics-quality');
+    if (!container) return;
+    container.innerHTML = [
+        ['Event terakhir', quality.last_event_at ? formatAccountDate(quality.last_event_at) : 'Belum ada'],
+        ['Event dengan ID unik', `${Number(quality.event_id_coverage || 0).toLocaleString('id-ID')}%`],
+        ['Perangkat tidak dikenal', `${Number(quality.unknown_device_rate || 0).toLocaleString('id-ID')}%`],
+        ['Skema akurat', quality.advanced_schema ? 'Aktif' : 'Perlu migrasi']
+    ].map(([label, value]) => `<div><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`).join('');
+}
+
+async function fetchSystemHealth() {
+    const status = document.getElementById('health-status');
+    if (status) status.textContent = 'Memeriksa…';
+    try {
+        const result = await api('system_health');
+        renderSystemHealth(result.data || {});
+    } catch (error) {
+        if (status) status.textContent = 'Gagal';
+        const alerts = document.getElementById('health-alerts');
+        if (alerts) alerts.innerHTML = `<div class="health-alert is-critical"><strong>Pemeriksaan gagal</strong><span>${escapeHtml(error.message)}</span></div>`;
+    }
+}
+
+function renderSystemHealth(data) {
+    const set = (id, value) => { const element = document.getElementById(id); if (element) element.textContent = value; };
+    set('health-status', ({ healthy: 'Sehat', warning: 'Peringatan', critical: 'Kritis' })[data.status] || 'Tidak diketahui');
+    set('health-response', `${numberLabel(data.response_ms)} ms`);
+    set('health-uptime', data.history?.uptime_percent === null ? 'Menunggu' : `${Number(data.history?.uptime_percent || 0).toLocaleString('id-ID')}%`);
+    set('health-errors', numberLabel(data.logs?.errors_24h));
+    set('health-backup-age', data.backups?.age_hours === null ? 'Belum ada' : `${Number(data.backups.age_hours).toLocaleString('id-ID')} jam`);
+    set('health-analytics-age', data.analytics?.age_hours === null ? 'Belum ada' : `${Number(data.analytics.age_hours).toLocaleString('id-ID')} jam`);
+
+    const alerts = document.getElementById('health-alerts');
+    if (alerts) alerts.innerHTML = (data.alerts || []).length
+        ? data.alerts.map(alert => `<div class="health-alert is-${escapeHtml(alert.severity)}"><strong>${escapeHtml(alert.title)}</strong><span>${escapeHtml(alert.message)}</span></div>`).join('')
+        : '<div class="health-alert is-healthy"><strong>Semua indikator normal</strong><span>Tidak ada peringatan aktif saat pemeriksaan ini.</span></div>';
+    renderWebVitals(data.web_vitals || [], 'health-vitals');
+    const dashboardAlert = document.getElementById('dashboard-operational-alert');
+    if (dashboardAlert) {
+        const active = data.alerts || [];
+        dashboardAlert.innerHTML = active.length ? `<strong>${active.length} peringatan operasional</strong>${escapeHtml(active[0].title)} — ${escapeHtml(active[0].message)} Buka menu Kesehatan untuk rincian.` : '';
+        dashboardAlert.classList.toggle('hidden', !active.length);
+    }
+
+    const checks = document.getElementById('health-checks');
+    if (checks) checks.innerHTML = Object.entries(data.checks || {}).map(([name, check]) => `<div><span>${check.ok ? '✓' : '!' } ${escapeHtml(name)}</span><strong class="${check.ok ? 'status-good' : 'status-warning'}">${escapeHtml(check.message || '')}</strong></div>`).join('');
+    const storage = document.getElementById('health-storage');
+    if (storage) storage.innerHTML = [
+        ['Ukuran database', fileSizeLabel(data.database?.size_bytes)], ['Folder upload', `${fileSizeLabel(data.uploads?.size_bytes)} · ${numberLabel(data.uploads?.files)} file`],
+        ['Jumlah backup', numberLabel(data.backups?.count)], ['Backup terbaru', data.backups?.latest_at ? formatAccountDate(data.backups.latest_at) : 'Belum tersedia'],
+        ['Ukuran backup terbaru', fileSizeLabel(data.backups?.latest_size_bytes)], ['Sampel monitor 30 hari', numberLabel(data.history?.samples)]
+    ].map(([label, value]) => `<div><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`).join('');
+    renderAnalyticsRanking('health-log-list', (data.logs?.recent || []).map(row => ({ label: `${formatAccountDate(row.time)} · ${row.event_id} · ${row.message}`, total: row.level })));
+    const migration = document.getElementById('health-migration-alert');
+    if (migration) {
+        migration.innerHTML = data.migration_required ? '<strong>Riwayat uptime belum aktif</strong>Jalankan database/upgrade_analytics_health.sql, lalu jadwalkan system-monitor.php setiap 5 menit.' : '';
+        migration.classList.toggle('hidden', !data.migration_required);
+    }
+}
+
+function fileSizeLabel(bytes) {
+    let value = Number(bytes || 0); const units = ['B', 'KB', 'MB', 'GB']; let index = 0;
+    while (value >= 1024 && index < units.length - 1) { value /= 1024; index++; }
+    return `${value.toLocaleString('id-ID', { maximumFractionDigits: index ? 1 : 0 })} ${units[index]}`;
 }
 
 function renderDailyChart(rows) {
@@ -1468,8 +1582,14 @@ function renderAnalyticsRanking(containerId, rows) {
     const container = document.getElementById(containerId);
     if (!container) return;
     container.innerHTML = rows.length
-        ? rows.map((row, index) => `<div class="analytics-ranking-item"><span>${index + 1}. ${escapeHtml(row.label)}</span><strong>${numberLabel(row.total)}</strong></div>`).join('')
+        ? rows.map((row, index) => `<div class="analytics-ranking-item"><span>${index + 1}. ${escapeHtml(row.label)}</span><strong>${typeof row.total === 'string' && !/^\d+(\.\d+)?$/.test(row.total) ? escapeHtml(row.total) : numberLabel(row.total)}</strong></div>`).join('')
         : '<p class="analytics-empty">Belum ada data.</p>';
+}
+
+function renderPerformanceRanking(containerId, rows) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = rows.length ? rows.map((row, index) => `<div class="analytics-ranking-item"><span>${index + 1}. ${escapeHtml(row.label)}<small>${numberLabel(row.sessions ?? row.total)} sesi · ${numberLabel(row.converted_sessions)} konversi</small></span><strong>${numberLabel(row.total)}<small>${Number(row.conversion_rate || 0).toLocaleString('id-ID')}%</small></strong></div>`).join('') : '<p class="analytics-empty">Belum ada data.</p>';
 }
 
 async function showDashboard() {
@@ -1477,7 +1597,7 @@ async function showDashboard() {
     document.getElementById('dashboard-section')?.classList.remove('hidden');
     document.querySelector('.preview-group')?.classList.add('hidden');
     await loadProfile();
-    await Promise.all([fetchStats(), loadLists()]);
+    await Promise.all([fetchStats(), fetchSystemHealth(), loadLists()]);
 }
 
 async function loadLists() {
@@ -1819,7 +1939,8 @@ function publicationLabel(item) {
 
 function utcDate(value) {
     if (!value) return null;
-    const date = new Date(String(value).replace(' ', 'T') + (String(value).includes('Z') ? '' : 'Z'));
+    const normalized = String(value).replace(' ', 'T');
+    const date = new Date(normalized + (/(?:Z|[+-]\d{2}:?\d{2})$/i.test(normalized) ? '' : 'Z'));
     return Number.isNaN(date.getTime()) ? null : date;
 }
 
@@ -2130,6 +2251,7 @@ function setupPasswordVisibility() {
 async function init() {
     setupPasswordVisibility();
     document.getElementById('analytics-days')?.addEventListener('change', fetchStats);
+    document.getElementById('health-refresh')?.addEventListener('click', fetchSystemHealth);
     setupContentListFilters('posts');
     setupContentListFilters('programs');
     setupAutomaticSlug('post');

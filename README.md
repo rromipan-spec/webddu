@@ -16,8 +16,8 @@ Website resmi Dompet Dana Umat Daarul Uluum (DDU), dibangun dengan PHP, MySQL, H
 - Optimasi unggahan gambar ke WebP dan beberapa ukuran tampilan.
 - Profil lembaga, legalitas, rekening resmi, laporan, dan kebijakan privasi.
 - Akun admin, peran admin/super admin, riwayat perubahan, keamanan login, dan sesi perangkat.
-- Statistik kunjungan anonim, perangkat, sumber kunjungan, halaman populer, dan klik WhatsApp.
-- Backup, health check, error log privat, integration test, dan audit Lighthouse mobile.
+- Statistik anonim akurat dengan sesi 30 menit, deduplikasi event, funnel, UTM, tren periode, dan Core Web Vitals.
+- Dashboard kesehatan berisi backup, uptime internal, kapasitas, error tersaring, peringatan otomatis, dan kesegaran analitik.
 
 ## Struktur proyek
 
@@ -112,6 +112,7 @@ Contoh berikut memakai lokasi produksi saat ini:
 /usr/bin/php /home/u706044810/domains/dompetdanaumat.com/backend/bin/backup.php
 /usr/bin/php /home/u706044810/domains/dompetdanaumat.com/backend/bin/optimize-existing-images.php
 /usr/bin/php /home/u706044810/domains/dompetdanaumat.com/backend/bin/prune-analytics.php
+/usr/bin/php /home/u706044810/domains/dompetdanaumat.com/backend/bin/system-monitor.php
 ```
 
 Jangan memindahkan `backend/config/.env`, `backend/storage/`, atau `frontend/uploads/` ke area publik lain. Workflow mempertahankan data produksi tersebut saat deployment.

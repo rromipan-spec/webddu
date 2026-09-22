@@ -111,7 +111,8 @@ CREATE TABLE IF NOT EXISTS institution_profile (
 
 CREATE TABLE IF NOT EXISTS stats (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    type ENUM('visit', 'wa_click') NOT NULL,
+    event_id CHAR(36) NULL,
+    type VARCHAR(40) NOT NULL,
     page_path VARCHAR(255) NOT NULL DEFAULT '/',
     content_type ENUM('page', 'article', 'program') NOT NULL DEFAULT 'page',
     content_slug VARCHAR(180) NOT NULL DEFAULT '',
@@ -122,12 +123,66 @@ CREATE TABLE IF NOT EXISTS stats (
     browser_family VARCHAR(40) NOT NULL DEFAULT 'Lainnya',
     referrer_source VARCHAR(80) NOT NULL DEFAULT 'Langsung',
     screen_bucket VARCHAR(20) NOT NULL DEFAULT 'Tidak diketahui',
+    landing_path VARCHAR(255) NOT NULL DEFAULT '/',
+    utm_source VARCHAR(100) NOT NULL DEFAULT '',
+    utm_medium VARCHAR(100) NOT NULL DEFAULT '',
+    utm_campaign VARCHAR(150) NOT NULL DEFAULT '',
+    utm_content VARCHAR(150) NOT NULL DEFAULT '',
+    cta_id VARCHAR(100) NOT NULL DEFAULT '',
+    event_label VARCHAR(120) NOT NULL DEFAULT '',
+    engagement_ms INT UNSIGNED NOT NULL DEFAULT 0,
+    scroll_depth TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    metric_name VARCHAR(30) NOT NULL DEFAULT '',
+    metric_value DECIMAL(12,3) NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_stats_event_id (event_id),
     INDEX idx_stats_type_created (type, created_at),
     INDEX idx_stats_created_at (created_at),
     INDEX idx_stats_page_created (page_path, created_at),
     INDEX idx_stats_device_created (device_type, created_at),
     INDEX idx_stats_session_created (session_hash, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS analytics_visitors (
+    visitor_hash CHAR(64) PRIMARY KEY,
+    first_seen_at DATETIME NOT NULL,
+    last_seen_at DATETIME NOT NULL,
+    total_sessions INT UNSIGNED NOT NULL DEFAULT 0,
+    total_page_views INT UNSIGNED NOT NULL DEFAULT 0,
+    INDEX idx_analytics_visitors_seen (last_seen_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS analytics_sessions (
+    session_hash CHAR(64) PRIMARY KEY,
+    visitor_hash CHAR(64) NOT NULL,
+    started_at DATETIME NOT NULL,
+    last_seen_at DATETIME NOT NULL,
+    landing_path VARCHAR(255) NOT NULL DEFAULT '/',
+    referrer_source VARCHAR(80) NOT NULL DEFAULT 'Langsung',
+    utm_source VARCHAR(100) NOT NULL DEFAULT '',
+    utm_medium VARCHAR(100) NOT NULL DEFAULT '',
+    utm_campaign VARCHAR(150) NOT NULL DEFAULT '',
+    device_type ENUM('desktop', 'mobile', 'tablet', 'unknown') NOT NULL DEFAULT 'unknown',
+    page_views INT UNSIGNED NOT NULL DEFAULT 0,
+    event_count INT UNSIGNED NOT NULL DEFAULT 0,
+    is_engaged TINYINT(1) NOT NULL DEFAULT 0,
+    converted_at DATETIME NULL,
+    INDEX idx_analytics_sessions_started (started_at),
+    INDEX idx_analytics_sessions_visitor (visitor_hash, started_at),
+    INDEX idx_analytics_sessions_conversion (converted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS system_health_snapshots (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    status ENUM('healthy', 'unhealthy') NOT NULL,
+    response_ms INT UNSIGNED NOT NULL DEFAULT 0,
+    database_ok TINYINT(1) NOT NULL DEFAULT 0,
+    uploads_ok TINYINT(1) NOT NULL DEFAULT 0,
+    logs_ok TINYINT(1) NOT NULL DEFAULT 0,
+    error_count INT UNSIGNED NOT NULL DEFAULT 0,
+    checked_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_health_checked (checked_at),
+    INDEX idx_health_status (status, checked_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS admin_sessions (

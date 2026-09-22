@@ -76,6 +76,7 @@
 
         if (linked) {
             applyLinkAttributes(slide, linkUrl);
+            slide.dataset.heroCta = `foto-hero-${index + 1}`;
             slide.setAttribute('aria-label', linkLabel);
         }
 

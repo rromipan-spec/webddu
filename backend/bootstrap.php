@@ -11,6 +11,7 @@ require_once __DIR__ . '/src/Auth.php';
 require_once __DIR__ . '/src/Sanitizer.php';
 require_once __DIR__ . '/src/ImageProcessor.php';
 require_once __DIR__ . '/src/Analytics.php';
+require_once __DIR__ . '/src/SystemHealth.php';
 
 AppLogger::boot(__DIR__ . '/storage/logs');
 Config::load(__DIR__ . '/config/.env');

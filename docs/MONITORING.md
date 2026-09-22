@@ -10,6 +10,12 @@ Tambahkan atau pastikan nilai berikut tersedia di `backend/config/.env` pada Hos
 APP_ENV=production
 LOG_MAX_SIZE_MB=5
 LOG_RETENTION_FILES=5
+BACKUP_MAX_AGE_HOURS=36
+ANALYTICS_STALE_HOURS=24
+ERROR_ALERT_THRESHOLD=5
+HEALTH_RESPONSE_ALERT_MS=1000
+ALERT_EMAIL=alamat-admin@contoh.com
+ALERT_COOLDOWN_HOURS=6
 ```
 
 Kedua pengaturan log bersifat opsional. Jika belum ditambahkan, aplikasi otomatis memakai ukuran 5 MB dan mempertahankan lima versi lama. Jangan mengubah `APP_ENV` menjadi `development` pada website aktif karena pesan internal dapat terlihat oleh pengunjung.
@@ -72,7 +78,19 @@ grep 'GANTI_DENGAN_EVENT_ID' /home/u706044810/domains/dompetdanaumat.com/backend
 
 Log berbentuk satu objek JSON per baris. Password database dan kunci setup yang diketahui aplikasi disamarkan sebelum ditulis. Isi request, cookie, authorization header, password, serta query string URL tidak dicatat.
 
-## 5. Jika status unhealthy
+## 5. Monitor berkala dan peringatan
+
+Panel **Kesehatan** membaca status terkini, backup, error 24 jam, kapasitas database/uploads, kesegaran analitik, dan riwayat uptime internal. Jalankan `database/upgrade_analytics_health.sql`, lalu buat cron setiap 5 menit:
+
+```bash
+/usr/bin/php /home/u706044810/domains/dompetdanaumat.com/backend/bin/system-monitor.php
+```
+
+Jika `ALERT_EMAIL` diisi dan fungsi email hosting aktif, peringatan dikirim ketika health check gagal, backup terlambat, error melonjak, analitik berhenti masuk, atau respons internal melewati batas. Peringatan yang sama dibatasi oleh `ALERT_COOLDOWN_HOURS`.
+
+Uptime ini bersifat internal. Server yang mati tidak dapat mencatat dirinya sendiri, jadi gunakan juga monitor eksternal yang memeriksa `/health.php` dari luar Hostinger.
+
+## 6. Jika status unhealthy
 
 1. Jalankan pemeriksaan lengkap melalui SSH.
 2. Pastikan semua migrasi SQL sudah dijalankan.
@@ -81,4 +99,4 @@ Log berbentuk satu objek JSON per baris. Password database dan kunci setup yang 
 5. Periksa `app.log` berdasarkan `event_id`.
 6. Jangan menghapus log sebelum penyebab masalah dicatat dan diperbaiki.
 
-Tidak ada migrasi SQL baru khusus untuk fitur monitoring ini.
+Tab kesehatan menyaring log dan tidak menampilkan cookie, token, kata sandi, atau konteks request sensitif.

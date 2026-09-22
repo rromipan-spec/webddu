@@ -1679,7 +1679,7 @@ body.admin-page {
 }
 
 .admin-page .analytics-summary-grid {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     margin-bottom: 0;
 }
 
@@ -1847,6 +1847,16 @@ body.admin-page {
     color: var(--admin-navy);
 }
 
+.admin-page .analytics-ranking-item small {
+    display: block;
+    margin-top: 3px;
+    color: #718096;
+    font-size: .72rem;
+    font-weight: 600;
+}
+
+.admin-page .analytics-ranking-item strong small { text-align: right; }
+
 .admin-page .admin-session-item {
     align-items: flex-start;
 }
@@ -1894,6 +1904,63 @@ body.admin-page {
     text-align: center;
 }
 
+.admin-page .stat-card-admin small {
+    display: block;
+    margin-top: .45rem;
+    color: #60708a;
+    font-size: .74rem;
+    line-height: 1.35;
+}
+
+.admin-page .trend-up { color: #087f5b !important; }
+.admin-page .trend-down { color: #b42318 !important; }
+.admin-page .trend-neutral { color: #60708a !important; }
+.admin-page .analytics-help { margin: -.35rem 0 1rem; color: #60708a; font-size: .88rem; }
+.admin-page .status-good { color: #087f5b; }
+.admin-page .status-warning { color: #b54708; }
+
+.admin-page .health-alert-list {
+    display: grid;
+    gap: .75rem;
+    margin: 1.25rem 0;
+}
+
+.admin-page .health-alert {
+    display: flex;
+    gap: .35rem 1rem;
+    align-items: baseline;
+    flex-wrap: wrap;
+    border-left: 4px solid #1769f5;
+    border-radius: 10px;
+    padding: .85rem 1rem;
+    background: #eaf2ff;
+    color: #172033;
+}
+
+.admin-page .health-alert.is-critical { border-color: #d92d20; background: #fff1f0; }
+.admin-page .health-alert.is-warning { border-color: #d4a84f; background: #fff9e8; }
+.admin-page .health-alert.is-healthy { border-color: #12a474; background: #ecfdf5; }
+.admin-page .health-alert span { color: #52627a; font-size: .9rem; }
+
+.admin-page .health-detail-list {
+    display: grid;
+    gap: 0;
+}
+
+.admin-page .health-detail-list > div {
+    display: grid;
+    grid-template-columns: minmax(120px, .7fr) minmax(0, 1.3fr);
+    gap: 1rem;
+    align-items: start;
+    padding: .8rem 0;
+    border-bottom: 1px solid #dbe6f5;
+}
+
+.admin-page .health-detail-list > div:last-child { border-bottom: 0; }
+.admin-page .health-detail-list span { color: #60708a; }
+.admin-page .health-detail-list strong { text-align: right; overflow-wrap: anywhere; }
+.admin-page .health-status-text { font-size: 1.4rem !important; }
+
 @media (max-width: 1100px) {
     .admin-page .analytics-summary-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1928,6 +1995,13 @@ body.admin-page {
     .admin-page .admin-session-item .btn-secondary {
         width: 100%;
     }
+
+    .admin-page .health-detail-list > div {
+        grid-template-columns: minmax(0, 1fr);
+        gap: .3rem;
+    }
+
+    .admin-page .health-detail-list strong { text-align: left; }
 }
 
 /* Pengelola hero homepage */
