@@ -201,12 +201,18 @@ final class Analytics
 
     private static function summary(PDO $db, string $start, string $end): array
     {
+        // Produksi dapat berada dalam kondisi migrasi parsial (misalnya tabel sesi
+        // sudah terbentuk, tetapi kolom engagement_ms belum ditambahkan). Jangan
+        // biarkan seluruh laporan gagal hanya karena satu metrik lanjutan belum siap.
+        $averageEngagement = self::hasColumn('stats', 'engagement_ms')
+            ? "AVG(IF(type='page_engagement',engagement_ms,NULL))"
+            : 'NULL';
         $statement = $db->prepare("SELECT SUM(type IN ('visit','page_view')) page_views,SUM(type='wa_click') wa_clicks,
             COUNT(DISTINCT NULLIF(visitor_hash,'')) visitors,
             COUNT(DISTINCT NULLIF(session_hash,'')) sessions,
             COUNT(DISTINCT IF(type='engaged_view',NULLIF(session_hash,''),NULL)) engaged_sessions,
             COUNT(DISTINCT IF(type='wa_click',NULLIF(session_hash,''),NULL)) converted_sessions,
-            AVG(IF(type='page_engagement',engagement_ms,NULL)) average_engagement_ms
+            {$averageEngagement} average_engagement_ms
             FROM stats WHERE created_at>=:start AND created_at<:end");
         $statement->execute(compact('start', 'end')); $row = $statement->fetch() ?: []; $result = [];
         foreach (['page_views','wa_clicks','visitors','sessions','engaged_sessions','converted_sessions'] as $key) $result[$key] = (int) ($row[$key] ?? 0);
@@ -330,7 +336,45 @@ final class Analytics
     private static function screenBucket(int $w): string { return match(true){$w<=0=>'Tidak diketahui',$w<=480=>'≤ 480 px',$w<=768=>'481–768 px',$w<=1024=>'769–1024 px',$w<=1440=>'1025–1440 px',default=>'> 1440 px'}; }
     private static function isBot(): bool { return preg_match('/bot|crawler|spider|slurp|headless|lighthouse|preview/i',(string)($_SERVER['HTTP_USER_AGENT']??''))===1; }
     private static function retentionDays(): int { return max(30,min(365,(int)Config::get('ANALYTICS_RETENTION_DAYS','180'))); }
-    private static function hasDimensions(): bool { try{return(bool)Database::connection()->query("SHOW COLUMNS FROM stats LIKE 'device_type'")->fetch();}catch(Throwable){return false;} }
-    private static function hasAdvancedSchema(): bool { try{$count=(int)Database::connection()->query("SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='stats' AND column_name IN ('event_id','metric_value','utm_campaign')")->fetchColumn();return $count===3&&self::tableExists('analytics_sessions')&&self::tableExists('analytics_visitors');}catch(Throwable){return false;} }
+    private static function hasDimensions(): bool
+    {
+        return self::hasColumns('stats', [
+            'page_path', 'content_type', 'content_slug', 'visitor_hash', 'session_hash',
+            'device_type', 'os_family', 'browser_family', 'referrer_source', 'screen_bucket',
+        ]);
+    }
+    private static function hasAdvancedSchema(): bool
+    {
+        try {
+            $required = [
+                'event_id', 'landing_path', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_content',
+                'cta_id', 'event_label', 'engagement_ms', 'scroll_depth', 'metric_name', 'metric_value',
+            ];
+            return self::hasColumns('stats', $required)
+                && self::tableExists('analytics_sessions')
+                && self::tableExists('analytics_visitors');
+        } catch (Throwable) {
+            return false;
+        }
+    }
+    private static function hasColumn(string $table, string $column): bool
+    {
+        return self::hasColumns($table, [$column]);
+    }
+    private static function hasColumns(string $table, array $columns): bool
+    {
+        if ($columns === []) return false;
+        try {
+            $placeholders = implode(',', array_fill(0, count($columns), '?'));
+            $statement = Database::connection()->prepare(
+                "SELECT COUNT(*) FROM information_schema.columns
+                 WHERE table_schema=DATABASE() AND table_name=? AND column_name IN ({$placeholders})"
+            );
+            $statement->execute(array_merge([$table], $columns));
+            return (int) $statement->fetchColumn() === count($columns);
+        } catch (Throwable) {
+            return false;
+        }
+    }
     private static function tableExists(string $table): bool { try{$s=Database::connection()->prepare('SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name=:table');$s->execute(['table'=>$table]);return(int)$s->fetchColumn()>0;}catch(Throwable){return false;} }
 }

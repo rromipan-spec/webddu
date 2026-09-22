@@ -1,7 +1,20 @@
 -- Jalankan satu kali melalui phpMyAdmin sebelum memakai Analitik Akurat dan Kesehatan Website.
--- Aman dijalankan setelah add_visitor_analytics.sql.
+-- Aman dijalankan ulang. File ini juga melengkapi kolom analitik dasar bila
+-- add_visitor_analytics.sql belum pernah dijalankan atau baru berjalan sebagian.
 
 ALTER TABLE stats MODIFY COLUMN type VARCHAR(40) NOT NULL;
+ALTER TABLE stats
+    ADD COLUMN IF NOT EXISTS page_path VARCHAR(255) NOT NULL DEFAULT '/' AFTER type,
+    ADD COLUMN IF NOT EXISTS content_type ENUM('page', 'article', 'program') NOT NULL DEFAULT 'page' AFTER page_path,
+    ADD COLUMN IF NOT EXISTS content_slug VARCHAR(180) NOT NULL DEFAULT '' AFTER content_type,
+    ADD COLUMN IF NOT EXISTS visitor_hash CHAR(64) NOT NULL DEFAULT '' AFTER content_slug,
+    ADD COLUMN IF NOT EXISTS session_hash CHAR(64) NOT NULL DEFAULT '' AFTER visitor_hash,
+    ADD COLUMN IF NOT EXISTS device_type ENUM('desktop', 'mobile', 'tablet', 'unknown') NOT NULL DEFAULT 'unknown' AFTER session_hash,
+    ADD COLUMN IF NOT EXISTS os_family VARCHAR(40) NOT NULL DEFAULT 'Lainnya' AFTER device_type,
+    ADD COLUMN IF NOT EXISTS browser_family VARCHAR(40) NOT NULL DEFAULT 'Lainnya' AFTER os_family,
+    ADD COLUMN IF NOT EXISTS referrer_source VARCHAR(80) NOT NULL DEFAULT 'Langsung' AFTER browser_family,
+    ADD COLUMN IF NOT EXISTS screen_bucket VARCHAR(20) NOT NULL DEFAULT 'Tidak diketahui' AFTER referrer_source;
+
 ALTER TABLE stats
     ADD COLUMN IF NOT EXISTS event_id CHAR(36) NULL AFTER id,
     ADD COLUMN IF NOT EXISTS landing_path VARCHAR(255) NOT NULL DEFAULT '/' AFTER screen_bucket,
