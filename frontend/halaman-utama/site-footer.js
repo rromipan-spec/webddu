@@ -1,4 +1,29 @@
-export function siteFooterHtml() {
+const googleMapsDestination = 'https://www.google.com/maps/dir/?api=1&destination=Jl.%20Durian%20Raya%20Jl.%20Bantar%20Kemang%20No.76%2F219%2C%20Baranangsiang%2C%20Bogor%2C%20Jawa%20Barat%2016143';
+
+function homeLocationHtml() {
+    return `
+                <div class="footer-col footer-location">
+                    <p class="footer-heading">Lokasi Kami</p>
+                    <a class="footer-map-link" href="${googleMapsDestination}" target="_blank" rel="noopener noreferrer" aria-label="Buka lokasi Dompet Dana Umat di Google Maps">
+                        <span class="footer-map-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" focusable="false"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 10.25A3.25 3.25 0 1 1 12 5.75a3.25 3.25 0 0 1 0 6.5Z"/></svg>
+                        </span>
+                        <span><strong>Buka Google Maps</strong><small>Petunjuk arah ke Dompet Dana Umat</small></span>
+                        <span class="footer-map-arrow" aria-hidden="true">&rarr;</span>
+                    </a>
+                </div>`;
+}
+
+export function siteFooterHtml({ homeLocationOnly = false } = {}) {
+    const contactColumn = homeLocationOnly ? homeLocationHtml() : `
+                <div class="footer-col">
+                    <p class="footer-heading">Contact Info</p>
+                    <ul class="contact-info">
+                        <li>📍 Jl. Durian Raya Jl. Bantar Kemang No.76/219, RT.004/RW.05, Baranangsiang, Kec. Bogor Tim., Kota Bogor, Jawa Barat 16143</li>
+                        <li>📞 +62 851 2127 7046</li>
+                        <li>✉️ Admin@dompetdanaumat.com</li>
+                    </ul>
+                </div>`;
     return `
     <footer class="footer">
         <div class="container">
@@ -10,14 +35,7 @@ export function siteFooterHtml() {
                     </div>
                     <p>Lembaga amil zakat yang terpercaya, amanah, dan profesional dalam mengelola dana umat untuk kesejahteraan masyarakat.</p>
                 </div>
-                <div class="footer-col">
-                    <p class="footer-heading">Contact Info</p>
-                    <ul class="contact-info">
-                        <li>📍 Jl. Durian Raya Jl. Bantar Kemang No.76/219, RT.004/RW.05, Baranangsiang, Kec. Bogor Tim., Kota Bogor, Jawa Barat 16143</li>
-                        <li>📞 +62 851 2127 7046</li>
-                        <li>✉️ Admin@dompetdanaumat.com</li>
-                    </ul>
-                </div>
+                ${contactColumn}
                 <div class="footer-col">
                     <p class="footer-heading">Ikuti Kami</p>
                     <div class="social-links">
@@ -45,8 +63,9 @@ export function siteFooterHtml() {
 }
 
 function mountSharedFooters() {
+    const homeLocationOnly = document.body.classList.contains('home-page');
     document.querySelectorAll('[data-site-footer]').forEach(footer => {
-        footer.outerHTML = siteFooterHtml();
+        footer.outerHTML = siteFooterHtml({ homeLocationOnly });
     });
 }
 
