@@ -1,4 +1,4 @@
-const googleMapsDestination = 'https://www.google.com/maps/dir/?api=1&destination=Jl.%20Durian%20Raya%20Jl.%20Bantar%20Kemang%20No.76%2F219%2C%20Baranangsiang%2C%20Bogor%2C%20Jawa%20Barat%2016143';
+const googleMapsDestination = 'https://share.google/L7KlN5NduvwaBeDRY';
 
 function homeLocationHtml() {
     return `
