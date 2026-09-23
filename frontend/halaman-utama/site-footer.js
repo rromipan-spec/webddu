@@ -4,6 +4,7 @@ function homeLocationHtml() {
     return `
                 <div class="footer-col footer-location">
                     <p class="footer-heading">Lokasi Kami</p>
+                    <p class="footer-address">Jl. Durian Raya, Jl. Bantar Kemang No.76/219, RT.004/RW.05, Baranangsiang, Kec. Bogor Tim., Kota Bogor, Jawa Barat 16143</p>
                     <a class="footer-map-link" href="${googleMapsDestination}" target="_blank" rel="noopener noreferrer" aria-label="Buka lokasi Dompet Dana Umat di Google Maps">
                         <span class="footer-map-icon" aria-hidden="true"><img src="/asset/google-maps-pin.png" alt="" width="24" height="34" loading="lazy" decoding="async"></span>
                         <span class="footer-map-copy"><strong>Buka Google Maps</strong><small>Petunjuk arah ke Dompet Dana Umat</small></span>
