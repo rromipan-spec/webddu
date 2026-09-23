@@ -624,3 +624,480 @@
         scroll-behavior: auto;
     }
 }
+
+/* Lapisan final mobile untuk seluruh halaman publik selain beranda. */
+@media (max-width: 768px) {
+    body:not(.home-page) {
+        --mobile-gutter: clamp(17px, 5vw, 22px);
+        --mobile-section-space: clamp(52px, 13vw, 68px);
+        overflow-x: clip;
+        -webkit-tap-highlight-color: rgba(7, 86, 214, .14);
+    }
+
+    body:not(.home-page) main,
+    body:not(.home-page) #post-container,
+    body:not(.home-page) #program-container {
+        min-width: 0;
+        overflow-x: clip;
+    }
+
+    body:not(.home-page) :where(img, video, canvas, svg) {
+        max-width: 100%;
+    }
+
+    body:not(.home-page) :where(a, button, input, select, textarea) {
+        touch-action: manipulation;
+    }
+
+    body:not(.home-page) :where(input, select, textarea) {
+        max-width: 100%;
+        font-size: 16px;
+    }
+
+    body:not(.home-page) :where(a, button, input, select, textarea):focus-visible {
+        outline: 3px solid rgba(23, 105, 245, .5);
+        outline-offset: 3px;
+    }
+
+    body:not(.home-page) > :where(main, #post-container, #program-container) .container {
+        width: 100%;
+        padding-right: var(--mobile-gutter);
+        padding-left: var(--mobile-gutter);
+    }
+
+    /* Navbar konsisten, aman untuk notch, dan mudah dijangkau ibu jari. */
+    body:not(.home-page) .main-header {
+        top: max(8px, env(safe-area-inset-top));
+        left: 8px;
+        z-index: 1200;
+        width: calc(100% - 16px);
+        border: 1px solid rgba(250, 250, 247, .1);
+        border-radius: 16px;
+        background: rgba(6, 59, 158, .94);
+        box-shadow: 0 10px 30px rgba(6, 59, 158, .22);
+        -webkit-backdrop-filter: blur(16px) saturate(125%);
+        backdrop-filter: blur(16px) saturate(125%);
+    }
+
+    body:not(.home-page) .main-header .container {
+        width: 100%;
+        margin: 0;
+        padding: 0 13px;
+    }
+
+    body:not(.home-page) .navbar {
+        min-height: 64px;
+        padding: 8px 0;
+    }
+
+    body:not(.home-page) .logo {
+        min-width: 0;
+        max-width: calc(100% - 58px);
+        gap: 9px;
+        font-size: clamp(.96rem, 4.2vw, 1.08rem);
+        line-height: 1.15;
+        white-space: nowrap;
+    }
+
+    body:not(.home-page) .logo img {
+        width: auto;
+        height: 42px;
+        flex: 0 0 auto;
+    }
+
+    body:not(.home-page) .logo span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    body:not(.home-page) .menu-toggle {
+        width: 46px;
+        height: 46px;
+        padding: 0;
+        flex: 0 0 46px;
+        justify-content: center;
+        border: 1px solid rgba(250, 250, 247, .14);
+        border-radius: 13px;
+        background: rgba(250, 250, 247, .07);
+    }
+
+    body:not(.home-page) .nav-links {
+        top: max(7px, env(safe-area-inset-top));
+        left: 7px;
+        width: calc(100% - 14px);
+        height: calc(100dvh - max(14px, env(safe-area-inset-top)));
+        max-height: calc(100dvh - max(14px, env(safe-area-inset-top)));
+        padding: 88px 23px max(22px, env(safe-area-inset-bottom));
+        gap: 6px;
+        border-radius: 20px;
+    }
+
+    body:not(.home-page) .nav-links::before {
+        top: 31px;
+        left: 23px;
+    }
+
+    body:not(.home-page) .nav-links > a {
+        min-height: 46px;
+        padding: 9px 4px 11px;
+        font-size: 1.04rem;
+        font-weight: 500;
+    }
+
+    body:not(.home-page) .close-menu-btn {
+        top: 17px;
+        right: 17px;
+        width: 46px;
+        height: 46px;
+    }
+
+    /* Hero dan ritme halaman. */
+    .about-page .about-hero {
+        min-height: 100svh;
+    }
+
+    .about-page .about-hero__inner {
+        padding-top: 122px;
+        padding-bottom: 88px;
+    }
+
+    .about-page .about-hero h1,
+    .article-page .post-hero h1,
+    .program-page .detail-program-hero h1,
+    .credibility-page .credibility-hero h1 {
+        max-width: 100%;
+        font-size: clamp(2rem, 9vw, 2.7rem);
+        line-height: 1.08;
+        overflow-wrap: anywhere;
+        text-wrap: balance;
+    }
+
+    .article-page .post-hero {
+        min-height: clamp(500px, 120vw, 620px);
+        padding-top: 116px;
+        padding-bottom: 64px;
+    }
+
+    .article-page .post-hero-inner {
+        padding-right: var(--mobile-gutter);
+        padding-left: var(--mobile-gutter);
+    }
+
+    .program-page .detail-program-hero {
+        --program-mobile-photo-height: clamp(275px, 76vw, 370px);
+        padding: calc(var(--program-mobile-photo-height) + 30px) var(--mobile-gutter) 58px !important;
+    }
+
+    .program-page .detail-program-hero .hero-content {
+        width: 100%;
+        padding: 0;
+    }
+
+    .program-page .detail-program-hero .hero-content p {
+        margin: 15px auto 0;
+        font-size: .98rem;
+        line-height: 1.65;
+    }
+
+    .credibility-page .credibility-hero {
+        padding: 122px var(--mobile-gutter) 64px;
+        text-align: left;
+    }
+
+    .credibility-page .credibility-hero h1,
+    .credibility-page .credibility-hero p {
+        margin-right: 0;
+        margin-left: 0;
+    }
+
+    .credibility-page .trust-warning {
+        margin: -22px var(--mobile-gutter) 0;
+    }
+
+    .credibility-page .trust-warning__inner {
+        padding: 21px 19px;
+        border-left-width: 4px;
+        border-radius: 13px;
+    }
+
+    .credibility-page .credibility-section {
+        padding: var(--mobile-section-space) 0;
+    }
+
+    .credibility-page .credibility-heading {
+        margin-bottom: 25px;
+    }
+
+    .credibility-page .credibility-card,
+    .credibility-page .policy-content {
+        padding: 22px 18px;
+        border-radius: 15px;
+    }
+
+    .credibility-page .policy-content h2 {
+        margin-top: 30px;
+        font-size: 1.3rem;
+        line-height: 1.3;
+    }
+
+    .credibility-page .official-contact {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .credibility-page .official-contact a {
+        width: 100%;
+        justify-content: center;
+        overflow-wrap: anywhere;
+        text-align: center;
+    }
+
+    /* Isi editor tetap terbaca tanpa overflow pada layar sempit. */
+    .program-page #program-container > section.container.fade-in {
+        padding: 50px var(--mobile-gutter) !important;
+    }
+
+    .program-page .mock-content,
+    .article-page .post-full-content,
+    .credibility-page .policy-content {
+        max-width: 100%;
+        overflow-wrap: anywhere;
+        word-break: normal;
+    }
+
+    .program-page .mock-content :where(h1, h2, h3, h4),
+    .article-page .post-full-content :where(h1, h2, h3, h4) {
+        margin-top: 1.35em;
+        margin-bottom: .48em;
+        line-height: 1.22 !important;
+        text-wrap: balance;
+    }
+
+    .program-page .mock-content :where(h1, h2, h3, h4):first-child,
+    .article-page .post-full-content :where(h1, h2, h3, h4):first-child {
+        margin-top: 0;
+    }
+
+    .program-page .mock-content p,
+    .article-page .post-full-content p {
+        margin-bottom: 1.05em;
+    }
+
+    .program-page .mock-content :where(ul, ol),
+    .article-page .post-full-content :where(ul, ol) {
+        padding-left: 1.3rem;
+    }
+
+    .program-page .mock-content :where(img, video, iframe),
+    .article-page .post-full-content :where(img, video, iframe) {
+        max-width: 100%;
+        height: auto;
+    }
+
+    .program-page .mock-content :where(.content-image-block, .image-wrap-inline, .image-wrap-square-left, .image-wrap-square-right),
+    .article-page .post-full-content :where(.content-image-block, .image-wrap-inline, .image-wrap-square-left, .image-wrap-square-right) {
+        display: block;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 22px 0 !important;
+        float: none !important;
+    }
+
+    .program-page .mock-content :where(table, pre),
+    .article-page .post-full-content :where(table, pre),
+    .credibility-page .policy-content :where(table, pre) {
+        display: block;
+        max-width: 100%;
+        overflow-x: auto;
+        overscroll-behavior-inline: contain;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .program-page .mock-content blockquote,
+    .article-page .post-full-content blockquote {
+        margin: 24px 0;
+        padding: 18px 17px;
+    }
+
+    .article-page .post-page-layout {
+        padding: 22px 0 64px;
+    }
+
+    .article-page .post-full {
+        padding: 19px 16px 24px;
+        border-radius: 16px;
+    }
+
+    .article-page .post-share-buttons {
+        gap: 8px;
+    }
+
+    .article-page .post-share-buttons :where(a, button) {
+        min-height: 46px;
+    }
+
+    /* CTA donasi ditumpuk rapi dan seluruh teks memiliki kontras yang aman. */
+    .post-donation-cta,
+    .program-donation-cta > .container {
+        padding: 36px 18px;
+        border-radius: 20px;
+    }
+
+    .program-donation-cta {
+        padding: 46px var(--mobile-gutter);
+    }
+
+    .post-donation-cta .donation-methods,
+    .program-donation-cta .donation-methods {
+        margin-top: 28px;
+        gap: 34px;
+    }
+
+    .post-donation-cta .donation-method,
+    .program-donation-cta .donation-method {
+        width: 100%;
+    }
+
+    .post-donation-cta .donation-method-label,
+    .program-donation-cta .donation-method-label {
+        color: #D4A84F !important;
+    }
+
+    .post-donation-cta .donation-method p,
+    .program-donation-cta .donation-method p {
+        color: #EAF2FF !important;
+    }
+
+    .post-donation-cta .btn-whatsapp-minimal,
+    .program-donation-cta .btn-whatsapp-minimal {
+        width: 100%;
+        min-height: 52px;
+        justify-content: center;
+    }
+
+    .post-donation-cta .donation-method--qr img,
+    .program-donation-cta .donation-method--qr img {
+        max-width: min(100%, 260px);
+    }
+
+    /* Footer dan tombol mengambang tidak bertabrakan dengan home indicator. */
+    body .footer {
+        padding-top: 52px;
+        padding-bottom: calc(92px + env(safe-area-inset-bottom));
+    }
+
+    body .footer .footer-grid {
+        gap: 34px;
+        margin-bottom: 34px;
+    }
+
+    body .footer .footer-logo,
+    body .footer .footer-col > .footer-heading {
+        min-height: 0;
+        margin-bottom: 16px;
+    }
+
+    body .footer .footer-profile-copy,
+    body .footer .footer-address {
+        max-width: 100%;
+        font-size: .92rem;
+        line-height: 1.68;
+    }
+
+    body .footer .footer-map-link {
+        width: 100%;
+        grid-template-columns: 44px minmax(0, 1fr) auto;
+    }
+
+    body .footer .footer-bottom {
+        padding-top: 24px;
+    }
+
+    body:not(.home-page) .whatsapp-popup {
+        right: 14px;
+        bottom: max(14px, env(safe-area-inset-bottom));
+        width: 52px;
+        height: 52px;
+        border: 0 !important;
+        outline: 0;
+        box-shadow: 0 10px 28px rgba(9, 68, 35, .3);
+        animation: none;
+    }
+
+    body:not(.home-page) .back-to-top {
+        right: 14px;
+        bottom: calc(max(14px, env(safe-area-inset-bottom)) + 64px);
+        width: 44px;
+        height: 44px;
+        border: 0;
+        box-shadow: 0 8px 22px rgba(6, 59, 158, .24);
+    }
+}
+
+@media (max-width: 420px) {
+    body:not(.home-page) {
+        --mobile-gutter: 17px;
+    }
+
+    body:not(.home-page) .main-header {
+        left: 7px;
+        width: calc(100% - 14px);
+    }
+
+    body:not(.home-page) .main-header .container {
+        padding-right: 11px;
+        padding-left: 11px;
+    }
+
+    body:not(.home-page) .logo {
+        font-size: .94rem;
+    }
+
+    body:not(.home-page) .logo img {
+        height: 39px;
+    }
+
+    .credibility-page .policy-content,
+    .credibility-page .credibility-card {
+        padding-right: 17px;
+        padding-left: 17px;
+    }
+
+    .post-donation-cta,
+    .program-donation-cta > .container {
+        padding-right: 16px;
+        padding-left: 16px;
+    }
+
+    body .footer .footer-map-arrow {
+        display: none;
+    }
+
+    body .footer .footer-map-link {
+        grid-template-columns: 44px minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 768px) and (orientation: landscape), (max-width: 768px) and (max-height: 540px) {
+    body:not(.home-page) .nav-links {
+        padding-top: 72px;
+        gap: 3px;
+    }
+
+    body:not(.home-page) .nav-links > a {
+        min-height: 38px;
+        padding-top: 5px;
+        padding-bottom: 7px;
+    }
+
+    .about-page .about-hero,
+    .article-page .post-hero {
+        min-height: 100svh;
+    }
+}
+
+@media (hover: none) and (pointer: coarse) {
+    body:not(.home-page) :where(.card, .related-card, .credibility-card, .whatsapp-popup, .back-to-top):hover {
+        transform: none;
+    }
+}
