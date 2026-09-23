@@ -235,7 +235,7 @@ function renderPost(container, post, related) {
                         ${qrImage ? `<div class="donation-method donation-method--qr">
                             <span class="donation-method-label">Scan Donasi</span>
                             <h3>QR/Barcode Resmi</h3>
-                            <a href="${escapeHtml(qrImage)}" target="_blank" rel="noopener noreferrer" aria-label="Buka QR/barcode donasi ukuran penuh"><img src="${escapeHtml(qrImage)}" alt="QR atau barcode donasi ${escapeHtml(post.title)}" width="600" height="600" loading="lazy"></a>
+                            <a href="${escapeHtml(qrImage)}" target="_blank" rel="noopener noreferrer" aria-label="Buka QR/barcode donasi ukuran penuh"><img src="${escapeHtml(qrImage)}" alt="QR atau barcode donasi ${escapeHtml(post.title)}" loading="lazy"></a>
                             <small>Ketuk gambar untuk memperbesar. Pastikan tujuan pembayaran sesuai informasi resmi DDU.</small>
                         </div>` : ''}
                         <div class="donation-method donation-method--whatsapp">
