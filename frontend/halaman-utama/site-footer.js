@@ -4,13 +4,11 @@ function homeLocationHtml() {
     return `
                 <div class="footer-col footer-location">
                     <p class="footer-heading">Lokasi Kami</p>
-                    <a class="footer-map-link" href="${googleMapsDestination}" target="_blank" rel="noopener noreferrer" aria-label="Buka lokasi Dompet Dana Umat di Google Maps">
-                        <span class="footer-map-icon" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" focusable="false"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 10.25A3.25 3.25 0 1 1 12 5.75a3.25 3.25 0 0 1 0 6.5Z"/></svg>
-                        </span>
-                        <span><strong>Buka Google Maps</strong><small>Petunjuk arah ke Dompet Dana Umat</small></span>
-                        <span class="footer-map-arrow" aria-hidden="true">&rarr;</span>
-                    </a>
+                    <div class="social-links">
+                        <a class="social-icon social-icon--maps" href="${googleMapsDestination}" target="_blank" rel="noopener noreferrer" aria-label="Buka lokasi Dompet Dana Umat di Google Maps" title="Google Maps">
+                            <img src="/asset/google-maps-pin.png" alt="" width="24" height="34" loading="lazy" decoding="async">
+                        </a>
+                    </div>
                 </div>`;
 }
 
