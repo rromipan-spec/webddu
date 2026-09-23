@@ -1,4 +1,4 @@
-const googleMapsDestination = 'https://share.google/L7KlN5NduvwaBeDRY';
+const googleMapsDestination = 'https://maps.app.goo.gl/HhdSiWbhhfxCiEhv8';
 
 function homeLocationHtml() {
     return `
