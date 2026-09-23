@@ -1,4 +1,4 @@
-import { siteFooterHtml } from './site-footer.js?v=20260923-6';
+import { siteFooterHtml } from './site-footer.js?v=20260923-7';
 import { detailSliderHtml, initDetailSliders, recordSliderImages } from './detail-slider.js?v=20260721-4';
 
 const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, char => ({

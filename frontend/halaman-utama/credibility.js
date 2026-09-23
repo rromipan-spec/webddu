@@ -1,4 +1,4 @@
-import { siteFooterHtml } from './site-footer.js?v=20260923-6';
+import { siteFooterHtml } from './site-footer.js?v=20260923-7';
 
 const API = '/api/index.php?resource=institution';
 

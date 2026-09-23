@@ -24,7 +24,8 @@ export function siteFooterHtml() {
                         <img src="/asset/logo-dompet-dana-umat-256.png" alt="Logo Dompet Dana Umat Daarul Uluum" width="256" height="258">
                         <span>Dompet Dana Umat</span>
                     </div>
-                    <p>Lembaga amil zakat yang terpercaya, amanah, dan profesional dalam mengelola dana umat untuk kesejahteraan masyarakat.</p>
+                    <p class="footer-profile-copy">Lembaga amil zakat, infak dan sedekah yang terpercaya, amanah, dan profesional dalam menghimpun dan mengelola dana umat untuk kesejahteraan masyarakat.</p>
+                    <p class="footer-profile-copy">Dompet Dana Umat berkomitmen menghadirkan pengelolaan zakat, infak, dan sedekah secara transparan, tepat sasaran, dan berkelanjutan guna meningkatkan kesejahteraan masyarakat serta memberdayakan para penerima manfaat.</p>
                 </div>
                 ${contactColumn}
                 <div class="footer-col">
