@@ -37,6 +37,14 @@
     fill: currentColor;
 }
 
+.home-page .footer-logo { gap: 15px; }
+.home-page .footer-logo img {
+    width: auto;
+    height: 56px;
+    flex: 0 0 auto;
+    object-fit: contain;
+}
+
 .footer .footer-policy-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 20px; margin-bottom: 12px; }
 .footer .footer-policy-links a { color: #EAF2FF; font-size: .88rem; text-decoration: none; }
 .footer .footer-policy-links a:hover { color: #FAFAF7; text-decoration: underline; }
@@ -148,6 +156,8 @@
     .footer .social-links {
         justify-content: flex-start;
     }
+
+    .home-page .footer-logo img { height: 50px; }
 }
 
 @media (max-width: 420px) {
