@@ -1,4 +1,4 @@
-import { siteFooterHtml } from './site-footer.js?v=20260923-7';
+import './site-footer.js?v=20260923-7';
 
 const API = '/api/index.php?resource=institution';
 
@@ -76,5 +76,4 @@ async function loadProfile() {
     }
 }
 
-document.querySelectorAll('[data-site-footer]').forEach(footer => { footer.outerHTML = siteFooterHtml(); });
 loadProfile();

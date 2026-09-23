@@ -1648,10 +1648,6 @@ p {
         justify-content: center;
     }
 
-    .contact-info li {
-        justify-content: center;
-    }
-
     .social-links {
         justify-content: center;
     }
@@ -1790,12 +1786,6 @@ p {
 .footer-col a:hover {
     color: #D4A84F;
     padding-left: 5px;
-}
-
-.contact-info li {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
 }
 
 .social-links {
@@ -2464,7 +2454,6 @@ select {
 
     .home-page .footer-grid { grid-template-columns: 1fr; text-align: left; }
     .home-page .footer-logo,
-    .home-page .contact-info li,
     .home-page .social-links { justify-content: flex-start; }
 }
 

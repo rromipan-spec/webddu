@@ -435,7 +435,6 @@
     }
 
     .home-page .footer-logo,
-    .home-page .contact-info li,
     .home-page .social-links {
         justify-content: flex-start;
     }

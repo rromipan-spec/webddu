@@ -43,8 +43,6 @@ websiteddu/
 `-- deploy.ps1               # pemeriksaan, commit, dan push deployment
 ```
 
-Folder `docs/legacy/` hanya menyimpan referensi migrasi Supabase lama. Berkas tersebut bukan bagian dari aplikasi produksi dan tidak ikut disalin oleh workflow deployment.
-
 ## Persyaratan
 
 - PHP 8.1 atau lebih baru.

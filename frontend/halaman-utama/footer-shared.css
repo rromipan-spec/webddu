@@ -162,7 +162,6 @@
 }
 
 .footer .footer-col > p,
-.footer .contact-info,
 .footer .footer-bottom p {
     color: #EAF2FF;
 }
@@ -191,7 +190,6 @@
     }
 
     .footer .footer-logo,
-    .footer .contact-info li,
     .footer .social-links {
         justify-content: flex-start;
     }

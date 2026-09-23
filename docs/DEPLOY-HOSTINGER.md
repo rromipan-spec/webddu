@@ -67,7 +67,3 @@ Sebelum deployment dimulai, GitHub Actions menjalankan integration test dengan d
 - Perbarui PHP ke rilis 8.x yang masih didukung.
 - Hapus arsip ZIP instalasi dari hosting setelah ekstraksi.
 - Jangan upload folder `docs/` atau `database/` ke `public_html`.
-
-## Catatan migrasi data lama
-
-Versi lama menggunakan Supabase. Struktur lamanya disimpan di `docs/legacy/`, tetapi frontend produksi sudah tidak memuat kunci Supabase. Data artikel/program lama perlu diekspor dari Supabase sebagai CSV, lalu disesuaikan dan diimpor ke tabel MySQL. Jangan mengaktifkan kembali `docs/legacy/supabase-config.js` pada website.

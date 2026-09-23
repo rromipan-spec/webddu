@@ -14,7 +14,6 @@ function homeLocationHtml() {
 }
 
 export function siteFooterHtml() {
-    const contactColumn = homeLocationHtml();
     return `
     <footer class="footer">
         <div class="container">
@@ -27,7 +26,7 @@ export function siteFooterHtml() {
                     <p class="footer-profile-copy">Lembaga amil zakat, infak dan sedekah yang terpercaya, amanah, dan profesional dalam menghimpun dan mengelola dana umat untuk kesejahteraan masyarakat.</p>
                     <p class="footer-profile-copy">Dompet Dana Umat berkomitmen menghadirkan pengelolaan zakat, infak, dan sedekah secara transparan, tepat sasaran, dan berkelanjutan guna meningkatkan kesejahteraan masyarakat serta memberdayakan para penerima manfaat.</p>
                 </div>
-                ${contactColumn}
+                ${homeLocationHtml()}
                 <div class="footer-col">
                     <p class="footer-heading">Ikuti Kami</p>
                     <div class="social-links">

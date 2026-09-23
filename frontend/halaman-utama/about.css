@@ -165,7 +165,6 @@
     }
 
     .about-page .footer-logo,
-    .about-page .contact-info li,
     .about-page .social-links {
         justify-content: flex-start;
     }
