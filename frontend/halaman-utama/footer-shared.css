@@ -72,9 +72,10 @@
     height: 44px;
     align-items: center;
     justify-content: center;
-    border-radius: 0;
-    background: transparent;
-    transition: background-color .2s ease, transform .2s ease;
+    border: 1px solid rgba(250, 250, 247, .14);
+    border-radius: 12px;
+    background: rgba(250, 250, 247, .08);
+    transition: background-color .2s ease, border-color .2s ease, transform .2s ease, box-shadow .2s ease;
 }
 
 .footer .footer-map-icon img {
@@ -108,7 +109,11 @@
 
 .footer .footer-map-link:hover .footer-map-icon,
 .footer .footer-map-link:focus-visible .footer-map-icon,
-.footer .footer-map-link:active .footer-map-icon { background: transparent; }
+.footer .footer-map-link:active .footer-map-icon {
+    border-color: rgba(250, 250, 247, .75);
+    background: #FAFAF7;
+    box-shadow: 0 8px 20px rgba(23, 32, 51, .22);
+}
 
 .footer .footer-map-link:hover .footer-map-icon img,
 .footer .footer-map-link:focus-visible .footer-map-icon img,
