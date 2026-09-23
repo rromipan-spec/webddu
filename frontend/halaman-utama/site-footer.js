@@ -13,16 +13,8 @@ function homeLocationHtml() {
                 </div>`;
 }
 
-export function siteFooterHtml({ homeLocationOnly = false } = {}) {
-    const contactColumn = homeLocationOnly ? homeLocationHtml() : `
-                <div class="footer-col">
-                    <p class="footer-heading">Contact Info</p>
-                    <ul class="contact-info">
-                        <li>📍 Jl. Durian Raya Jl. Bantar Kemang No.76/219, RT.004/RW.05, Baranangsiang, Kec. Bogor Tim., Kota Bogor, Jawa Barat 16143</li>
-                        <li>📞 +62 851 2127 7046</li>
-                        <li>✉️ Admin@dompetdanaumat.com</li>
-                    </ul>
-                </div>`;
+export function siteFooterHtml() {
+    const contactColumn = homeLocationHtml();
     return `
     <footer class="footer">
         <div class="container">
@@ -62,9 +54,8 @@ export function siteFooterHtml({ homeLocationOnly = false } = {}) {
 }
 
 function mountSharedFooters() {
-    const homeLocationOnly = document.body.classList.contains('home-page');
     document.querySelectorAll('[data-site-footer]').forEach(footer => {
-        footer.outerHTML = siteFooterHtml({ homeLocationOnly });
+        footer.outerHTML = siteFooterHtml();
     });
 }
 
