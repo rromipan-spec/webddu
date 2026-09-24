@@ -2730,6 +2730,17 @@ body.admin-page {
 }
 .admin-page .program-template-actions button:hover { border-color: #0756D6; background: #EAF2FF; }
 
+.admin-page .program-template-actions button[data-program-template="waqf-quran"] {
+    grid-column: 1 / -1;
+    border-color: rgba(212, 168, 79, .72);
+    background: linear-gradient(105deg, #FFFBEF, #FFFFFF 64%);
+}
+
+.admin-page .program-template-actions button[data-program-template="waqf-quran"]:hover {
+    border-color: #D4A84F;
+    background: #FFF7DD;
+}
+
 .admin-page .program-template-actions button > span:last-child,
 .admin-page .program-section-choice-grid button > span:last-child {
     min-width: 0;
@@ -2767,6 +2778,10 @@ body.admin-page {
 .admin-page .program-template-mini--fundraising i:nth-child(3) { background: repeating-linear-gradient(90deg, #BBD1F4 0 28%, transparent 28% 34%); }
 .admin-page .program-template-mini--report i:nth-child(2) { background: repeating-linear-gradient(90deg, #8DB4EE 0 30%, transparent 30% 35%); }
 .admin-page .program-template-mini--report i:nth-child(3) { background: repeating-linear-gradient(90deg, #D4A84F 0 30%, transparent 30% 35%); }
+.admin-page .program-template-mini--waqf i:first-child { background: linear-gradient(90deg, #063B9E 72%, #D4A84F 72%); }
+.admin-page .program-template-mini--waqf i:nth-child(2) { background: #EAF2FF; }
+.admin-page .program-template-mini--waqf i:nth-child(3) { background: repeating-linear-gradient(90deg, #8DB4EE 0 29%, transparent 29% 35%); }
+.admin-page .program-template-mini--waqf i:nth-child(4) { background: #24C96B; }
 
 .admin-page .program-section-addbar {
     display: grid;

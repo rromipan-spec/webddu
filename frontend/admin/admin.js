@@ -1404,6 +1404,119 @@ function createProgramTemplate(template = 'simple') {
     cta.data.eyebrow = 'Langkah Kebaikan';
     cta.data.title = title ? `Mari Berkontribusi untuk ${title}` : 'Mari Berkontribusi';
 
+    if (template === 'waqf-quran') {
+        const currentHero = programSections.find(section => section.type === 'hero');
+        const currentCta = programSections.find(section => section.type === 'cta' && section.visible)
+            || programSections.find(section => section.type === 'cta');
+        const waNumber = currentCta?.data.whatsapp_number
+            || document.getElementById('prog-wa')?.value.trim()
+            || '';
+        const existingQrImage = currentCta?.data.qr_image
+            || document.getElementById('prog-donation-qr-image')?.value
+            || '';
+        const qrImage = /^\/uploads\/qrcodes\/[a-f0-9]{32}\.png$/i.test(existingQrImage) ? existingQrImage : '';
+
+        hero.data.eyebrow = 'السلام عليكم ورحمة الله وبركاته بسم الله الرحمن الرحيم';
+        hero.data.title = 'UNTUK MEWUJUDKAN NIAT BAIK ANDA';
+        hero.data.subtitle = 'MARI BERSAMA DALAM GERAKAN WAKAF AL-QUR’AN';
+        hero.data.body = 'APAKAH INI AMALAN YANG ANDA CARI ?\nPAHALA TERUS MENGALIR SAMPAI HARI AKHIR';
+        hero.data.overlay = 30;
+        hero.data.height = 'screen';
+        if (currentHero) {
+            ['media_type', 'media_url', 'mobile_media_url', 'poster_url', 'media_alt'].forEach(field => {
+                hero.data[field] = currentHero.data[field] || hero.data[field];
+            });
+        }
+
+        const introduction = createProgramSection('content');
+        Object.assign(introduction.data, {
+            eyebrow: 'GERAKAN WAKAF AL-QUR’AN',
+            title: 'Gerakan Wakaf Al-Qur’an',
+            body: 'Gerakan Wakaf Quran adalah program yang dipnaungi oleh Dompet Dana Umat (DDU) Daarul Uluum.',
+            theme: 'warm',
+            width: 'boxed',
+            alignment: 'left',
+            spacing: 'normal',
+            media_type: 'none',
+            media_position: 'right'
+        });
+
+        const reward = createProgramSection('content');
+        Object.assign(reward.data, {
+            title: 'Seberapa Besar pahala yang mengalir ketika kita berwakaf Qur’an.',
+            body: 'Tiap huruf yang dibaca, tiap ayat yang dibaca, tiap surat yang kita baca akan menjadi pahala yang terus menerus mengalir ketika kita berwakaf Quran.',
+            theme: 'pale',
+            width: 'boxed',
+            alignment: 'left',
+            spacing: 'normal',
+            media_type: 'none',
+            media_position: 'left'
+        });
+
+        const rewardImpact = createProgramSection('impact');
+        Object.assign(rewardImpact.data, {
+            eyebrow: 'KEBAIKAN YANG TERUS DIBACA',
+            title: 'Satu Huruf 10 Kebaikan.',
+            body: 'Bayangkan berapa banyak huruf, ayat, surat dan juz yang dibaca semuanya mengalir kepada Anda tanpa mengurangi pahala yang membacanya.',
+            theme: 'light',
+            width: 'narrow',
+            alignment: 'center',
+            spacing: 'normal',
+            columns: 2,
+            items: [{
+                value: '1 Huruf',
+                label: '10 Kebaikan',
+                note: 'Setiap huruf yang dibaca pahalanya mengalir kepada Anda. Satu huruf dihitung 10 kebaikan.'
+            }]
+        });
+
+        const reflection = createProgramSection('content');
+        Object.assign(reflection.data, {
+            title: 'HIDUP HANYA SEBENTAR',
+            subtitle: 'TAK TERASA MUNGKIN DOSA KITA LEBIH BESAR DARI AMAL KITA',
+            body: 'KITA PERLU PAHALA YANG TERUS MENERUS MENGALIR',
+            theme: 'deep',
+            width: 'narrow',
+            alignment: 'center',
+            spacing: 'spacious',
+            media_type: 'none'
+        });
+
+        const progress = createProgramSection('progress');
+        progress.visible = false;
+        progress.data.title = 'Progres Gerakan Wakaf Al-Qur’an';
+
+        const gallery = createProgramSection('gallery');
+        gallery.visible = false;
+        gallery.data.title = 'Dokumentasi Penyaluran Wakaf Al-Qur’an';
+        gallery.data.layout = 'featured';
+
+        Object.assign(cta.data, {
+            eyebrow: 'LANGKAH KEBAIKAN',
+            title: 'Kami membuka program wakaf terbaik untuk mewujudkan niat baik Anda.',
+            whatsapp_number: waNumber,
+            whatsapp_message: currentCta?.data.whatsapp_message || 'Assalamualaikum, saya ingin memperoleh informasi dan berpartisipasi dalam Gerakan Wakaf Al-Qur’an.',
+            qr_image: qrImage,
+            button_label: 'Wakaf Al-Qur’an Sekarang',
+            show_qr: true,
+            show_whatsapp: true
+        });
+
+        const faq = createProgramSection('faq');
+        faq.visible = false;
+        Object.assign(faq.data, {
+            title: 'Pertanyaan yang Sering Ditanyakan',
+            items: [
+                { question: 'Ke mana Al-Qur’an akan disalurkan?', answer: '' },
+                { question: 'Siapa penerima manfaat program ini?', answer: '' },
+                { question: 'Bagaimana cara melakukan konfirmasi wakaf?', answer: '' },
+                { question: 'Apakah tersedia laporan dan dokumentasi penyaluran?', answer: '' }
+            ]
+        });
+
+        return [hero, introduction, reward, rewardImpact, reflection, progress, gallery, cta, faq];
+    }
+
     if (template === 'simple') return [hero, content, cta];
 
     if (template === 'fundraising') {
@@ -1423,6 +1536,20 @@ function createProgramTemplate(template = 'simple') {
     const faq = createProgramSection('faq');
     faq.data.title = 'Informasi Tambahan';
     return [hero, content, gallery, impact, faq, cta];
+}
+
+function fillWaqfQuranProgramBasics() {
+    const title = document.getElementById('prog-title');
+    const slug = document.getElementById('prog-slug');
+    const id = document.getElementById('prog-id');
+    const category = document.getElementById('prog-category');
+    const excerpt = document.getElementById('prog-excerpt');
+    if (title && !title.value.trim()) title.value = 'Gerakan Wakaf Al-Qur’an';
+    if (slug && !id?.value && !slug.value.trim()) slug.value = slugify(title?.value || 'Gerakan Wakaf Al-Qur’an');
+    if (category && (!category.value.trim() || category.value.trim().toLowerCase() === 'umum')) category.value = 'Wakaf';
+    if (excerpt && !excerpt.value.trim()) {
+        excerpt.value = 'Gerakan Wakaf Quran adalah program yang dipnaungi oleh Dompet Dana Umat (DDU) Daarul Uluum.';
+    }
 }
 
 function normalizeProgramSections(sections) {
@@ -1713,7 +1840,9 @@ function setupProgramSectionBuilder() {
     document.querySelectorAll('[data-program-template]').forEach(button => {
         button.addEventListener('click', () => {
             if (!confirm('Gunakan susunan ini? Susunan bagian yang ada sekarang akan diganti.')) return;
-            programSections = createProgramTemplate(button.dataset.programTemplate);
+            const template = button.dataset.programTemplate;
+            if (template === 'waqf-quran') fillWaqfQuranProgramBasics();
+            programSections = createProgramTemplate(template);
             collapsedProgramSections.clear();
             programSections.slice(1).forEach(section => collapsedProgramSections.add(section.key));
             renderProgramSectionBuilder();
