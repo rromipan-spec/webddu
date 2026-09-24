@@ -407,7 +407,7 @@ function replaceProgramSections(PDO $db, int $programId, array $sections): void
     if (!programSectionsAvailable()) {
         Http::json([
             'ok' => false,
-            'message' => 'Section Builder belum diaktifkan. Jalankan database/add_program_section_builder.sql melalui phpMyAdmin.',
+            'message' => 'Penyusun halaman program belum diaktifkan. Jalankan database/add_program_section_builder.sql melalui phpMyAdmin.',
         ], 409);
     }
     $delete = $db->prepare('DELETE FROM program_sections WHERE program_id = :program_id');
@@ -435,10 +435,10 @@ function validateProgramSections(mixed $input): array
 {
     if (is_string($input)) $input = json_decode($input, true);
     if (!is_array($input)) {
-        Http::json(['ok' => false, 'message' => 'Susunan section program tidak valid.'], 422);
+        Http::json(['ok' => false, 'message' => 'Susunan bagian program tidak valid.'], 422);
     }
     if (count($input) > 50) {
-        Http::json(['ok' => false, 'message' => 'Maksimal 50 section dalam satu program.'], 422);
+        Http::json(['ok' => false, 'message' => 'Maksimal 50 bagian dalam satu program.'], 422);
     }
 
     $allowedTypes = ['hero', 'content', 'progress', 'gallery', 'impact', 'cta', 'faq'];
@@ -448,7 +448,7 @@ function validateProgramSections(mixed $input): array
         if (!is_array($rawSection)) continue;
         $type = strtolower(trim((string) ($rawSection['type'] ?? '')));
         if (!in_array($type, $allowedTypes, true)) {
-            Http::json(['ok' => false, 'message' => 'Jenis section program tidak dikenali.'], 422);
+            Http::json(['ok' => false, 'message' => 'Jenis bagian program tidak dikenali.'], 422);
         }
         $key = strtolower(trim((string) ($rawSection['key'] ?? '')));
         if (!preg_match('/^[a-z0-9][a-z0-9_-]{5,63}$/', $key) || isset($keys[$key])) {
@@ -603,7 +603,7 @@ function sectionMediaUrl(mixed $value): string
     $url = mb_substr(trim((string) $value), 0, 1000);
     if ($url === '') return '';
     if (str_starts_with($url, '/uploads/') || (str_starts_with(strtolower($url), 'https://') && filter_var($url, FILTER_VALIDATE_URL))) return $url;
-    Http::json(['ok' => false, 'message' => 'Salah satu media section menggunakan alamat yang tidak valid.'], 422);
+    Http::json(['ok' => false, 'message' => 'Salah satu media program menggunakan alamat yang tidak valid.'], 422);
 }
 
 function sectionLink(mixed $value): string
@@ -611,7 +611,7 @@ function sectionLink(mixed $value): string
     $url = mb_substr(trim((string) $value), 0, 1000);
     if ($url === '') return '';
     if (preg_match('~^(https://|/|#)~i', $url)) return $url;
-    Http::json(['ok' => false, 'message' => 'Salah satu tautan section tidak valid.'], 422);
+    Http::json(['ok' => false, 'message' => 'Salah satu tautan bagian tidak valid.'], 422);
 }
 
 function writeResource(string $table, array $body): never

@@ -2652,6 +2652,75 @@ body.admin-page {
     font-weight: 800;
 }
 
+.admin-page .program-builder-steps {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin: 22px 0 14px;
+    padding: 0;
+    list-style: none;
+}
+
+.admin-page .program-builder-steps li {
+    display: flex;
+    min-width: 0;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 13px;
+    border: 1px solid #D9E6FB;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, .8);
+}
+
+.admin-page .program-builder-steps li > strong {
+    display: grid;
+    width: 28px;
+    height: 28px;
+    flex: 0 0 28px;
+    place-items: center;
+    color: #fff;
+    border-radius: 9px;
+    background: #0756D6;
+    font-size: .78rem;
+}
+
+.admin-page .program-builder-steps b,
+.admin-page .program-builder-steps small {
+    display: block;
+}
+
+.admin-page .program-builder-steps b { color: #063B9E; font-size: .85rem; }
+.admin-page .program-builder-steps small { margin-top: 3px; color: #657187; line-height: 1.45; }
+
+.admin-page .program-template-picker {
+    display: grid;
+    grid-template-columns: minmax(170px, .6fr) minmax(0, 1.4fr);
+    gap: 16px;
+    padding: 16px;
+    border: 1px solid rgba(212, 168, 79, .42);
+    border-radius: 14px;
+    background: #FFFBEF;
+}
+
+.admin-page .program-template-picker strong,
+.admin-page .program-template-picker small { display: block; }
+.admin-page .program-template-picker strong { color: #172033; }
+.admin-page .program-template-picker small { margin-top: 4px; color: #657187; line-height: 1.5; }
+.admin-page .program-template-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.admin-page .program-template-actions button {
+    min-height: 42px;
+    padding: 8px 12px;
+    color: #063B9E;
+    border: 1px solid #BFD4F8;
+    border-radius: 10px;
+    background: #fff;
+    cursor: pointer;
+    font: inherit;
+    font-size: .78rem;
+    font-weight: 700;
+}
+.admin-page .program-template-actions button:hover { border-color: #0756D6; background: #EAF2FF; }
+
 .admin-page .program-section-addbar {
     display: grid;
     grid-template-columns: minmax(160px, .8fr) minmax(220px, 1.2fr) auto;
@@ -2796,6 +2865,46 @@ body.admin-page {
     padding: 18px 16px 20px;
 }
 
+.admin-page .program-section-field-intro {
+    display: flex;
+    grid-column: 1 / -1;
+    align-items: baseline;
+    gap: 10px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #EAF2FF;
+}
+
+.admin-page .program-section-field-intro strong { color: #063B9E; }
+.admin-page .program-section-field-intro span { color: #657187; font-size: .78rem; }
+
+.admin-page .program-section-advanced {
+    grid-column: 1 / -1;
+    border: 1px solid #D9E6FB;
+    border-radius: 12px;
+    background: #F8FAFD;
+}
+
+.admin-page .program-section-advanced > summary {
+    padding: 13px 15px;
+    color: #063B9E;
+    cursor: pointer;
+    font-size: .82rem;
+    font-weight: 800;
+}
+
+.admin-page .program-section-advanced > summary span {
+    margin-left: 7px;
+    padding: 3px 7px;
+    color: #657187;
+    border-radius: 999px;
+    background: #EAF2FF;
+    font-size: .68rem;
+}
+
+.admin-page .program-section-advanced .program-section-settings {
+    padding-top: 2px;
+}
+
 .admin-page .program-section-card__body .form-group {
     min-width: 0;
     margin: 0;
@@ -2860,6 +2969,14 @@ body.admin-page {
 
 .admin-page .program-section-media-control input {
     margin-top: 0;
+}
+
+.admin-page .program-field-help {
+    display: block;
+    margin-top: 6px;
+    color: #657187;
+    font-size: .74rem;
+    line-height: 1.45;
 }
 
 .admin-page .program-section-media-control button,
@@ -2935,11 +3052,17 @@ body.admin-page {
     }
 
     .admin-page .program-section-addbar,
+    .admin-page .program-builder-steps,
+    .admin-page .program-template-picker,
     .admin-page .program-section-card__body,
     .admin-page .program-section-settings,
     .admin-page .program-section-item__grid {
         grid-template-columns: minmax(0, 1fr);
     }
+
+    .admin-page .program-template-actions { justify-content: flex-start; }
+
+    .admin-page .program-template-actions button { width: 100%; }
 
     .admin-page .program-section-addbar label,
     .admin-page .program-section-addbar select,

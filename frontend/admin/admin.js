@@ -1347,13 +1347,13 @@ async function saveHomepageSettings(event) {
 }
 
 const programSectionMeta = {
-    hero: ['Hero / Header', 'Media latar, judul, deskripsi, dan tombol pembuka.'],
-    content: ['Konten Teks + Media', 'Paragraf dengan foto atau video di berbagai posisi.'],
-    progress: ['Progres Donasi', 'Target, dana terkumpul, kekurangan, dan persentase otomatis.'],
-    gallery: ['Galeri Foto / Video', 'Kumpulan dokumentasi dengan beberapa model grid.'],
-    impact: ['Dampak / Statistik', 'Angka penting, penerima manfaat, dan capaian program.'],
-    cta: ['CTA Donasi', 'QR/barcode dan WhatsApp khusus untuk section ini.'],
-    faq: ['FAQ', 'Daftar pertanyaan dan jawaban yang dapat dibuka-tutup.']
+    hero: ['Sampul Pembuka', 'Foto atau video besar yang pertama kali dilihat pengunjung.'],
+    content: ['Teks dan Media', 'Cerita program dengan foto atau video di atas maupun di samping.'],
+    progress: ['Target dan Progres Dana', 'Target, dana terkumpul, kekurangan, dan persentase dihitung otomatis.'],
+    gallery: ['Galeri Dokumentasi', 'Kumpulan foto atau video kegiatan dalam beberapa pilihan susunan.'],
+    impact: ['Dampak dan Capaian', 'Tampilkan jumlah penerima manfaat atau hasil penting program.'],
+    cta: ['Ajakan Donasi', 'Tampilkan QR/barcode dan tombol WhatsApp untuk berdonasi.'],
+    faq: ['Pertanyaan Umum', 'Jawaban untuk pertanyaan yang sering disampaikan calon donatur.']
 };
 
 function programSectionKey() {
@@ -1374,6 +1374,40 @@ function createProgramSection(type = 'content') {
     if (safeType === 'cta') Object.assign(data, { whatsapp_number: '', whatsapp_message: '', qr_image: '', button_label: 'Hubungi via WhatsApp', button_url: '', show_qr: true, show_whatsapp: true });
     if (safeType === 'faq') Object.assign(data, { items: [] });
     return { key: programSectionKey(), type: safeType, visible: true, data };
+}
+
+function createProgramTemplate(template = 'simple') {
+    const title = document.getElementById('prog-title')?.value.trim() || '';
+    const hero = createProgramSection('hero');
+    hero.data.title = title;
+    hero.data.eyebrow = 'Program Kebaikan';
+
+    const content = createProgramSection('content');
+    content.data.title = 'Tentang Program';
+
+    const cta = createProgramSection('cta');
+    cta.data.eyebrow = 'Langkah Kebaikan';
+    cta.data.title = title ? `Mari Berkontribusi untuk ${title}` : 'Mari Berkontribusi';
+
+    if (template === 'simple') return [hero, content, cta];
+
+    if (template === 'fundraising') {
+        const progress = createProgramSection('progress');
+        progress.data.title = 'Progres Penggalangan Dana';
+        const impact = createProgramSection('impact');
+        impact.data.title = 'Dampak yang Ingin Dicapai';
+        const gallery = createProgramSection('gallery');
+        gallery.data.title = 'Dokumentasi Program';
+        return [hero, content, progress, impact, gallery, cta];
+    }
+
+    const gallery = createProgramSection('gallery');
+    gallery.data.title = 'Dokumentasi Kegiatan';
+    const impact = createProgramSection('impact');
+    impact.data.title = 'Hasil dan Dampak';
+    const faq = createProgramSection('faq');
+    faq.data.title = 'Informasi Tambahan';
+    return [hero, content, gallery, impact, faq, cta];
 }
 
 function normalizeProgramSections(sections) {
@@ -1421,64 +1455,65 @@ function sectionMediaField(section, field, label, options = {}) {
             ? `<a class="program-section-media-link" href="${escapeHtml(value)}" target="_blank" rel="noopener noreferrer">Buka tautan media ↗</a>`
             : (isVideo ? `<video class="program-section-media-preview" src="${escapeHtml(value)}" controls muted playsinline></video>` : `<img class="program-section-media-preview" src="${escapeHtml(value)}" alt="">`))
         : '';
-    return `<div class="form-group is-wide"><label>${escapeHtml(label)}</label><div class="program-section-media-control"><input type="text" value="${escapeHtml(value)}" data-section-field="${field}" placeholder="${isExternalPlayer ? 'Tempel URL HTTPS media' : 'URL HTTPS atau hasil upload'}">${isExternalPlayer ? '' : `<button type="button" data-section-action="upload" data-upload-field="${field}" data-upload-kind="${options.kind || 'image'}">Upload</button>`}</div>${preview}</div>`;
+    return `<div class="form-group is-wide"><label>${escapeHtml(label)}</label><div class="program-section-media-control"><input type="text" value="${escapeHtml(value)}" data-section-field="${field}" placeholder="${isExternalPlayer ? 'Tempel tautan HTTPS media' : 'Terisi otomatis setelah upload'}">${isExternalPlayer ? '' : `<button type="button" data-section-action="upload" data-upload-field="${field}" data-upload-kind="${options.kind || 'image'}">Pilih File</button>`}</div><small class="program-field-help">${isExternalPlayer ? 'Salin tautan YouTube atau Google Drive, lalu tempel di kolom ini.' : 'Klik Pilih File. Kolom alamat akan terisi otomatis setelah upload berhasil.'}</small>${preview}</div>`;
 }
 
 function programSectionCommonFields(section) {
-    return `${sectionTextField(section, 'eyebrow', 'Label kecil', { wide: false, max: 80 })}
-        ${sectionTextField(section, 'title', 'Judul section', { wide: false, max: 220 })}
-        ${sectionTextField(section, 'subtitle', 'Subjudul', { textarea: true, rows: 2, max: 500 })}
-        ${sectionTextField(section, 'body', 'Teks / paragraf', { textarea: true, rows: 5, max: 12000 })}`;
+    return `<div class="program-section-field-intro"><strong>Isi utama</strong><span>Isi seperlunya. Semua kolom di bawah boleh dikosongkan.</span></div>
+        ${sectionTextField(section, 'eyebrow', 'Label kecil (opsional)', { wide: false, max: 80, placeholder: 'Contoh: Program Wakaf' })}
+        ${sectionTextField(section, 'title', 'Judul bagian (opsional)', { wide: false, max: 220, placeholder: 'Tuliskan judul yang mudah dipahami' })}
+        ${sectionTextField(section, 'subtitle', 'Kalimat penjelas singkat (opsional)', { textarea: true, rows: 2, max: 500 })}
+        ${sectionTextField(section, 'body', 'Isi paragraf (opsional)', { textarea: true, rows: 5, max: 12000, placeholder: 'Ceritakan tujuan, kebutuhan, atau manfaat program...' })}`;
 }
 
 function programSectionSettings(section) {
-    return `<div class="program-section-settings">
-        ${sectionSelectField(section, 'theme', 'Warna', { light: 'Putih', pale: 'Biru muda', blue: 'DDU Blue', deep: 'Deep Blue', warm: 'Warm White' })}
-        ${sectionSelectField(section, 'width', 'Lebar', { narrow: 'Sempit', boxed: 'Dalam container', full: 'Penuh' })}
-        ${sectionSelectField(section, 'alignment', 'Rata teks', { left: 'Kiri', center: 'Tengah', right: 'Kanan' })}
-        ${sectionSelectField(section, 'spacing', 'Jarak vertikal', { compact: 'Rapat', normal: 'Normal', spacious: 'Lapang' })}
-    </div>`;
+    return `<details class="program-section-advanced"><summary>Pengaturan tampilan lanjutan <span>Opsional</span></summary><div class="program-section-settings">
+        ${sectionSelectField(section, 'theme', 'Warna latar', { light: 'Putih', pale: 'Biru muda', blue: 'Biru DDU', deep: 'Biru gelap', warm: 'Putih hangat' })}
+        ${sectionSelectField(section, 'width', 'Lebar isi', { narrow: 'Sempit', boxed: 'Normal', full: 'Lebar' })}
+        ${sectionSelectField(section, 'alignment', 'Posisi tulisan', { left: 'Rata kiri', center: 'Rata tengah', right: 'Rata kanan' })}
+        ${sectionSelectField(section, 'spacing', 'Jarak atas dan bawah', { compact: 'Rapat', normal: 'Normal', spacious: 'Lapang' })}
+    </div></details>`;
 }
 
 function renderProgramSectionTypeFields(section) {
     if (section.type === 'hero') return `${programSectionCommonFields(section)}
-        ${sectionSelectField(section, 'media_type', 'Jenis media', { image: 'Gambar', video: 'Video upload', youtube: 'YouTube', drive: 'Google Drive' })}
-        ${sectionSelectField(section, 'height', 'Tinggi hero', { compact: 'Ringkas', medium: 'Sedang', screen: 'Satu layar' })}
-        ${sectionMediaField(section, 'media_url', 'Media desktop', { kind: section.data.media_type === 'video' ? 'video' : 'image' })}
-        ${sectionMediaField(section, 'mobile_media_url', 'Media mobile (opsional)', { kind: 'image' })}
-        ${sectionTextField(section, 'media_alt', 'Alt media', { wide: false, max: 180 })}
-        ${sectionTextField(section, 'overlay', 'Overlay gelap (0–80%)', { wide: false, type: 'number', min: 0 })}
-        ${sectionTextField(section, 'button_label', 'Tulisan tombol', { wide: false, max: 80 })}
-        ${sectionTextField(section, 'button_url', 'Tujuan tombol', { wide: false })}
-        ${sectionTextField(section, 'whole_link', 'Tautan seluruh hero (opsional)')}`;
+        ${sectionSelectField(section, 'media_type', 'Media sampul', { image: 'Foto', video: 'Video dari komputer', youtube: 'Tautan YouTube', drive: 'Tautan Google Drive' })}
+        ${sectionSelectField(section, 'height', 'Tinggi sampul', { compact: 'Ringkas', medium: 'Sedang', screen: 'Memenuhi layar' })}
+        ${sectionMediaField(section, 'media_url', 'Foto/video untuk desktop', { kind: section.data.media_type === 'video' ? 'video' : 'image' })}
+        ${sectionMediaField(section, 'mobile_media_url', 'Foto khusus layar HP (opsional)', { kind: 'image' })}
+        ${sectionTextField(section, 'media_alt', 'Keterangan foto untuk aksesibilitas (opsional)', { wide: false, max: 180 })}
+        ${sectionTextField(section, 'overlay', 'Tingkat gelap foto, 0–80', { wide: false, type: 'number', min: 0 })}
+        ${sectionTextField(section, 'button_label', 'Tulisan tombol (opsional)', { wide: false, max: 80, placeholder: 'Contoh: Donasi Sekarang' })}
+        ${sectionTextField(section, 'button_url', 'Tujuan tombol (opsional)', { wide: false, placeholder: 'Contoh: /nama-program atau https://...' })}
+        ${sectionTextField(section, 'whole_link', 'Tautan seluruh sampul jika tanpa tombol (opsional)')}`;
     if (section.type === 'content') return `${programSectionCommonFields(section)}
         ${sectionSelectField(section, 'media_type', 'Jenis media', { none: 'Tanpa media', image: 'Gambar', video: 'Video', youtube: 'YouTube', drive: 'Google Drive' })}
-        ${sectionSelectField(section, 'media_position', 'Posisi media', { top: 'Di atas', bottom: 'Di bawah', left: 'Kiri', right: 'Kanan', background: 'Background' })}
-        ${sectionSelectField(section, 'media_ratio', 'Rasio media', { natural: 'Asli', landscape: 'Landscape', square: 'Kotak', portrait: 'Portrait' })}
-        ${sectionTextField(section, 'media_alt', 'Alt media', { wide: false, max: 180 })}
+        ${sectionSelectField(section, 'media_position', 'Posisi foto/video', { top: 'Di atas tulisan', bottom: 'Di bawah tulisan', left: 'Di sebelah kiri', right: 'Di sebelah kanan', background: 'Menjadi latar belakang' })}
+        ${sectionSelectField(section, 'media_ratio', 'Bentuk media', { natural: 'Mengikuti ukuran asli', landscape: 'Mendatar', square: 'Kotak', portrait: 'Tegak' })}
+        ${sectionTextField(section, 'media_alt', 'Keterangan foto untuk aksesibilitas (opsional)', { wide: false, max: 180 })}
         ${sectionMediaField(section, 'media_url', 'Foto / video', { kind: section.data.media_type === 'video' ? 'video' : 'image' })}
-        ${sectionTextField(section, 'caption', 'Caption media', { wide: false, max: 300 })}
-        ${sectionTextField(section, 'media_link', 'Tautan ketika media diklik', { wide: false })}`;
+        ${sectionTextField(section, 'caption', 'Keterangan di bawah media (opsional)', { wide: false, max: 300 })}
+        ${sectionTextField(section, 'media_link', 'Tautan saat media diklik (opsional)', { wide: false })}`;
     if (section.type === 'progress') return `${programSectionCommonFields(section)}
-        ${sectionTextField(section, 'target', 'Target dana (Rp)', { wide: false, type: 'number', min: 0 })}
+        ${sectionTextField(section, 'target', 'Target dana dalam rupiah', { wide: false, type: 'number', min: 0 })}
         ${sectionTextField(section, 'collected', 'Sudah terkumpul (Rp)', { wide: false, type: 'number', min: 0 })}
-        ${sectionTextField(section, 'donors', 'Jumlah donatur', { wide: false, type: 'number', min: 0 })}
-        ${sectionTextField(section, 'deadline', 'Batas waktu', { wide: false, type: 'date' })}
+        ${sectionTextField(section, 'donors', 'Jumlah donatur (opsional)', { wide: false, type: 'number', min: 0 })}
+        ${sectionTextField(section, 'deadline', 'Batas waktu (opsional)', { wide: false, type: 'date' })}
         <div class="program-section-settings">${sectionCheckField(section, 'show_amounts', 'Tampilkan nominal')}${sectionCheckField(section, 'show_percentage', 'Tampilkan persentase')}</div>
-        ${sectionTextField(section, 'button_label', 'Tulisan tombol', { wide: false, max: 80 })}
-        ${sectionTextField(section, 'button_url', 'Tujuan tombol', { wide: false })}`;
+        ${sectionTextField(section, 'button_label', 'Tulisan tombol (opsional)', { wide: false, max: 80 })}
+        ${sectionTextField(section, 'button_url', 'Tujuan tombol (opsional)', { wide: false, placeholder: 'Contoh: /nama-program atau https://...' })}`;
     if (section.type === 'gallery') return `${programSectionCommonFields(section)}
-        ${sectionSelectField(section, 'layout', 'Model galeri', { single: 'Satu foto besar', 'grid-2': 'Grid 2 kolom', 'grid-3': 'Grid 3 kolom', featured: 'Satu besar + foto kecil', mosaic: 'Mosaic', carousel: 'Carousel' }, true)}
+        ${sectionSelectField(section, 'layout', 'Susunan galeri', { single: 'Satu foto besar', 'grid-2': 'Dua foto per baris', 'grid-3': 'Tiga foto per baris', featured: 'Satu besar dan beberapa kecil', mosaic: 'Susunan mozaik', carousel: 'Bisa digeser ke samping' }, true)}
         ${renderProgramSectionItems(section)}`;
     if (section.type === 'impact') return `${programSectionCommonFields(section)}
         ${sectionSelectField(section, 'columns', 'Jumlah kolom', { 2: '2 kolom', 3: '3 kolom', 4: '4 kolom' }, true)}
         ${renderProgramSectionItems(section)}`;
     if (section.type === 'cta') return `${programSectionCommonFields(section)}
-        ${sectionTextField(section, 'whatsapp_number', 'Nomor WhatsApp', { wide: false, max: 16 })}
-        ${sectionTextField(section, 'whatsapp_message', 'Pesan awal WhatsApp', { textarea: true, rows: 3, max: 500 })}
-        ${sectionMediaField(section, 'qr_image', 'QR / barcode', { kind: 'image' })}
-        ${sectionTextField(section, 'button_label', 'Tulisan tombol', { wide: false, max: 80 })}
-        ${sectionTextField(section, 'button_url', 'URL tombol khusus (opsional)', { wide: false })}
+        ${sectionTextField(section, 'whatsapp_number', 'Nomor WhatsApp tujuan', { wide: false, max: 16, placeholder: 'Contoh: 6285121277046' })}
+        ${sectionTextField(section, 'whatsapp_message', 'Pesan WhatsApp otomatis (opsional)', { textarea: true, rows: 3, max: 500 })}
+        ${sectionMediaField(section, 'qr_image', 'Foto QR / barcode (opsional)', { kind: 'image' })}
+        ${sectionTextField(section, 'button_label', 'Tulisan tombol WhatsApp', { wide: false, max: 80 })}
+        ${sectionTextField(section, 'button_url', 'Tautan lain sebagai pengganti WhatsApp (opsional)', { wide: false, placeholder: 'Kosongkan agar tombol menuju WhatsApp' })}
         <div class="program-section-settings">${sectionCheckField(section, 'show_qr', 'Tampilkan QR')}${sectionCheckField(section, 'show_whatsapp', 'Tampilkan WhatsApp')}</div>`;
     return `${programSectionCommonFields(section)}${renderProgramSectionItems(section)}`;
 }
@@ -1486,41 +1521,42 @@ function renderProgramSectionTypeFields(section) {
 function renderProgramSectionItems(section) {
     const items = Array.isArray(section.data.items) ? section.data.items : [];
     const itemHtml = items.map((item, index) => {
-        if (section.type === 'gallery') return `<div class="program-section-item"><div class="program-section-item__header"><strong>Media ${index + 1}</strong><button type="button" data-section-action="remove-item" data-item-index="${index}">Hapus</button></div><div class="program-section-item__grid">
+        if (section.type === 'gallery') return `<div class="program-section-item"><div class="program-section-item__header"><strong>Foto/video ${index + 1}</strong><button type="button" data-section-action="remove-item" data-item-index="${index}">Hapus</button></div><div class="program-section-item__grid">
             <label>Jenis<select data-item-field="type" data-item-index="${index}">${selectOptions({ image: 'Gambar', video: 'Video', youtube: 'YouTube', drive: 'Google Drive' }, item.type || 'image')}</select></label>
-            <label>URL media<input type="text" value="${escapeHtml(item.url || '')}" data-item-field="url" data-item-index="${index}"></label>
-            <label>Alt text<input type="text" value="${escapeHtml(item.alt || '')}" data-item-field="alt" data-item-index="${index}"></label>
-            <label>Caption<input type="text" value="${escapeHtml(item.caption || '')}" data-item-field="caption" data-item-index="${index}"></label>
-            <label>Tautan<input type="text" value="${escapeHtml(item.link || '')}" data-item-field="link" data-item-index="${index}"></label>
-            <button type="button" class="program-section-add-item" data-section-action="upload-item" data-item-index="${index}">Upload media</button>
+            <label>Alamat media<input type="text" value="${escapeHtml(item.url || '')}" data-item-field="url" data-item-index="${index}" placeholder="Terisi otomatis setelah memilih file"></label>
+            <label>Keterangan untuk aksesibilitas<input type="text" value="${escapeHtml(item.alt || '')}" data-item-field="alt" data-item-index="${index}"></label>
+            <label>Keterangan di bawah media<input type="text" value="${escapeHtml(item.caption || '')}" data-item-field="caption" data-item-index="${index}"></label>
+            <label>Tautan saat diklik (opsional)<input type="text" value="${escapeHtml(item.link || '')}" data-item-field="link" data-item-index="${index}"></label>
+            <button type="button" class="program-section-add-item" data-section-action="upload-item" data-item-index="${index}">Pilih File</button>
         </div></div>`;
-        if (section.type === 'impact') return `<div class="program-section-item"><div class="program-section-item__header"><strong>Data ${index + 1}</strong><button type="button" data-section-action="remove-item" data-item-index="${index}">Hapus</button></div><div class="program-section-item__grid">
-            <label>Angka / nilai<input type="text" value="${escapeHtml(item.value || '')}" data-item-field="value" data-item-index="${index}"></label>
-            <label>Label<input type="text" value="${escapeHtml(item.label || '')}" data-item-field="label" data-item-index="${index}"></label>
-            <label>Catatan<input type="text" value="${escapeHtml(item.note || '')}" data-item-field="note" data-item-index="${index}"></label>
+        if (section.type === 'impact') return `<div class="program-section-item"><div class="program-section-item__header"><strong>Capaian ${index + 1}</strong><button type="button" data-section-action="remove-item" data-item-index="${index}">Hapus</button></div><div class="program-section-item__grid">
+            <label>Angka atau nilai<input type="text" value="${escapeHtml(item.value || '')}" data-item-field="value" data-item-index="${index}" placeholder="Contoh: 150"></label>
+            <label>Arti angka tersebut<input type="text" value="${escapeHtml(item.label || '')}" data-item-field="label" data-item-index="${index}" placeholder="Contoh: Penerima manfaat"></label>
+            <label>Catatan tambahan (opsional)<input type="text" value="${escapeHtml(item.note || '')}" data-item-field="note" data-item-index="${index}"></label>
         </div></div>`;
         return `<div class="program-section-item"><div class="program-section-item__header"><strong>Pertanyaan ${index + 1}</strong><button type="button" data-section-action="remove-item" data-item-index="${index}">Hapus</button></div><div class="program-section-item__grid">
             <label>Pertanyaan<input type="text" value="${escapeHtml(item.question || '')}" data-item-field="question" data-item-index="${index}"></label>
             <label>Jawaban<textarea rows="3" data-item-field="answer" data-item-index="${index}">${escapeHtml(item.answer || '')}</textarea></label>
         </div></div>`;
     }).join('');
-    const label = section.type === 'gallery' ? '+ Tambah media' : section.type === 'impact' ? '+ Tambah data' : '+ Tambah pertanyaan';
-    return `<div class="program-section-items">${itemHtml || '<p class="program-section-help">Belum ada item.</p>'}<button type="button" class="program-section-add-item" data-section-action="add-item">${label}</button>${section.type === 'gallery' ? '<button type="button" class="program-section-add-item" data-section-action="upload-gallery">Upload beberapa foto</button>' : ''}</div>`;
+    const label = section.type === 'gallery' ? '+ Tambah satu media' : section.type === 'impact' ? '+ Tambah capaian' : '+ Tambah pertanyaan';
+    const emptyText = section.type === 'gallery' ? 'Belum ada foto atau video.' : section.type === 'impact' ? 'Belum ada data capaian.' : 'Belum ada pertanyaan.';
+    return `<div class="program-section-items">${itemHtml || `<p class="program-section-help">${emptyText}</p>`}<button type="button" class="program-section-add-item" data-section-action="add-item">${label}</button>${section.type === 'gallery' ? '<button type="button" class="program-section-add-item" data-section-action="upload-gallery">Pilih beberapa foto sekaligus</button>' : ''}</div>`;
 }
 
 function renderProgramSectionBuilder() {
     const list = document.getElementById('program-section-list');
     if (!list) return;
-    document.getElementById('program-section-count').textContent = `${programSections.length} section`;
+    document.getElementById('program-section-count').textContent = `${programSections.length} bagian`;
     if (!programSections.length) {
-        list.innerHTML = '<div class="program-section-empty"><strong>Belum ada section.</strong><br>Pilih jenis section lalu klik Tambah Section.</div>';
+        list.innerHTML = '<div class="program-section-empty"><strong>Halaman program masih kosong.</strong><br>Pilih susunan siap pakai di atas atau tambahkan bagian sendiri.</div>';
         return;
     }
     list.innerHTML = programSections.map((section, index) => {
         const meta = programSectionMeta[section.type];
         return `<article class="program-section-card${section.visible ? '' : ' is-hidden-section'}${collapsedProgramSections.has(section.key) ? ' is-collapsed' : ''}" data-section-key="${escapeHtml(section.key)}">
             <header class="program-section-card__header"><div class="program-section-card__identity"><span class="program-section-card__number">${String(index + 1).padStart(2, '0')}</span><div><strong>${escapeHtml(meta[0])}</strong><small>${escapeHtml(section.data.title || meta[1])}</small></div></div>
-            <div class="program-section-actions"><button type="button" data-section-action="collapse">${collapsedProgramSections.has(section.key) ? 'Buka' : 'Lipat'}</button><button type="button" data-section-action="up" aria-label="Naikkan section">↑</button><button type="button" data-section-action="down" aria-label="Turunkan section">↓</button><button type="button" data-section-action="duplicate">Duplikat</button><button type="button" data-section-action="toggle">${section.visible ? 'Sembunyikan' : 'Tampilkan'}</button><button type="button" class="is-danger" data-section-action="delete">Hapus</button></div></header>
+            <div class="program-section-actions"><button type="button" data-section-action="collapse">${collapsedProgramSections.has(section.key) ? 'Isi bagian' : 'Tutup'}</button><button type="button" data-section-action="up" aria-label="Pindahkan ke atas">↑ Atas</button><button type="button" data-section-action="down" aria-label="Pindahkan ke bawah">↓ Bawah</button><button type="button" data-section-action="duplicate">Salin</button><button type="button" data-section-action="toggle">${section.visible ? 'Sembunyikan' : 'Tampilkan'}</button><button type="button" class="is-danger" data-section-action="delete">Hapus</button></div></header>
             <div class="program-section-card__body">${renderProgramSectionTypeFields(section)}${programSectionSettings(section)}</div>
         </article>`;
     }).join('');
@@ -1624,6 +1660,7 @@ function setupProgramSectionBuilder() {
     const fileInput = document.getElementById('program-section-media-file');
     if (!list || !addButton || !fileInput) return;
     programSections = [createProgramSection('hero'), createProgramSection('content'), createProgramSection('cta')];
+    programSections.slice(1).forEach(section => collapsedProgramSections.add(section.key));
     renderProgramSectionBuilder();
     addButton.addEventListener('click', () => {
         const type = document.getElementById('program-section-type').value;
@@ -1631,6 +1668,18 @@ function setupProgramSectionBuilder() {
         renderProgramSectionBuilder();
         syncProgramLegacyFieldsFromSections();
         updatePreview();
+    });
+    document.querySelectorAll('[data-program-template]').forEach(button => {
+        button.addEventListener('click', () => {
+            if (!confirm('Gunakan susunan ini? Susunan bagian yang ada sekarang akan diganti.')) return;
+            programSections = createProgramTemplate(button.dataset.programTemplate);
+            collapsedProgramSections.clear();
+            programSections.slice(1).forEach(section => collapsedProgramSections.add(section.key));
+            renderProgramSectionBuilder();
+            syncProgramLegacyFieldsFromSections();
+            updatePreview();
+            list.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
     });
     list.addEventListener('input', event => {
         const card = event.target.closest('[data-section-key]');
@@ -1674,7 +1723,7 @@ function setupProgramSectionBuilder() {
             programSections.splice(index + 1, 0, copy);
         }
         if (action === 'toggle') section.visible = !section.visible;
-        if (action === 'delete' && confirm('Hapus section ini?')) {
+        if (action === 'delete' && confirm('Hapus bagian ini?')) {
             collapsedProgramSections.delete(section.key);
             programSections.splice(index, 1);
         }
@@ -2560,7 +2609,7 @@ async function editItem(resource, id) {
             if (migrationAlert) {
                 migrationAlert.classList.toggle('hidden', !data.sections_migration_required);
                 migrationAlert.textContent = data.sections_migration_required
-                    ? 'Aktifkan Section Builder dengan menjalankan database/add_program_section_builder.sql sebelum menyimpan.'
+                    ? 'Penyusun halaman belum aktif. Jalankan database/add_program_section_builder.sql sebelum menyimpan program.'
                     : '';
             }
         } else {

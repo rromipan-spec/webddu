@@ -104,7 +104,7 @@
             .toolbar button, .toolbar select { flex: 1 1 auto; }
         }
     </style>
-    <link rel="stylesheet" href="admin.css?v=20260924-1">
+    <link rel="stylesheet" href="admin.css?v=20260924-2">
     <link rel="stylesheet" href="../halaman-utama/ddu-theme.css?v=20260917-6">
 </head>
 <body class="admin-page">
@@ -392,29 +392,42 @@
                         <section class="program-section-builder-shell" aria-labelledby="program-section-builder-heading">
                             <div class="program-section-builder-heading">
                                 <div>
-                                    <span class="admin-eyebrow">Landing Page Modular</span>
-                                    <h3 id="program-section-builder-heading">Section Builder Program</h3>
-                                    <p>Tambah section sebanyak yang dibutuhkan, atur urutannya, lalu isi hanya elemen yang ingin ditampilkan.</p>
+                                    <span class="admin-eyebrow">Penyusun Halaman Program</span>
+                                    <h3 id="program-section-builder-heading">Susun Halaman Program</h3>
+                                    <p>Susun halaman seperti menyusun balok: pilih bagian, isi kontennya, lalu atur urutannya.</p>
                                 </div>
-                                <span id="program-section-count" class="program-section-count">0 section</span>
+                                <span id="program-section-count" class="program-section-count">0 bagian</span>
                             </div>
                             <div id="program-section-migration-alert" class="security-alert hidden" role="alert"></div>
+                            <ol class="program-builder-steps" aria-label="Cara menyusun halaman program">
+                                <li><strong>1</strong><span><b>Pilih susunan</b><small>Gunakan susunan siap pakai atau tambahkan sendiri.</small></span></li>
+                                <li><strong>2</strong><span><b>Isi konten</b><small>Kolom bertanda opsional boleh dikosongkan.</small></span></li>
+                                <li><strong>3</strong><span><b>Atur dan simpan</b><small>Naik-turunkan bagian lalu simpan program.</small></span></li>
+                            </ol>
+                            <div class="program-template-picker">
+                                <div><strong>Mulai cepat</strong><small>Pilih salah satu susunan rekomendasi. Isinya tetap bisa diubah.</small></div>
+                                <div class="program-template-actions">
+                                    <button type="button" data-program-template="simple">Halaman Sederhana</button>
+                                    <button type="button" data-program-template="fundraising">Program Penggalangan Dana</button>
+                                    <button type="button" data-program-template="report">Laporan Kegiatan</button>
+                                </div>
+                            </div>
                             <div class="program-section-addbar">
-                                <label for="program-section-type">Jenis section baru</label>
+                                <label for="program-section-type">Tambah bagian sendiri</label>
                                 <select id="program-section-type">
-                                    <option value="hero">Hero / Header</option>
-                                    <option value="content">Konten Teks + Media</option>
-                                    <option value="progress">Progres Donasi</option>
-                                    <option value="gallery">Galeri Foto / Video</option>
-                                    <option value="impact">Dampak / Statistik</option>
-                                    <option value="cta">CTA Donasi</option>
-                                    <option value="faq">FAQ</option>
+                                    <option value="hero">Sampul pembuka</option>
+                                    <option value="content">Teks dan foto/video</option>
+                                    <option value="progress">Target dan progres dana</option>
+                                    <option value="gallery">Galeri dokumentasi</option>
+                                    <option value="impact">Angka dampak/capaian</option>
+                                    <option value="cta">Ajakan donasi (QR &amp; WhatsApp)</option>
+                                    <option value="faq">Pertanyaan umum</option>
                                 </select>
-                                <button type="button" class="btn-secondary" id="program-add-section">+ Tambah Section</button>
+                                <button type="button" class="btn-secondary" id="program-add-section">+ Tambahkan Bagian</button>
                             </div>
                             <div id="program-section-list" class="program-section-list" aria-live="polite"></div>
                             <input type="file" id="program-section-media-file" hidden accept="image/jpeg,image/png,image/webp,video/mp4,video/webm" multiple>
-                            <p class="program-section-help">Section yang disembunyikan tetap tersimpan tetapi tidak muncul di website.</p>
+                            <p class="program-section-help">Tips: bagian yang disembunyikan tetap tersimpan, tetapi tidak terlihat oleh pengunjung website.</p>
                         </section>
                         <div class="form-group program-legacy-field hidden">
                             <label>Judul Hero (Di Landing Page)</label>
@@ -984,6 +997,6 @@
         </form>
     </dialog>
 
-    <script type="module" src="admin.js?v=20260924-1"></script>
+    <script type="module" src="admin.js?v=20260924-2"></script>
 </body>
 </html>
