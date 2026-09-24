@@ -1356,6 +1356,11 @@ const programSectionMeta = {
     faq: ['Pertanyaan Umum', 'Jawaban untuk pertanyaan yang sering disampaikan calon donatur.']
 };
 
+function programSectionIllustration(type) {
+    const safeType = programSectionMeta[type] ? type : 'content';
+    return `<span class="program-section-visual program-section-visual--${safeType}" aria-hidden="true"><i></i><i></i><i></i><i></i></span>`;
+}
+
 function programSectionKey() {
     return `section-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
@@ -1555,7 +1560,7 @@ function renderProgramSectionBuilder() {
     list.innerHTML = programSections.map((section, index) => {
         const meta = programSectionMeta[section.type];
         return `<article class="program-section-card${section.visible ? '' : ' is-hidden-section'}${collapsedProgramSections.has(section.key) ? ' is-collapsed' : ''}" data-section-key="${escapeHtml(section.key)}">
-            <header class="program-section-card__header"><div class="program-section-card__identity"><span class="program-section-card__number">${String(index + 1).padStart(2, '0')}</span><div><strong>${escapeHtml(meta[0])}</strong><small>${escapeHtml(section.data.title || meta[1])}</small></div></div>
+            <header class="program-section-card__header"><div class="program-section-card__identity"><span class="program-section-card__number">${String(index + 1).padStart(2, '0')}</span>${programSectionIllustration(section.type)}<div class="program-section-card__copy"><strong>${escapeHtml(meta[0])}</strong><small>${escapeHtml(section.data.title || meta[1])}</small></div></div>
             <div class="program-section-actions"><button type="button" data-section-action="collapse">${collapsedProgramSections.has(section.key) ? 'Isi bagian' : 'Tutup'}</button><button type="button" data-section-action="up" aria-label="Pindahkan ke atas">↑ Atas</button><button type="button" data-section-action="down" aria-label="Pindahkan ke bawah">↓ Bawah</button><button type="button" data-section-action="duplicate">Salin</button><button type="button" data-section-action="toggle">${section.visible ? 'Sembunyikan' : 'Tampilkan'}</button><button type="button" class="is-danger" data-section-action="delete">Hapus</button></div></header>
             <div class="program-section-card__body">${renderProgramSectionTypeFields(section)}${programSectionSettings(section)}</div>
         </article>`;
@@ -1658,12 +1663,24 @@ function setupProgramSectionBuilder() {
     const list = document.getElementById('program-section-list');
     const addButton = document.getElementById('program-add-section');
     const fileInput = document.getElementById('program-section-media-file');
-    if (!list || !addButton || !fileInput) return;
+    const typeInput = document.getElementById('program-section-type');
+    const typeChoices = [...document.querySelectorAll('[data-program-section-choice]')];
+    if (!list || !addButton || !fileInput || !typeInput) return;
     programSections = [createProgramSection('hero'), createProgramSection('content'), createProgramSection('cta')];
     programSections.slice(1).forEach(section => collapsedProgramSections.add(section.key));
     renderProgramSectionBuilder();
+    typeChoices.forEach(button => {
+        button.addEventListener('click', () => {
+            typeInput.value = button.dataset.programSectionChoice || 'content';
+            typeChoices.forEach(choice => {
+                const selected = choice === button;
+                choice.classList.toggle('is-selected', selected);
+                choice.setAttribute('aria-pressed', String(selected));
+            });
+        });
+    });
     addButton.addEventListener('click', () => {
-        const type = document.getElementById('program-section-type').value;
+        const type = typeInput.value;
         programSections.push(createProgramSection(type));
         renderProgramSectionBuilder();
         syncProgramLegacyFieldsFromSections();

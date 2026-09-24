@@ -104,7 +104,7 @@
             .toolbar button, .toolbar select { flex: 1 1 auto; }
         }
     </style>
-    <link rel="stylesheet" href="admin.css?v=20260924-2">
+    <link rel="stylesheet" href="admin.css?v=20260924-3">
     <link rel="stylesheet" href="../halaman-utama/ddu-theme.css?v=20260917-6">
 </head>
 <body class="admin-page">
@@ -407,22 +407,23 @@
                             <div class="program-template-picker">
                                 <div><strong>Mulai cepat</strong><small>Pilih salah satu susunan rekomendasi. Isinya tetap bisa diubah.</small></div>
                                 <div class="program-template-actions">
-                                    <button type="button" data-program-template="simple">Halaman Sederhana</button>
-                                    <button type="button" data-program-template="fundraising">Program Penggalangan Dana</button>
-                                    <button type="button" data-program-template="report">Laporan Kegiatan</button>
+                                    <button type="button" data-program-template="simple"><span class="program-template-mini program-template-mini--simple" aria-hidden="true"><i></i><i></i><i></i></span><span>Halaman Sederhana<small>Sampul · cerita · ajakan</small></span></button>
+                                    <button type="button" data-program-template="fundraising"><span class="program-template-mini program-template-mini--fundraising" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span>Penggalangan Dana<small>Sampul · progres · dampak · QR</small></span></button>
+                                    <button type="button" data-program-template="report"><span class="program-template-mini program-template-mini--report" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span>Laporan Kegiatan<small>Sampul · galeri · capaian</small></span></button>
                                 </div>
                             </div>
                             <div class="program-section-addbar">
-                                <label for="program-section-type">Tambah bagian sendiri</label>
-                                <select id="program-section-type">
-                                    <option value="hero">Sampul pembuka</option>
-                                    <option value="content">Teks dan foto/video</option>
-                                    <option value="progress">Target dan progres dana</option>
-                                    <option value="gallery">Galeri dokumentasi</option>
-                                    <option value="impact">Angka dampak/capaian</option>
-                                    <option value="cta">Ajakan donasi (QR &amp; WhatsApp)</option>
-                                    <option value="faq">Pertanyaan umum</option>
-                                </select>
+                                <div class="program-section-addbar-heading"><strong>Tambah bagian sendiri</strong><small>Pilih gambaran bagian yang ingin dimasukkan.</small></div>
+                                <input type="hidden" id="program-section-type" value="hero">
+                                <div class="program-section-choice-grid" role="group" aria-label="Pilih bentuk bagian program">
+                                    <button type="button" class="is-selected" data-program-section-choice="hero" aria-pressed="true"><span class="program-section-visual program-section-visual--hero" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span><b>Sampul Pembuka</b><small>Gambar besar, judul, dan tombol.</small></span></button>
+                                    <button type="button" data-program-section-choice="content" aria-pressed="false"><span class="program-section-visual program-section-visual--content" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span><b>Teks + Media</b><small>Cerita dengan foto atau video.</small></span></button>
+                                    <button type="button" data-program-section-choice="progress" aria-pressed="false"><span class="program-section-visual program-section-visual--progress" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span><b>Progres Dana</b><small>Target, terkumpul, dan persentase.</small></span></button>
+                                    <button type="button" data-program-section-choice="gallery" aria-pressed="false"><span class="program-section-visual program-section-visual--gallery" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span><b>Galeri</b><small>Beberapa foto dokumentasi.</small></span></button>
+                                    <button type="button" data-program-section-choice="impact" aria-pressed="false"><span class="program-section-visual program-section-visual--impact" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span><b>Dampak</b><small>Angka dan hasil yang telah dicapai.</small></span></button>
+                                    <button type="button" data-program-section-choice="cta" aria-pressed="false"><span class="program-section-visual program-section-visual--cta" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span><b>Ajakan Donasi</b><small>QR/barcode dan tombol WhatsApp.</small></span></button>
+                                    <button type="button" data-program-section-choice="faq" aria-pressed="false"><span class="program-section-visual program-section-visual--faq" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span><b>Pertanyaan Umum</b><small>Daftar pertanyaan dan jawaban.</small></span></button>
+                                </div>
                                 <button type="button" class="btn-secondary" id="program-add-section">+ Tambahkan Bagian</button>
                             </div>
                             <div id="program-section-list" class="program-section-list" aria-live="polite"></div>
@@ -997,6 +998,6 @@
         </form>
     </dialog>
 
-    <script type="module" src="admin.js?v=20260924-2"></script>
+    <script type="module" src="admin.js?v=20260924-3"></script>
 </body>
 </html>
