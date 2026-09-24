@@ -199,6 +199,15 @@ function setDonationQrImage(prefix, url) {
         : '';
 }
 
+function updateProgramSectionQrImage(url) {
+    const cta = programSections.find(section => section.type === 'cta' && section.visible)
+        || programSections.find(section => section.type === 'cta');
+    if (!cta) return;
+    cta.data.qr_image = url || '';
+    renderProgramSectionBuilder();
+    updatePreview();
+}
+
 function setupDonationQrUpload(prefix) {
     const zone = document.getElementById(`${prefix}-qr-drop-zone`);
     const input = document.getElementById(`${prefix}-qr-file`);
@@ -220,6 +229,7 @@ function setupDonationQrUpload(prefix) {
         try {
             const result = await api('qr_upload', { method: 'POST', body: form });
             setDonationQrImage(prefix, result.url);
+            if (prefix === 'prog') updateProgramSectionQrImage(result.url);
             if (status) status.textContent = 'QR/barcode tersimpan. Simpan konten untuk menerapkan perubahan.';
         } catch (error) {
             if (status) status.textContent = '';
@@ -1516,7 +1526,7 @@ function renderProgramSectionTypeFields(section) {
     if (section.type === 'cta') return `${programSectionCommonFields(section)}
         ${sectionTextField(section, 'whatsapp_number', 'Nomor WhatsApp tujuan', { wide: false, max: 16, placeholder: 'Contoh: 6285121277046' })}
         ${sectionTextField(section, 'whatsapp_message', 'Pesan WhatsApp otomatis (opsional)', { textarea: true, rows: 3, max: 500 })}
-        ${sectionMediaField(section, 'qr_image', 'Foto QR / barcode (opsional)', { kind: 'image' })}
+        ${sectionMediaField(section, 'qr_image', 'Foto QR / barcode PNG (opsional)', { kind: 'qr' })}
         ${sectionTextField(section, 'button_label', 'Tulisan tombol WhatsApp', { wide: false, max: 80 })}
         ${sectionTextField(section, 'button_url', 'Tautan lain sebagai pengganti WhatsApp (opsional)', { wide: false, placeholder: 'Kosongkan agar tombol menuju WhatsApp' })}
         <div class="program-section-settings">${sectionCheckField(section, 'show_qr', 'Tampilkan QR')}${sectionCheckField(section, 'show_whatsapp', 'Tampilkan WhatsApp')}</div>`;
@@ -1632,18 +1642,32 @@ async function uploadProgramSectionFiles(files) {
     if (!pendingProgramSectionUpload || !files.length) return;
     const section = findProgramSection(pendingProgramSectionUpload.key);
     if (!section) return;
+    const task = pendingProgramSectionUpload;
     const uploaded = [];
-    for (const file of files) {
-        if (file.type.startsWith('video/') || /\.(mp4|webm)$/i.test(file.name)) {
-            const form = new FormData();
-            form.append('video', file);
-            const result = await api('video_upload', { method: 'POST', body: form });
-            uploaded.push({ type: 'video', url: result.url });
-        } else {
-            uploaded.push({ type: 'image', url: await uploadImageFileWithRetry(file, 3, 'content') });
+    if (task.mode === 'field' && task.field === 'qr_image') {
+        const file = files[0];
+        if (file.type !== 'image/png' && !/\.png$/i.test(file.name)) {
+            throw new Error('QR/barcode harus berupa file PNG.');
+        }
+        if (file.size > 2 * 1024 * 1024) {
+            throw new Error('Ukuran QR/barcode maksimal 2 MB.');
+        }
+        const form = new FormData();
+        form.append('qr', file);
+        const result = await api('qr_upload', { method: 'POST', body: form });
+        uploaded.push({ type: 'image', url: result.url });
+    } else {
+        for (const file of files) {
+            if (file.type.startsWith('video/') || /\.(mp4|webm)$/i.test(file.name)) {
+                const form = new FormData();
+                form.append('video', file);
+                const result = await api('video_upload', { method: 'POST', body: form });
+                uploaded.push({ type: 'video', url: result.url });
+            } else {
+                uploaded.push({ type: 'image', url: await uploadImageFileWithRetry(file, 3, 'content') });
+            }
         }
     }
-    const task = pendingProgramSectionUpload;
     if (task.mode === 'gallery') {
         section.data.items = [...(section.data.items || []), ...uploaded.map(item => ({ type: item.type, url: item.url, alt: '', caption: '', link: '' }))].slice(0, 24);
     } else if (task.mode === 'item') {
@@ -1752,7 +1776,13 @@ function setupProgramSectionBuilder() {
         if (['upload', 'upload-item', 'upload-gallery'].includes(action)) {
             pendingProgramSectionUpload = { key: section.key, field: button.dataset.uploadField, index: Number(button.dataset.itemIndex), mode: action === 'upload-gallery' ? 'gallery' : action === 'upload-item' ? 'item' : 'field' };
             fileInput.multiple = action === 'upload-gallery';
-            fileInput.accept = button.dataset.uploadKind === 'video' ? 'video/mp4,video/webm' : action === 'upload-gallery' || action === 'upload-item' ? 'image/jpeg,image/png,image/webp,video/mp4,video/webm' : 'image/jpeg,image/png,image/webp';
+            fileInput.accept = button.dataset.uploadKind === 'video'
+                ? 'video/mp4,video/webm'
+                : button.dataset.uploadKind === 'qr'
+                    ? 'image/png'
+                    : action === 'upload-gallery' || action === 'upload-item'
+                        ? 'image/jpeg,image/png,image/webp,video/mp4,video/webm'
+                        : 'image/jpeg,image/png,image/webp';
             fileInput.click();
             return;
         }
@@ -2450,6 +2480,7 @@ document.addEventListener('click', event => {
         event.stopPropagation();
         const prefix = clearDonationQr.dataset.clearDonationQr;
         setDonationQrImage(prefix, '');
+        if (prefix === 'prog') updateProgramSectionQrImage('');
         const status = document.getElementById(`${prefix}-qr-upload-status`);
         if (status) status.textContent = 'QR/barcode dihapus dari rancangan. Simpan konten untuk menerapkan perubahan.';
     }
