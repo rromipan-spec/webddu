@@ -242,6 +242,7 @@ function readResource(string $table): never
         $stmt = $db->prepare("SELECT * FROM {$table} WHERE id = :id LIMIT 1");
         $stmt->execute(['id' => $id]);
         $row = $stmt->fetch();
+        if ($row && $table === 'programs') $row = withProgramSections($row);
         Http::json(['ok' => true, 'data' => $row ?: null], $row ? 200 : 404);
     }
 
@@ -253,6 +254,7 @@ function readResource(string $table): never
         $stmt = $db->prepare("SELECT * FROM {$table} WHERE slug = :slug{$publicationFilter} LIMIT 1");
         $stmt->execute(['slug' => $slug]);
         $row = $stmt->fetch();
+        if ($row && $table === 'programs') $row = withProgramSections($row);
         if ($row && !$preview) $row = publicContentRow($row);
         Http::json(['ok' => true, 'data' => $row ?: null], $row ? 200 : 404);
     }
@@ -363,10 +365,262 @@ function publicContentRow(array $row): array
     return $row;
 }
 
+function programSectionsAvailable(): bool
+{
+    static $available = null;
+    if ($available !== null) return $available;
+    try {
+        $statement = Database::connection()->query("SHOW TABLES LIKE 'program_sections'");
+        $available = (bool) $statement->fetchColumn();
+    } catch (Throwable) {
+        $available = false;
+    }
+    return $available;
+}
+
+function withProgramSections(array $program): array
+{
+    $program['sections'] = [];
+    $program['sections_migration_required'] = !programSectionsAvailable();
+    if ($program['sections_migration_required']) return $program;
+
+    $statement = Database::connection()->prepare(
+        'SELECT section_key, section_type, sort_order, is_visible, section_data
+         FROM program_sections WHERE program_id = :program_id
+         ORDER BY sort_order ASC, id ASC'
+    );
+    $statement->execute(['program_id' => (int) $program['id']]);
+    foreach ($statement->fetchAll() as $row) {
+        $data = json_decode((string) $row['section_data'], true);
+        $program['sections'][] = [
+            'key' => (string) $row['section_key'],
+            'type' => (string) $row['section_type'],
+            'visible' => (bool) $row['is_visible'],
+            'data' => is_array($data) ? $data : [],
+        ];
+    }
+    return $program;
+}
+
+function replaceProgramSections(PDO $db, int $programId, array $sections): void
+{
+    if (!programSectionsAvailable()) {
+        Http::json([
+            'ok' => false,
+            'message' => 'Section Builder belum diaktifkan. Jalankan database/add_program_section_builder.sql melalui phpMyAdmin.',
+        ], 409);
+    }
+    $delete = $db->prepare('DELETE FROM program_sections WHERE program_id = :program_id');
+    $delete->execute(['program_id' => $programId]);
+    if ($sections === []) return;
+
+    $insert = $db->prepare(
+        'INSERT INTO program_sections
+         (program_id, section_key, section_type, sort_order, is_visible, section_data)
+         VALUES (:program_id, :section_key, :section_type, :sort_order, :is_visible, :section_data)'
+    );
+    foreach ($sections as $index => $section) {
+        $insert->execute([
+            'program_id' => $programId,
+            'section_key' => $section['key'],
+            'section_type' => $section['type'],
+            'sort_order' => $index,
+            'is_visible' => $section['visible'] ? 1 : 0,
+            'section_data' => json_encode($section['data'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+        ]);
+    }
+}
+
+function validateProgramSections(mixed $input): array
+{
+    if (is_string($input)) $input = json_decode($input, true);
+    if (!is_array($input)) {
+        Http::json(['ok' => false, 'message' => 'Susunan section program tidak valid.'], 422);
+    }
+    if (count($input) > 50) {
+        Http::json(['ok' => false, 'message' => 'Maksimal 50 section dalam satu program.'], 422);
+    }
+
+    $allowedTypes = ['hero', 'content', 'progress', 'gallery', 'impact', 'cta', 'faq'];
+    $sections = [];
+    $keys = [];
+    foreach ($input as $index => $rawSection) {
+        if (!is_array($rawSection)) continue;
+        $type = strtolower(trim((string) ($rawSection['type'] ?? '')));
+        if (!in_array($type, $allowedTypes, true)) {
+            Http::json(['ok' => false, 'message' => 'Jenis section program tidak dikenali.'], 422);
+        }
+        $key = strtolower(trim((string) ($rawSection['key'] ?? '')));
+        if (!preg_match('/^[a-z0-9][a-z0-9_-]{5,63}$/', $key) || isset($keys[$key])) {
+            $key = 'section-' . ($index + 1) . '-' . substr(hash('sha256', $type . '-' . $index), 0, 10);
+        }
+        $keys[$key] = true;
+        $rawData = is_array($rawSection['data'] ?? null) ? $rawSection['data'] : [];
+        $sections[] = [
+            'key' => $key,
+            'type' => $type,
+            'visible' => filter_var($rawSection['visible'] ?? true, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE) ?? true,
+            'data' => validateProgramSectionData($type, $rawData),
+        ];
+    }
+    return $sections;
+}
+
+function validateProgramSectionData(string $type, array $data): array
+{
+    $result = [
+        'eyebrow' => sectionText($data['eyebrow'] ?? '', 80),
+        'title' => sectionText($data['title'] ?? '', 220),
+        'subtitle' => sectionText($data['subtitle'] ?? '', 500),
+        'body' => sectionText($data['body'] ?? '', 12000, true),
+        'theme' => sectionChoice($data['theme'] ?? 'light', ['light', 'pale', 'blue', 'deep', 'warm'], 'light'),
+        'width' => sectionChoice($data['width'] ?? 'boxed', ['narrow', 'boxed', 'full'], 'boxed'),
+        'alignment' => sectionChoice($data['alignment'] ?? 'left', ['left', 'center', 'right'], 'left'),
+        'spacing' => sectionChoice($data['spacing'] ?? 'normal', ['compact', 'normal', 'spacious'], 'normal'),
+    ];
+
+    if ($type === 'hero') {
+        $result += [
+            'media_type' => sectionChoice($data['media_type'] ?? 'image', ['image', 'video', 'youtube', 'drive'], 'image'),
+            'media_url' => sectionMediaUrl($data['media_url'] ?? ''),
+            'mobile_media_url' => sectionMediaUrl($data['mobile_media_url'] ?? ''),
+            'poster_url' => sectionMediaUrl($data['poster_url'] ?? ''),
+            'media_alt' => sectionText($data['media_alt'] ?? '', 180),
+            'overlay' => max(0, min(80, (int) ($data['overlay'] ?? 25))),
+            'height' => sectionChoice($data['height'] ?? 'screen', ['compact', 'medium', 'screen'], 'screen'),
+            'button_label' => sectionText($data['button_label'] ?? '', 80),
+            'button_url' => sectionLink($data['button_url'] ?? ''),
+            'whole_link' => sectionLink($data['whole_link'] ?? ''),
+        ];
+    } elseif ($type === 'content') {
+        $result += [
+            'media_type' => sectionChoice($data['media_type'] ?? 'none', ['none', 'image', 'video', 'youtube', 'drive'], 'none'),
+            'media_url' => sectionMediaUrl($data['media_url'] ?? ''),
+            'media_alt' => sectionText($data['media_alt'] ?? '', 180),
+            'caption' => sectionText($data['caption'] ?? '', 300),
+            'media_position' => sectionChoice($data['media_position'] ?? 'top', ['top', 'bottom', 'left', 'right', 'background'], 'top'),
+            'media_ratio' => sectionChoice($data['media_ratio'] ?? 'landscape', ['natural', 'landscape', 'square', 'portrait'], 'landscape'),
+            'media_link' => sectionLink($data['media_link'] ?? ''),
+        ];
+    } elseif ($type === 'progress') {
+        $target = sectionMoney($data['target'] ?? 0);
+        $collected = sectionMoney($data['collected'] ?? 0);
+        $result += [
+            'target' => $target,
+            'collected' => $collected,
+            'donors' => max(0, min(100000000, (int) ($data['donors'] ?? 0))),
+            'deadline' => preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) ($data['deadline'] ?? '')) ? (string) $data['deadline'] : '',
+            'show_amounts' => sectionBool($data['show_amounts'] ?? true),
+            'show_percentage' => sectionBool($data['show_percentage'] ?? true),
+            'button_label' => sectionText($data['button_label'] ?? '', 80),
+            'button_url' => sectionLink($data['button_url'] ?? ''),
+        ];
+    } elseif ($type === 'gallery') {
+        $result['layout'] = sectionChoice($data['layout'] ?? 'grid-2', ['single', 'grid-2', 'grid-3', 'featured', 'mosaic', 'carousel'], 'grid-2');
+        $result['items'] = validateProgramSectionItems($data['items'] ?? [], 'gallery');
+    } elseif ($type === 'impact') {
+        $result['columns'] = max(2, min(4, (int) ($data['columns'] ?? 3)));
+        $result['items'] = validateProgramSectionItems($data['items'] ?? [], 'impact');
+    } elseif ($type === 'cta') {
+        $wa = preg_replace('/\D+/', '', (string) ($data['whatsapp_number'] ?? ''));
+        if ($wa !== '' && (strlen($wa) < 8 || strlen($wa) > 16)) {
+            Http::json(['ok' => false, 'message' => 'Nomor WhatsApp pada section CTA tidak valid.'], 422);
+        }
+        $result += [
+            'whatsapp_number' => $wa,
+            'whatsapp_message' => sectionText($data['whatsapp_message'] ?? '', 500, true),
+            'qr_image' => sectionMediaUrl($data['qr_image'] ?? ''),
+            'button_label' => sectionText($data['button_label'] ?? '', 80),
+            'button_url' => sectionLink($data['button_url'] ?? ''),
+            'show_qr' => sectionBool($data['show_qr'] ?? true),
+            'show_whatsapp' => sectionBool($data['show_whatsapp'] ?? true),
+        ];
+    } elseif ($type === 'faq') {
+        $result['items'] = validateProgramSectionItems($data['items'] ?? [], 'faq');
+    }
+    return $result;
+}
+
+function validateProgramSectionItems(mixed $items, string $type): array
+{
+    if (!is_array($items)) return [];
+    $limit = $type === 'gallery' ? 24 : 20;
+    $result = [];
+    foreach (array_slice($items, 0, $limit) as $item) {
+        if (!is_array($item)) continue;
+        if ($type === 'gallery') {
+            $url = sectionMediaUrl($item['url'] ?? '');
+            if ($url === '') continue;
+            $result[] = [
+                'type' => sectionChoice($item['type'] ?? 'image', ['image', 'video', 'youtube', 'drive'], 'image'),
+                'url' => $url,
+                'alt' => sectionText($item['alt'] ?? '', 180),
+                'caption' => sectionText($item['caption'] ?? '', 300),
+                'link' => sectionLink($item['link'] ?? ''),
+            ];
+        } elseif ($type === 'impact') {
+            $value = sectionText($item['value'] ?? '', 80);
+            $label = sectionText($item['label'] ?? '', 180);
+            if ($value === '' && $label === '') continue;
+            $result[] = ['value' => $value, 'label' => $label, 'note' => sectionText($item['note'] ?? '', 300)];
+        } else {
+            $question = sectionText($item['question'] ?? '', 300);
+            $answer = sectionText($item['answer'] ?? '', 3000, true);
+            if ($question === '' && $answer === '') continue;
+            $result[] = ['question' => $question, 'answer' => $answer];
+        }
+    }
+    return $result;
+}
+
+function sectionText(mixed $value, int $limit, bool $multiline = false): string
+{
+    $text = strip_tags((string) $value);
+    $text = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $text) ?? '';
+    $text = $multiline ? trim($text) : trim(preg_replace('/\s+/u', ' ', $text) ?? '');
+    return mb_substr($text, 0, $limit);
+}
+
+function sectionChoice(mixed $value, array $allowed, string $fallback): string
+{
+    $choice = strtolower(trim((string) $value));
+    return in_array($choice, $allowed, true) ? $choice : $fallback;
+}
+
+function sectionBool(mixed $value): bool
+{
+    return filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE) ?? false;
+}
+
+function sectionMoney(mixed $value): float
+{
+    if (!is_numeric($value)) return 0;
+    return max(0, min(999999999999999.99, round((float) $value, 2)));
+}
+
+function sectionMediaUrl(mixed $value): string
+{
+    $url = mb_substr(trim((string) $value), 0, 1000);
+    if ($url === '') return '';
+    if (str_starts_with($url, '/uploads/') || (str_starts_with(strtolower($url), 'https://') && filter_var($url, FILTER_VALIDATE_URL))) return $url;
+    Http::json(['ok' => false, 'message' => 'Salah satu media section menggunakan alamat yang tidak valid.'], 422);
+}
+
+function sectionLink(mixed $value): string
+{
+    $url = mb_substr(trim((string) $value), 0, 1000);
+    if ($url === '') return '';
+    if (preg_match('~^(https://|/|#)~i', $url)) return $url;
+    Http::json(['ok' => false, 'message' => 'Salah satu tautan section tidak valid.'], 422);
+}
+
 function writeResource(string $table, array $body): never
 {
     $id = isset($body['id']) && $body['id'] !== '' ? filter_var($body['id'], FILTER_VALIDATE_INT) : null;
     $fields = validatePayload($table, $body);
+    $sections = $table === 'programs' && array_key_exists('sections', $body)
+        ? validateProgramSections($body['sections'])
+        : null;
     $db = Database::connection();
 
     try {
@@ -384,6 +638,7 @@ function writeResource(string $table, array $body): never
             $fields['id'] = $id;
             $stmt = $db->prepare("UPDATE {$table} SET {$sets} WHERE id = :id");
             $stmt->execute($fields);
+            if ($table === 'programs' && $sections !== null) replaceProgramSections($db, (int) $id, $sections);
             $afterStatement = $db->prepare("SELECT * FROM {$table} WHERE id = :id LIMIT 1");
             $afterStatement->execute(['id' => $id]);
             recordContentHistory($db, $table, (int) $id, 'updated', $before, $afterStatement->fetch() ?: []);
@@ -398,6 +653,7 @@ function writeResource(string $table, array $body): never
         $stmt = $db->prepare("INSERT INTO {$table} ({$columns}) VALUES ({$params})");
         $stmt->execute($fields);
         $newId = (int) $db->lastInsertId();
+        if ($table === 'programs' && $sections !== null) replaceProgramSections($db, $newId, $sections);
         $newStatement = $db->prepare("SELECT * FROM {$table} WHERE id = :id LIMIT 1");
         $newStatement->execute(['id' => $newId]);
         recordContentHistory($db, $table, $newId, 'created', [], $newStatement->fetch() ?: []);

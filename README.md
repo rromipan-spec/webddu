@@ -126,6 +126,7 @@ Jangan memindahkan `backend/config/.env`, `backend/storage/`, atau `frontend/upl
 - [Optimasi gambar](docs/IMAGE-OPTIMIZATION.md)
 - [Hero video artikel](docs/ARTICLE-HERO-VIDEO.md)
 - [Hero video program](docs/PROGRAM-HERO-VIDEO.md)
+- [Section Builder program](docs/PROGRAM-SECTION-BUILDER.md)
 - [QR dan CTA donasi](docs/DONATION-QR-CTA.md)
 - [Profil dan kredibilitas](docs/CREDIBILITY-PROFILE.md)
 - [Google Search Console](docs/GOOGLE-SEARCH-CONSOLE.md)

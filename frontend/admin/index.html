@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#063B9E">
     <title>Admin Dashboard - DDU</title>
     <link rel="stylesheet" href="../halaman-utama/metropolis.css?v=20260917-1">
-    <link rel="stylesheet" href="../halaman-utama/style.css?v=20260917-2">
+    <link rel="stylesheet" href="../halaman-utama/style.css?v=20260924-1">
     <style>
         .admin-container { padding: 120px 20px; max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 400px 1fr; gap: 30px; }
         .admin-sidebar { display: flex; flex-direction: column; gap: 20px; position: sticky; top: 100px; height: calc(100vh - 120px); }
@@ -104,7 +104,7 @@
             .toolbar button, .toolbar select { flex: 1 1 auto; }
         }
     </style>
-    <link rel="stylesheet" href="admin.css?v=20260922-1">
+    <link rel="stylesheet" href="admin.css?v=20260924-1">
     <link rel="stylesheet" href="../halaman-utama/ddu-theme.css?v=20260917-6">
 </head>
 <body class="admin-page">
@@ -348,9 +348,9 @@
                             </div>
                         </section>
                         <div class="form-group">
-                            <label>Slider Utama Program (Maksimal 3 Foto)</label>
+                            <label>Sampul Kartu Program (Maksimal 3 Foto)</label>
                             <div class="drop-zone" id="prog-drop-zone">
-                                <p>Pilih 1–3 foto untuk berganti otomatis di halaman program</p>
+                                <p>Pilih foto sampul untuk daftar program dan fallback media</p>
                                 <input type="file" id="prog-image-file" hidden accept="image/jpeg,image/png,image/webp" multiple>
                                 <input type="hidden" id="prog-image-url">
                                 <input type="hidden" id="prog-gallery-images" value="[]">
@@ -389,11 +389,38 @@
                             <label>Ringkasan Singkat (Muncul di Depan)</label>
                             <textarea id="prog-excerpt" rows="2"></textarea>
                         </div>
-                        <div class="form-group">
+                        <section class="program-section-builder-shell" aria-labelledby="program-section-builder-heading">
+                            <div class="program-section-builder-heading">
+                                <div>
+                                    <span class="admin-eyebrow">Landing Page Modular</span>
+                                    <h3 id="program-section-builder-heading">Section Builder Program</h3>
+                                    <p>Tambah section sebanyak yang dibutuhkan, atur urutannya, lalu isi hanya elemen yang ingin ditampilkan.</p>
+                                </div>
+                                <span id="program-section-count" class="program-section-count">0 section</span>
+                            </div>
+                            <div id="program-section-migration-alert" class="security-alert hidden" role="alert"></div>
+                            <div class="program-section-addbar">
+                                <label for="program-section-type">Jenis section baru</label>
+                                <select id="program-section-type">
+                                    <option value="hero">Hero / Header</option>
+                                    <option value="content">Konten Teks + Media</option>
+                                    <option value="progress">Progres Donasi</option>
+                                    <option value="gallery">Galeri Foto / Video</option>
+                                    <option value="impact">Dampak / Statistik</option>
+                                    <option value="cta">CTA Donasi</option>
+                                    <option value="faq">FAQ</option>
+                                </select>
+                                <button type="button" class="btn-secondary" id="program-add-section">+ Tambah Section</button>
+                            </div>
+                            <div id="program-section-list" class="program-section-list" aria-live="polite"></div>
+                            <input type="file" id="program-section-media-file" hidden accept="image/jpeg,image/png,image/webp,video/mp4,video/webm" multiple>
+                            <p class="program-section-help">Section yang disembunyikan tetap tersimpan tetapi tidak muncul di website.</p>
+                        </section>
+                        <div class="form-group program-legacy-field hidden">
                             <label>Judul Hero (Di Landing Page)</label>
                             <input type="text" id="prog-hero-title">
                         </div>
-                        <div class="form-group">
+                        <div class="form-group program-legacy-field hidden">
                             <label>Sub-Judul Hero</label>
                             <input type="text" id="prog-hero-subtitle">
                         </div>
@@ -435,6 +462,7 @@
                                 </div>
                             </div>
                         </section>
+                        <div class="program-legacy-editor hidden" aria-hidden="true">
                         <label>Isi Detail Program (Landing Page)</label>
                         <div class="toolbar">
                             <select aria-label="Pilih template isi program" onchange="applyContentTemplate('prog', this.value); this.selectedIndex=0;">
@@ -507,6 +535,7 @@
                         <div class="editor-area">
                             <div id="prog-content-editor" class="visual-editor" contenteditable="true"></div>
                             <textarea id="prog-content" class="hidden-input"></textarea>
+                        </div>
                         </div>
                         <button type="submit" class="btn btn-primary">Simpan Program</button>
                     </form>
@@ -955,6 +984,6 @@
         </form>
     </dialog>
 
-    <script type="module" src="admin.js?v=20260922-1"></script>
+    <script type="module" src="admin.js?v=20260924-1"></script>
 </body>
 </html>

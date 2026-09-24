@@ -138,7 +138,10 @@ jq -e --arg slug "$SCHEDULED_SLUG" \
 
 echo '[8/14] CRUD program'
 PROGRAM_PAYLOAD="$(jq -nc --arg slug "$PROGRAM_SLUG" \
-  '{title:"Program Integration Test",slug:$slug,excerpt:"Ringkasan program",content:"<p>Program pengujian.</p>",category:"Pengujian",status:"published",published_at:"",featured_order:1,gallery_images:[]}')"
+  '{title:"Program Integration Test",slug:$slug,excerpt:"Ringkasan program",content:"<p>Program pengujian.</p>",category:"Pengujian",status:"published",published_at:"",featured_order:1,gallery_images:[],sections:[
+    {key:"section-integration-hero",type:"hero",visible:true,data:{eyebrow:"Program",title:"Program Integration Test",subtitle:"Hero modular",body:"",theme:"blue",width:"full",alignment:"left",spacing:"normal",media_type:"image",media_url:"",mobile_media_url:"",poster_url:"",media_alt:"",overlay:25,height:"medium",button_label:"",button_url:"",whole_link:""}},
+    {key:"section-integration-progress",type:"progress",visible:true,data:{eyebrow:"Transparansi",title:"Progres",subtitle:"",body:"",theme:"light",width:"boxed",alignment:"left",spacing:"normal",target:1000000,collected:250000,donors:5,deadline:"",show_amounts:true,show_percentage:true,button_label:"",button_url:""}}
+  ]}')"
 request 201 -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" -H 'Content-Type: application/json' \
   --data "$PROGRAM_PAYLOAD" "$BASE_URL/api/index.php?resource=programs"
 PROGRAM_ID="$(jq -r '.id' "$RESPONSE")"
@@ -146,7 +149,7 @@ PROGRAM_UPDATED="$(jq --argjson id "$PROGRAM_ID" '. + {id:$id,title:"Program Int
 request 200 -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" -H 'Content-Type: application/json' \
   --data "$PROGRAM_UPDATED" "$BASE_URL/api/index.php?resource=programs"
 request 200 "$BASE_URL/api/index.php?resource=programs&slug=$PROGRAM_SLUG"
-assert_json '.data.title == "Program Integration Diperbarui" and .data.featured_order == 2 and .data.status == "published"'
+assert_json '.data.title == "Program Integration Diperbarui" and .data.featured_order == 2 and .data.status == "published" and (.data.sections | length) == 2 and .data.sections[1].type == "progress" and .data.sections[1].data.collected == 250000'
 
 echo '[9/14] Upload gambar valid'
 php -r '$image=imagecreatetruecolor(320,320); $white=imagecolorallocate($image,255,255,255); $blue=imagecolorallocate($image,20,80,160); imagefill($image,0,0,$white); imagefilledrectangle($image,40,40,280,280,$blue); imagepng($image,$argv[1]); imagedestroy($image);' "$WORK_DIR/test.png"

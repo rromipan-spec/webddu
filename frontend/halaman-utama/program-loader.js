@@ -26,30 +26,256 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 function renderProgram(container, program) {
     document.title = `${program.seo_title || program.title} - Dompet Dana Umat`;
+    document.body.classList.add('program-section-page');
+    const hasSectionBuilder = Array.isArray(program.sections) && program.sections.length > 0;
+    const sections = Array.isArray(program.sections)
+        ? program.sections.filter(section => section && section.visible !== false && section.data)
+        : [];
+    const primaryCta = sections.find(section => section.type === 'cta')?.data || {};
+    const wa = primaryCta.whatsapp_number || program.whatsapp_number || '6285121277046';
+    const message = primaryCta.whatsapp_message || program.whatsapp_message || `Assalamualaikum, saya ingin berkonsultasi mengenai ${program.title}.`;
+    const whatsappUrl = whatsappLink(wa, message);
+    const sliderImages = recordSliderImages(program);
+    const content = hasSectionBuilder
+        ? sections.map((section, index) => renderProgramSection(section, program, index)).join('')
+        : renderLegacyProgram(program, sliderImages);
+
+    container.innerHTML = `
+    ${programNavbarHtml()}
+    <main class="program-builder-page">${content}</main>
+    ${siteFooterHtml()}
+    <a href="#" class="back-to-top">↑</a><a href="${escapeHtml(whatsappUrl)}" class="whatsapp-popup" target="_blank" rel="noopener noreferrer" aria-label="Hubungi WhatsApp"><img src="/asset/whatsapp-phone.svg" alt="" width="24" height="24"></a>`;
+    container.querySelectorAll('.mock-content').forEach(removeEmptyContentLines);
+    initDetailSliders(container);
+    initProgramHeroVideo(container);
+}
+
+function renderLegacyProgram(program, sliderImages) {
     const wa = program.whatsapp_number || '6285121277046';
     const message = program.whatsapp_message || `Assalamualaikum, saya ingin berkonsultasi mengenai ${program.title}.`;
-    const sliderImages = recordSliderImages(program);
     const isWakaf = program.slug === 'wakaf-asrama-santri' || /\bwakaf\b/i.test(program.title);
     const actionLabel = isWakaf ? 'Wakaf Sekarang →' : 'Hubungi Admin via WhatsApp →';
     const actionText = isWakaf
         ? 'Salurkan wakaf terbaik Anda dan jadilah bagian dari perjuangan para santri.'
         : 'Konsultasikan donasi Anda secara amanah bersama tim layanan kami.';
-    const whatsappUrl = `https://wa.me/${encodeURIComponent(wa)}?text=${encodeURIComponent(message)}`;
+    const whatsappUrl = whatsappLink(wa, message);
     const qrImage = donationQrUrl(program.donation_qr_image);
     const heroMedia = programHeroMediaHtml(program, sliderImages);
-    container.innerHTML = `
-    ${programNavbarHtml()}
+    return `
     <section class="hero detail-program-hero" style="padding:220px 0 120px">${heroMedia}<div class="hero-overlay" style="background:rgba(6, 59, 158, .8)"></div><div class="container hero-container" style="text-align:center"><div class="hero-content" style="max-width:100%;margin:0 auto"><span class="section-kicker">${escapeHtml(program.category || 'LAYANAN DDU')}</span><h1 style="color:#FAFAF7;margin-top:10px">${escapeHtml(program.hero_title || program.title)}</h1><p style="color:#EAF2FF">${escapeHtml(program.hero_subtitle)}</p></div></div></section>
     <section class="container fade-in" style="padding:80px 20px"><div style="max-width:850px;margin:0 auto;line-height:1.8" class="mock-content">${program.content || '<p>Konten belum tersedia.</p>'}</div></section>
     <section class="cta-minimal program-donation-cta fade-in"><div class="container"><span class="section-kicker">Langkah Kebaikan</span><h2>Ingin Berkontribusi untuk ${escapeHtml(program.title)}?</h2><p>${escapeHtml(actionText)}</p><div class="donation-methods${qrImage ? ' has-qr' : ''}">
         ${qrImage ? `<div class="donation-method donation-method--qr"><span class="donation-method-label">Scan Donasi</span><h3>QR/Barcode Resmi</h3><a href="${escapeHtml(qrImage)}" target="_blank" rel="noopener noreferrer" aria-label="Buka QR/barcode donasi ukuran penuh"><img src="${escapeHtml(qrImage)}" alt="QR atau barcode donasi ${escapeHtml(program.title)}" loading="lazy"></a><small>Ketuk gambar untuk memperbesar. Pastikan tujuan pembayaran sesuai informasi resmi DDU.</small></div>` : ''}
         <div class="donation-method donation-method--whatsapp"><span class="donation-method-label">WhatsApp Resmi</span><h3>Konsultasi Donasi</h3><p>Hubungi admin untuk memperoleh panduan penyaluran dan konfirmasi donasi.</p><strong class="donation-whatsapp-number">${escapeHtml(whatsappDisplay(wa))}</strong><a href="${whatsappUrl}" class="btn-whatsapp-minimal" target="_blank" rel="noopener noreferrer">${escapeHtml(actionLabel)}</a></div>
-    </div></div></section>
-    ${siteFooterHtml()}
-    <a href="#" class="back-to-top">↑</a><a href="${whatsappUrl}" class="whatsapp-popup" target="_blank" rel="noopener noreferrer" aria-label="Hubungi WhatsApp"><img src="/asset/whatsapp-phone.svg" alt="" width="24" height="24"></a>`;
-    removeEmptyContentLines(container.querySelector('.mock-content'));
-    initDetailSliders(container);
-    initProgramHeroVideo(container);
+    </div></div></section>`;
+}
+
+function renderProgramSection(section, program, index) {
+    const data = section.data || {};
+    const type = String(section.type || 'content');
+    const classes = [
+        'program-builder-section',
+        `program-builder-section--${type}`,
+        `program-builder-section--theme-${safeChoice(data.theme, ['light', 'pale', 'blue', 'deep', 'warm'], 'light')}`,
+        `program-builder-section--width-${safeChoice(data.width, ['narrow', 'boxed', 'full'], 'boxed')}`,
+        `program-builder-section--align-${safeChoice(data.alignment, ['left', 'center', 'right'], 'left')}`,
+        `program-builder-section--space-${safeChoice(data.spacing, ['compact', 'normal', 'spacious'], 'normal')}`,
+        'fade-in'
+    ].join(' ');
+    const content = {
+        hero: renderSectionHero,
+        content: renderSectionContent,
+        progress: renderSectionProgress,
+        gallery: renderSectionGallery,
+        impact: renderSectionImpact,
+        cta: renderSectionCta,
+        faq: renderSectionFaq
+    }[type]?.(data, program) || '';
+    if (!content) return '';
+    return `<section class="${classes}" data-program-section="${escapeHtml(section.key || `${type}-${index}`)}">${content}</section>`;
+}
+
+function renderSectionHeading(data, defaultTitle = '') {
+    const title = data.title || defaultTitle;
+    const body = multilineHtml(data.body || '');
+    return `<div class="program-section-heading">
+        ${data.eyebrow ? `<span class="program-section-eyebrow">${escapeHtml(data.eyebrow)}</span>` : ''}
+        ${title ? `<h2>${escapeHtml(title)}</h2>` : ''}
+        ${data.subtitle ? `<p class="program-section-subtitle">${escapeHtml(data.subtitle)}</p>` : ''}
+        ${body ? `<div class="program-section-copy">${body}</div>` : ''}
+    </div>`;
+}
+
+function renderSectionHero(data, program) {
+    if (!data.media_url && !data.title && !data.subtitle && !data.body && !data.eyebrow && !data.button_label) return '';
+    const media = sectionMediaHtml(data.media_type, data.media_url, data.media_alt || program.title, {
+        mobileUrl: data.mobile_media_url,
+        poster: data.poster_url,
+        background: true
+    });
+    const buttonUrl = safeSectionHref(data.button_url);
+    const wholeUrl = safeSectionHref(data.whole_link);
+    const button = data.button_label && buttonUrl
+        ? `<a class="program-section-button" href="${escapeHtml(buttonUrl)}"${externalLinkAttrs(buttonUrl)}>${escapeHtml(data.button_label)} <span aria-hidden="true">→</span></a>`
+        : '';
+    const height = safeChoice(data.height, ['compact', 'medium', 'screen'], 'screen');
+    const overlay = Math.max(0, Math.min(80, Number(data.overlay) || 0)) / 100;
+    const hero = `<div class="program-section-hero program-section-hero--${height}" style="--program-hero-overlay:${overlay}">
+        <div class="program-section-hero__media">${media}</div>
+        <div class="program-section-hero__overlay"></div>
+        <div class="program-section-inner"><div class="program-section-hero__content">
+            ${data.eyebrow ? `<span class="program-section-eyebrow">${escapeHtml(data.eyebrow)}</span>` : ''}
+            ${data.title ? `<h1>${escapeHtml(data.title)}</h1>` : ''}
+            ${data.subtitle ? `<p class="program-section-subtitle">${escapeHtml(data.subtitle)}</p>` : ''}
+            ${data.body ? `<div class="program-section-copy">${multilineHtml(data.body)}</div>` : ''}
+            ${button}
+        </div></div>
+        ${wholeUrl && !button ? `<a class="program-section-hero__click-layer" href="${escapeHtml(wholeUrl)}"${externalLinkAttrs(wholeUrl)} aria-label="${escapeHtml(data.title || program.title)}"></a>` : ''}
+    </div>`;
+    return hero;
+}
+
+function renderSectionContent(data, program) {
+    if (!data.media_url && !data.title && !data.subtitle && !data.body && !data.eyebrow) return '';
+    const position = safeChoice(data.media_position, ['top', 'bottom', 'left', 'right', 'background'], 'top');
+    const ratio = safeChoice(data.media_ratio, ['natural', 'landscape', 'square', 'portrait'], 'landscape');
+    const mediaHtml = data.media_type !== 'none' && data.media_url
+        ? `<figure class="program-section-media program-section-media--${ratio}">${linkedMedia(sectionMediaHtml(data.media_type, data.media_url, data.media_alt || data.title || program.title), data.media_link)}${data.caption ? `<figcaption>${escapeHtml(data.caption)}</figcaption>` : ''}</figure>`
+        : '';
+    const text = `<div class="program-section-content__text">${renderSectionHeading(data)}</div>`;
+    if (position === 'background' && mediaHtml) {
+        return `<div class="program-section-content program-section-content--background"><div class="program-section-content__background">${sectionMediaHtml(data.media_type, data.media_url, data.media_alt || '', { background: true })}</div><div class="program-section-content__shade"></div><div class="program-section-inner">${text}</div></div>`;
+    }
+    return `<div class="program-section-inner"><div class="program-section-content program-section-content--${position}">${position === 'bottom' || position === 'right' ? `${text}${mediaHtml}` : `${mediaHtml}${text}`}</div></div>`;
+}
+
+function renderSectionProgress(data, program) {
+    if (!data.title && !data.subtitle && !data.body && !data.eyebrow && !Number(data.target) && !Number(data.collected) && !Number(data.donors) && !data.deadline && !data.button_label) return '';
+    const target = Math.max(0, Number(data.target) || 0);
+    const collected = Math.max(0, Number(data.collected) || 0);
+    const remaining = Math.max(0, target - collected);
+    const percentage = target > 0 ? Math.round((collected / target) * 1000) / 10 : 0;
+    const visualPercentage = Math.max(0, Math.min(100, percentage));
+    const href = safeSectionHref(data.button_url);
+    return `<div class="program-section-inner"><div class="program-progress-card">
+        ${renderSectionHeading(data, 'Perjalanan Kebaikan Kita')}
+        ${data.show_percentage !== false ? `<div class="program-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${visualPercentage}"><span style="width:${visualPercentage}%"></span></div><strong class="program-progress-percent">${formatNumber(percentage)}%</strong>` : ''}
+        ${data.show_amounts !== false ? `<div class="program-progress-metrics"><div><span>Terkumpul</span><strong>${formatCurrency(collected)}</strong></div><div><span>Target</span><strong>${formatCurrency(target)}</strong></div><div><span>Masih dibutuhkan</span><strong>${formatCurrency(remaining)}</strong></div>${Number(data.donors) > 0 ? `<div><span>Donatur</span><strong>${formatNumber(data.donors)}</strong></div>` : ''}${data.deadline ? `<div><span>Batas waktu</span><strong>${formatDate(data.deadline)}</strong></div>` : ''}</div>` : ''}
+        ${data.button_label && href ? `<a class="program-section-button" href="${escapeHtml(href)}"${externalLinkAttrs(href)}>${escapeHtml(data.button_label)} <span aria-hidden="true">→</span></a>` : ''}
+    </div></div>`;
+}
+
+function renderSectionGallery(data, program) {
+    const items = Array.isArray(data.items) ? data.items.filter(item => item?.url) : [];
+    if (!items.length && !data.title && !data.body && !data.subtitle) return '';
+    const layout = safeChoice(data.layout, ['single', 'grid-2', 'grid-3', 'featured', 'mosaic', 'carousel'], 'grid-2');
+    const figures = items.map((item, index) => {
+        const figure = `<figure class="program-gallery-item">${sectionMediaHtml(item.type, item.url, item.alt || `${program.title} ${index + 1}`)}${item.caption ? `<figcaption>${escapeHtml(item.caption)}</figcaption>` : ''}</figure>`;
+        return linkedMedia(figure, item.link);
+    }).join('');
+    return `<div class="program-section-inner">${renderSectionHeading(data)}<div class="program-gallery program-gallery--${layout}">${figures}</div></div>`;
+}
+
+function renderSectionImpact(data) {
+    const items = Array.isArray(data.items) ? data.items : [];
+    if (!items.length && !data.title && !data.subtitle && !data.body && !data.eyebrow) return '';
+    const columns = Math.max(2, Math.min(4, Number(data.columns) || 3));
+    return `<div class="program-section-inner">${renderSectionHeading(data)}${items.length ? `<div class="program-impact-grid" style="--impact-columns:${columns}">${items.map(item => `<article class="program-impact-card">${item.value ? `<strong>${escapeHtml(item.value)}</strong>` : ''}${item.label ? `<h3>${escapeHtml(item.label)}</h3>` : ''}${item.note ? `<p>${escapeHtml(item.note)}</p>` : ''}</article>`).join('')}</div>` : ''}</div>`;
+}
+
+function renderSectionCta(data, program) {
+    const wa = data.whatsapp_number || program.whatsapp_number || '6285121277046';
+    const message = data.whatsapp_message || program.whatsapp_message || `Assalamualaikum, saya ingin berkonsultasi mengenai ${program.title}.`;
+    const customUrl = safeSectionHref(data.button_url);
+    const actionUrl = customUrl || whatsappLink(wa, message);
+    const qrImage = safeMediaHref(data.qr_image);
+    const showQr = data.show_qr !== false && qrImage;
+    const showWa = data.show_whatsapp !== false;
+    return `<div class="program-section-inner"><div class="program-cta-card">
+        ${renderSectionHeading(data, `Ingin Berkontribusi untuk ${program.title}?`)}
+        <div class="program-cta-methods${showQr ? ' has-qr' : ''}">
+            ${showQr ? `<div class="program-cta-qr"><span class="program-section-eyebrow">Scan Donasi</span><h3>QR/Barcode Resmi</h3><a href="${escapeHtml(qrImage)}" target="_blank" rel="noopener noreferrer"><span class="program-cta-qr__glass"><img src="${escapeHtml(qrImage)}" alt="QR atau barcode donasi ${escapeHtml(program.title)}" loading="lazy"></span></a><small>Ketuk gambar untuk memperbesar.</small></div>` : ''}
+            ${showWa ? `<div class="program-cta-contact"><span class="program-section-eyebrow">WhatsApp Resmi</span><h3>Konsultasi Donasi</h3><p>Hubungi admin untuk panduan penyaluran dan konfirmasi donasi.</p><strong>${escapeHtml(whatsappDisplay(wa))}</strong>${data.button_label ? `<a class="program-section-button" href="${escapeHtml(actionUrl)}"${externalLinkAttrs(actionUrl)}>${escapeHtml(data.button_label)} <span aria-hidden="true">→</span></a>` : ''}</div>` : ''}
+        </div>
+    </div></div>`;
+}
+
+function renderSectionFaq(data) {
+    const items = Array.isArray(data.items) ? data.items : [];
+    if (!items.length && !data.title && !data.subtitle && !data.body && !data.eyebrow) return '';
+    return `<div class="program-section-inner program-faq">${renderSectionHeading(data, 'Pertanyaan yang Sering Ditanyakan')}<div class="program-faq-list">${items.map((item, index) => `<details${index === 0 ? ' open' : ''}><summary>${escapeHtml(item.question || 'Pertanyaan')}</summary><div>${multilineHtml(item.answer || '')}</div></details>`).join('')}</div></div>`;
+}
+
+function sectionMediaHtml(type, url, alt = '', options = {}) {
+    const safeUrl = safeMediaHref(url);
+    if (!safeUrl) return '';
+    const mediaType = safeChoice(type, ['image', 'video', 'youtube', 'drive'], 'image');
+    if (mediaType === 'video' || mediaType === 'drive') {
+        const source = mediaType === 'drive' ? driveDirectUrl(safeUrl) : safeUrl;
+        if (!source) return '';
+        const shouldAutoplay = options.background && !matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const backgroundAttrs = options.background ? ` ${shouldAutoplay ? 'autoplay ' : ''}muted loop playsinline tabindex="-1" aria-hidden="true"` : ' controls playsinline';
+        return `<video src="${escapeHtml(source)}"${options.poster ? ` poster="${escapeHtml(safeMediaHref(options.poster))}"` : ''}${backgroundAttrs} preload="metadata"></video>`;
+    }
+    if (mediaType === 'youtube') {
+        const id = youtubeVideoId(safeUrl);
+        if (!id) return '';
+        const autoplay = options.background && !matchMedia('(prefers-reduced-motion: reduce)').matches ? 1 : 0;
+        const query = options.background ? `autoplay=${autoplay}&mute=1&loop=1&playlist=${id}&controls=0&rel=0&playsinline=1` : 'rel=0&playsinline=1';
+        return `<iframe src="https://www.youtube-nocookie.com/embed/${id}?${query}" title="${escapeHtml(alt || 'Video program')}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe>`;
+    }
+    const mobile = safeMediaHref(options.mobileUrl);
+    return `<picture>${mobile ? `<source media="(max-width: 767px)" srcset="${escapeHtml(mobile)}">` : ''}<img src="${escapeHtml(safeUrl)}" alt="${escapeHtml(alt)}" loading="${options.background ? 'eager' : 'lazy'}"></picture>`;
+}
+
+function linkedMedia(html, url) {
+    const href = safeSectionHref(url);
+    return href ? `<a href="${escapeHtml(href)}"${externalLinkAttrs(href)}>${html}</a>` : html;
+}
+
+function multilineHtml(value) {
+    return String(value || '').split(/\n{2,}/).map(part => part.trim()).filter(Boolean).map(part => `<p>${escapeHtml(part).replace(/\n/g, '<br>')}</p>`).join('');
+}
+
+function safeChoice(value, allowed, fallback) {
+    return allowed.includes(String(value || '')) ? String(value) : fallback;
+}
+
+function safeSectionHref(value) {
+    const url = String(value || '').trim();
+    return /^(https:\/\/|\/|#)/i.test(url) ? url : '';
+}
+
+function safeMediaHref(value) {
+    const url = String(value || '').trim();
+    return /^(https:\/\/|\/uploads\/)/i.test(url) ? url : '';
+}
+
+function externalLinkAttrs(url) {
+    return /^https:\/\//i.test(url) ? ' target="_blank" rel="noopener noreferrer"' : '';
+}
+
+function whatsappLink(number, message) {
+    const digits = String(number || '').replace(/\D+/g, '') || '6285121277046';
+    return `https://wa.me/${encodeURIComponent(digits)}?text=${encodeURIComponent(message || '')}`;
+}
+
+function driveDirectUrl(url) {
+    const id = driveVideoId(url);
+    return id ? `https://drive.google.com/uc?export=download&id=${encodeURIComponent(id)}` : '';
+}
+
+function formatCurrency(value) {
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(Number(value) || 0);
+}
+
+function formatNumber(value) {
+    return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 1 }).format(Number(value) || 0);
+}
+
+function formatDate(value) {
+    const date = new Date(`${value}T00:00:00`);
+    return Number.isNaN(date.getTime()) ? escapeHtml(value) : new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).format(date);
 }
 
 function removeEmptyContentLines(content) {

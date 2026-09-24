@@ -5,6 +5,9 @@ let currentAdminId = 0;
 let homepageOfficialWhatsapp = '';
 let homepageOfficialWhatsappLabel = '';
 let homepagePrograms = [];
+let programSections = [];
+let pendingProgramSectionUpload = null;
+const collapsedProgramSections = new Set();
 const contentListState = {
     posts: { prefix: 'post', page: 1, perPage: 10, searchTimer: null, requestId: 0 },
     programs: { prefix: 'program', page: 1, perPage: 10, searchTimer: null, requestId: 0 }
@@ -571,15 +574,19 @@ function updatePreview() {
     const content = serializeEditorContent(editor);
     const hidden = document.getElementById(`${prefix}-content`);
     if (hidden) hidden.value = content;
-    const title = document.getElementById(`${prefix}-title`)?.value || 'Judul';
-    const image = document.getElementById(`${prefix}-image-url`)?.value || '';
+    const previewHero = program ? programSections.find(section => section.type === 'hero' && section.visible) : null;
+    const title = previewHero?.data.title || document.getElementById(`${prefix}-title`)?.value || 'Judul';
+    const fallbackImage = document.getElementById(`${prefix}-image-url`)?.value || '';
+    const image = program && previewHero
+        ? (previewHero.data.media_type === 'image' ? previewHero.data.media_url : (previewHero.data.poster_url || previewHero.data.mobile_media_url || fallbackImage))
+        : fallbackImage;
     const pTitle = document.getElementById('p-title');
     const pSub = document.getElementById('p-sub');
     const pImage = document.getElementById('p-img');
     const pBody = document.getElementById('p-body');
     const pHero = document.getElementById('p-hero');
     if (pTitle) pTitle.textContent = title;
-    if (pSub) pSub.textContent = article ? `Diterbitkan pada ${new Date().toLocaleDateString('id-ID')}` : (document.getElementById('prog-hero-subtitle')?.value || 'Subjudul program');
+    if (pSub) pSub.textContent = article ? `Diterbitkan pada ${new Date().toLocaleDateString('id-ID')}` : (previewHero?.data.subtitle || document.getElementById('prog-hero-subtitle')?.value || 'Subjudul program');
     if (pImage) { pImage.src = managedImageVariant(image, 'thumb'); pImage.style.display = image ? 'block' : 'none'; }
     if (pHero) {
         const heroImage = article ? (parseGalleryImages(document.getElementById('post-hero-images')?.value, 10)[0] || '') : image;
@@ -1339,8 +1346,368 @@ async function saveHomepageSettings(event) {
     }
 }
 
+const programSectionMeta = {
+    hero: ['Hero / Header', 'Media latar, judul, deskripsi, dan tombol pembuka.'],
+    content: ['Konten Teks + Media', 'Paragraf dengan foto atau video di berbagai posisi.'],
+    progress: ['Progres Donasi', 'Target, dana terkumpul, kekurangan, dan persentase otomatis.'],
+    gallery: ['Galeri Foto / Video', 'Kumpulan dokumentasi dengan beberapa model grid.'],
+    impact: ['Dampak / Statistik', 'Angka penting, penerima manfaat, dan capaian program.'],
+    cta: ['CTA Donasi', 'QR/barcode dan WhatsApp khusus untuk section ini.'],
+    faq: ['FAQ', 'Daftar pertanyaan dan jawaban yang dapat dibuka-tutup.']
+};
+
+function programSectionKey() {
+    return `section-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function createProgramSection(type = 'content') {
+    const safeType = programSectionMeta[type] ? type : 'content';
+    const data = {
+        eyebrow: '', title: '', subtitle: '', body: '', theme: safeType === 'hero' || safeType === 'cta' ? 'blue' : 'light',
+        width: safeType === 'hero' ? 'full' : 'boxed', alignment: safeType === 'hero' || safeType === 'cta' ? 'center' : 'left', spacing: 'normal'
+    };
+    if (safeType === 'hero') Object.assign(data, { media_type: 'image', media_url: '', mobile_media_url: '', poster_url: '', media_alt: '', overlay: 25, height: 'screen', button_label: '', button_url: '', whole_link: '' });
+    if (safeType === 'content') Object.assign(data, { media_type: 'none', media_url: '', media_alt: '', caption: '', media_position: 'top', media_ratio: 'landscape', media_link: '' });
+    if (safeType === 'progress') Object.assign(data, { target: 0, collected: 0, donors: 0, deadline: '', show_amounts: true, show_percentage: true, button_label: '', button_url: '' });
+    if (safeType === 'gallery') Object.assign(data, { layout: 'grid-2', items: [] });
+    if (safeType === 'impact') Object.assign(data, { columns: 3, items: [] });
+    if (safeType === 'cta') Object.assign(data, { whatsapp_number: '', whatsapp_message: '', qr_image: '', button_label: 'Hubungi via WhatsApp', button_url: '', show_qr: true, show_whatsapp: true });
+    if (safeType === 'faq') Object.assign(data, { items: [] });
+    return { key: programSectionKey(), type: safeType, visible: true, data };
+}
+
+function normalizeProgramSections(sections) {
+    if (!Array.isArray(sections)) return [];
+    return sections.filter(section => section && programSectionMeta[section.type]).slice(0, 50).map(section => {
+        const defaults = createProgramSection(section.type);
+        return {
+            key: /^[a-z0-9][a-z0-9_-]{5,63}$/i.test(String(section.key || '')) ? section.key : programSectionKey(),
+            type: section.type,
+            visible: section.visible !== false,
+            data: { ...defaults.data, ...(section.data && typeof section.data === 'object' ? section.data : {}) }
+        };
+    });
+}
+
+function selectOptions(options, selected) {
+    return Object.entries(options).map(([value, label]) => `<option value="${escapeHtml(value)}"${String(selected) === value ? ' selected' : ''}>${escapeHtml(label)}</option>`).join('');
+}
+
+function sectionTextField(section, field, label, options = {}) {
+    const value = section.data[field] ?? '';
+    const wide = options.wide === false ? '' : ' is-wide';
+    const placeholder = options.placeholder ? ` placeholder="${escapeHtml(options.placeholder)}"` : '';
+    const max = options.max ? ` maxlength="${options.max}"` : '';
+    if (options.textarea) {
+        return `<div class="form-group${wide}"><label>${escapeHtml(label)}<textarea rows="${options.rows || 4}" data-section-field="${field}"${placeholder}${max}>${escapeHtml(value)}</textarea></label></div>`;
+    }
+    return `<div class="form-group${wide}"><label>${escapeHtml(label)}<input type="${options.type || 'text'}" value="${escapeHtml(value)}" data-section-field="${field}"${placeholder}${max}${options.min !== undefined ? ` min="${options.min}"` : ''}></label></div>`;
+}
+
+function sectionSelectField(section, field, label, options, wide = false) {
+    return `<div class="form-group${wide ? ' is-wide' : ''}"><label>${escapeHtml(label)}<select data-section-field="${field}">${selectOptions(options, section.data[field])}</select></label></div>`;
+}
+
+function sectionCheckField(section, field, label) {
+    return `<label class="program-section-check"><input type="checkbox" data-section-field="${field}"${section.data[field] !== false ? ' checked' : ''}><span>${escapeHtml(label)}</span></label>`;
+}
+
+function sectionMediaField(section, field, label, options = {}) {
+    const value = section.data[field] || '';
+    const isVideo = /\.(mp4|webm)(?:\?|$)/i.test(value);
+    const isExternalPlayer = field === 'media_url' && ['youtube', 'drive'].includes(section.data.media_type);
+    const preview = value
+        ? (isExternalPlayer
+            ? `<a class="program-section-media-link" href="${escapeHtml(value)}" target="_blank" rel="noopener noreferrer">Buka tautan media ↗</a>`
+            : (isVideo ? `<video class="program-section-media-preview" src="${escapeHtml(value)}" controls muted playsinline></video>` : `<img class="program-section-media-preview" src="${escapeHtml(value)}" alt="">`))
+        : '';
+    return `<div class="form-group is-wide"><label>${escapeHtml(label)}</label><div class="program-section-media-control"><input type="text" value="${escapeHtml(value)}" data-section-field="${field}" placeholder="${isExternalPlayer ? 'Tempel URL HTTPS media' : 'URL HTTPS atau hasil upload'}">${isExternalPlayer ? '' : `<button type="button" data-section-action="upload" data-upload-field="${field}" data-upload-kind="${options.kind || 'image'}">Upload</button>`}</div>${preview}</div>`;
+}
+
+function programSectionCommonFields(section) {
+    return `${sectionTextField(section, 'eyebrow', 'Label kecil', { wide: false, max: 80 })}
+        ${sectionTextField(section, 'title', 'Judul section', { wide: false, max: 220 })}
+        ${sectionTextField(section, 'subtitle', 'Subjudul', { textarea: true, rows: 2, max: 500 })}
+        ${sectionTextField(section, 'body', 'Teks / paragraf', { textarea: true, rows: 5, max: 12000 })}`;
+}
+
+function programSectionSettings(section) {
+    return `<div class="program-section-settings">
+        ${sectionSelectField(section, 'theme', 'Warna', { light: 'Putih', pale: 'Biru muda', blue: 'DDU Blue', deep: 'Deep Blue', warm: 'Warm White' })}
+        ${sectionSelectField(section, 'width', 'Lebar', { narrow: 'Sempit', boxed: 'Dalam container', full: 'Penuh' })}
+        ${sectionSelectField(section, 'alignment', 'Rata teks', { left: 'Kiri', center: 'Tengah', right: 'Kanan' })}
+        ${sectionSelectField(section, 'spacing', 'Jarak vertikal', { compact: 'Rapat', normal: 'Normal', spacious: 'Lapang' })}
+    </div>`;
+}
+
+function renderProgramSectionTypeFields(section) {
+    if (section.type === 'hero') return `${programSectionCommonFields(section)}
+        ${sectionSelectField(section, 'media_type', 'Jenis media', { image: 'Gambar', video: 'Video upload', youtube: 'YouTube', drive: 'Google Drive' })}
+        ${sectionSelectField(section, 'height', 'Tinggi hero', { compact: 'Ringkas', medium: 'Sedang', screen: 'Satu layar' })}
+        ${sectionMediaField(section, 'media_url', 'Media desktop', { kind: section.data.media_type === 'video' ? 'video' : 'image' })}
+        ${sectionMediaField(section, 'mobile_media_url', 'Media mobile (opsional)', { kind: 'image' })}
+        ${sectionTextField(section, 'media_alt', 'Alt media', { wide: false, max: 180 })}
+        ${sectionTextField(section, 'overlay', 'Overlay gelap (0–80%)', { wide: false, type: 'number', min: 0 })}
+        ${sectionTextField(section, 'button_label', 'Tulisan tombol', { wide: false, max: 80 })}
+        ${sectionTextField(section, 'button_url', 'Tujuan tombol', { wide: false })}
+        ${sectionTextField(section, 'whole_link', 'Tautan seluruh hero (opsional)')}`;
+    if (section.type === 'content') return `${programSectionCommonFields(section)}
+        ${sectionSelectField(section, 'media_type', 'Jenis media', { none: 'Tanpa media', image: 'Gambar', video: 'Video', youtube: 'YouTube', drive: 'Google Drive' })}
+        ${sectionSelectField(section, 'media_position', 'Posisi media', { top: 'Di atas', bottom: 'Di bawah', left: 'Kiri', right: 'Kanan', background: 'Background' })}
+        ${sectionSelectField(section, 'media_ratio', 'Rasio media', { natural: 'Asli', landscape: 'Landscape', square: 'Kotak', portrait: 'Portrait' })}
+        ${sectionTextField(section, 'media_alt', 'Alt media', { wide: false, max: 180 })}
+        ${sectionMediaField(section, 'media_url', 'Foto / video', { kind: section.data.media_type === 'video' ? 'video' : 'image' })}
+        ${sectionTextField(section, 'caption', 'Caption media', { wide: false, max: 300 })}
+        ${sectionTextField(section, 'media_link', 'Tautan ketika media diklik', { wide: false })}`;
+    if (section.type === 'progress') return `${programSectionCommonFields(section)}
+        ${sectionTextField(section, 'target', 'Target dana (Rp)', { wide: false, type: 'number', min: 0 })}
+        ${sectionTextField(section, 'collected', 'Sudah terkumpul (Rp)', { wide: false, type: 'number', min: 0 })}
+        ${sectionTextField(section, 'donors', 'Jumlah donatur', { wide: false, type: 'number', min: 0 })}
+        ${sectionTextField(section, 'deadline', 'Batas waktu', { wide: false, type: 'date' })}
+        <div class="program-section-settings">${sectionCheckField(section, 'show_amounts', 'Tampilkan nominal')}${sectionCheckField(section, 'show_percentage', 'Tampilkan persentase')}</div>
+        ${sectionTextField(section, 'button_label', 'Tulisan tombol', { wide: false, max: 80 })}
+        ${sectionTextField(section, 'button_url', 'Tujuan tombol', { wide: false })}`;
+    if (section.type === 'gallery') return `${programSectionCommonFields(section)}
+        ${sectionSelectField(section, 'layout', 'Model galeri', { single: 'Satu foto besar', 'grid-2': 'Grid 2 kolom', 'grid-3': 'Grid 3 kolom', featured: 'Satu besar + foto kecil', mosaic: 'Mosaic', carousel: 'Carousel' }, true)}
+        ${renderProgramSectionItems(section)}`;
+    if (section.type === 'impact') return `${programSectionCommonFields(section)}
+        ${sectionSelectField(section, 'columns', 'Jumlah kolom', { 2: '2 kolom', 3: '3 kolom', 4: '4 kolom' }, true)}
+        ${renderProgramSectionItems(section)}`;
+    if (section.type === 'cta') return `${programSectionCommonFields(section)}
+        ${sectionTextField(section, 'whatsapp_number', 'Nomor WhatsApp', { wide: false, max: 16 })}
+        ${sectionTextField(section, 'whatsapp_message', 'Pesan awal WhatsApp', { textarea: true, rows: 3, max: 500 })}
+        ${sectionMediaField(section, 'qr_image', 'QR / barcode', { kind: 'image' })}
+        ${sectionTextField(section, 'button_label', 'Tulisan tombol', { wide: false, max: 80 })}
+        ${sectionTextField(section, 'button_url', 'URL tombol khusus (opsional)', { wide: false })}
+        <div class="program-section-settings">${sectionCheckField(section, 'show_qr', 'Tampilkan QR')}${sectionCheckField(section, 'show_whatsapp', 'Tampilkan WhatsApp')}</div>`;
+    return `${programSectionCommonFields(section)}${renderProgramSectionItems(section)}`;
+}
+
+function renderProgramSectionItems(section) {
+    const items = Array.isArray(section.data.items) ? section.data.items : [];
+    const itemHtml = items.map((item, index) => {
+        if (section.type === 'gallery') return `<div class="program-section-item"><div class="program-section-item__header"><strong>Media ${index + 1}</strong><button type="button" data-section-action="remove-item" data-item-index="${index}">Hapus</button></div><div class="program-section-item__grid">
+            <label>Jenis<select data-item-field="type" data-item-index="${index}">${selectOptions({ image: 'Gambar', video: 'Video', youtube: 'YouTube', drive: 'Google Drive' }, item.type || 'image')}</select></label>
+            <label>URL media<input type="text" value="${escapeHtml(item.url || '')}" data-item-field="url" data-item-index="${index}"></label>
+            <label>Alt text<input type="text" value="${escapeHtml(item.alt || '')}" data-item-field="alt" data-item-index="${index}"></label>
+            <label>Caption<input type="text" value="${escapeHtml(item.caption || '')}" data-item-field="caption" data-item-index="${index}"></label>
+            <label>Tautan<input type="text" value="${escapeHtml(item.link || '')}" data-item-field="link" data-item-index="${index}"></label>
+            <button type="button" class="program-section-add-item" data-section-action="upload-item" data-item-index="${index}">Upload media</button>
+        </div></div>`;
+        if (section.type === 'impact') return `<div class="program-section-item"><div class="program-section-item__header"><strong>Data ${index + 1}</strong><button type="button" data-section-action="remove-item" data-item-index="${index}">Hapus</button></div><div class="program-section-item__grid">
+            <label>Angka / nilai<input type="text" value="${escapeHtml(item.value || '')}" data-item-field="value" data-item-index="${index}"></label>
+            <label>Label<input type="text" value="${escapeHtml(item.label || '')}" data-item-field="label" data-item-index="${index}"></label>
+            <label>Catatan<input type="text" value="${escapeHtml(item.note || '')}" data-item-field="note" data-item-index="${index}"></label>
+        </div></div>`;
+        return `<div class="program-section-item"><div class="program-section-item__header"><strong>Pertanyaan ${index + 1}</strong><button type="button" data-section-action="remove-item" data-item-index="${index}">Hapus</button></div><div class="program-section-item__grid">
+            <label>Pertanyaan<input type="text" value="${escapeHtml(item.question || '')}" data-item-field="question" data-item-index="${index}"></label>
+            <label>Jawaban<textarea rows="3" data-item-field="answer" data-item-index="${index}">${escapeHtml(item.answer || '')}</textarea></label>
+        </div></div>`;
+    }).join('');
+    const label = section.type === 'gallery' ? '+ Tambah media' : section.type === 'impact' ? '+ Tambah data' : '+ Tambah pertanyaan';
+    return `<div class="program-section-items">${itemHtml || '<p class="program-section-help">Belum ada item.</p>'}<button type="button" class="program-section-add-item" data-section-action="add-item">${label}</button>${section.type === 'gallery' ? '<button type="button" class="program-section-add-item" data-section-action="upload-gallery">Upload beberapa foto</button>' : ''}</div>`;
+}
+
+function renderProgramSectionBuilder() {
+    const list = document.getElementById('program-section-list');
+    if (!list) return;
+    document.getElementById('program-section-count').textContent = `${programSections.length} section`;
+    if (!programSections.length) {
+        list.innerHTML = '<div class="program-section-empty"><strong>Belum ada section.</strong><br>Pilih jenis section lalu klik Tambah Section.</div>';
+        return;
+    }
+    list.innerHTML = programSections.map((section, index) => {
+        const meta = programSectionMeta[section.type];
+        return `<article class="program-section-card${section.visible ? '' : ' is-hidden-section'}${collapsedProgramSections.has(section.key) ? ' is-collapsed' : ''}" data-section-key="${escapeHtml(section.key)}">
+            <header class="program-section-card__header"><div class="program-section-card__identity"><span class="program-section-card__number">${String(index + 1).padStart(2, '0')}</span><div><strong>${escapeHtml(meta[0])}</strong><small>${escapeHtml(section.data.title || meta[1])}</small></div></div>
+            <div class="program-section-actions"><button type="button" data-section-action="collapse">${collapsedProgramSections.has(section.key) ? 'Buka' : 'Lipat'}</button><button type="button" data-section-action="up" aria-label="Naikkan section">↑</button><button type="button" data-section-action="down" aria-label="Turunkan section">↓</button><button type="button" data-section-action="duplicate">Duplikat</button><button type="button" data-section-action="toggle">${section.visible ? 'Sembunyikan' : 'Tampilkan'}</button><button type="button" class="is-danger" data-section-action="delete">Hapus</button></div></header>
+            <div class="program-section-card__body">${renderProgramSectionTypeFields(section)}${programSectionSettings(section)}</div>
+        </article>`;
+    }).join('');
+}
+
+function findProgramSection(key) {
+    return programSections.find(section => section.key === key);
+}
+
+function programSectionFromLegacy(data = {}) {
+    const gallery = parseGalleryImages(data.gallery_images || '[]');
+    const hero = createProgramSection('hero');
+    Object.assign(hero.data, {
+        eyebrow: data.category || '', title: data.hero_title || data.title || '', subtitle: data.hero_subtitle || '',
+        media_type: data.hero_media_type === 'images' ? 'image' : (data.hero_media_type || 'image'),
+        media_url: data.hero_video_url || gallery[0] || data.image || '', media_alt: data.image_alt || data.title || ''
+    });
+    const content = createProgramSection('content');
+    const temporary = document.createElement('div');
+    temporary.innerHTML = data.content || '';
+    content.data.title = 'Tentang Program';
+    content.data.body = (temporary.innerText || temporary.textContent || '').trim();
+    const cta = createProgramSection('cta');
+    Object.assign(cta.data, { title: `Ingin Berkontribusi untuk ${data.title || 'Program Ini'}?`, whatsapp_number: data.whatsapp_number || '', whatsapp_message: data.whatsapp_message || '', qr_image: data.donation_qr_image || '' });
+    return [hero, content, cta];
+}
+
+function sectionBodyToHtml(section) {
+    const data = section.data || {};
+    const title = data.title ? `<h2>${escapeHtml(data.title)}</h2>` : '';
+    const paragraphs = String(data.body || '').split(/\n{2,}/).map(value => value.trim()).filter(Boolean).map(value => `<p>${escapeHtml(value).replace(/\n/g, '<br>')}</p>`).join('');
+    return `${title}${paragraphs}`;
+}
+
+function syncProgramLegacyFieldsFromSections() {
+    const hero = programSections.find(section => section.type === 'hero' && section.visible) || programSections.find(section => section.type === 'hero');
+    const content = programSections.filter(section => ['content', 'progress', 'impact', 'faq'].includes(section.type));
+    const cta = programSections.find(section => section.type === 'cta' && section.visible) || programSections.find(section => section.type === 'cta');
+    if (hero) {
+        document.getElementById('prog-hero-title').value = hero.data.title || '';
+        document.getElementById('prog-hero-subtitle').value = hero.data.subtitle || '';
+        const legacyType = hero.data.media_type === 'image' ? 'images' : hero.data.media_type;
+        document.getElementById('prog-hero-media-type').value = ['images', 'video', 'youtube', 'drive'].includes(legacyType) ? legacyType : 'images';
+        document.getElementById('prog-hero-video-url').value = legacyType === 'video' ? (hero.data.media_url || '') : '';
+        document.getElementById('prog-hero-video-link').value = ['youtube', 'drive'].includes(legacyType) ? (hero.data.media_url || '') : '';
+    } else {
+        document.getElementById('prog-hero-title').value = '';
+        document.getElementById('prog-hero-subtitle').value = '';
+        document.getElementById('prog-hero-media-type').value = 'images';
+        document.getElementById('prog-hero-video-url').value = '';
+        document.getElementById('prog-hero-video-link').value = '';
+    }
+    const legacyHtml = content.map(sectionBodyToHtml).join('');
+    document.getElementById('prog-content').value = legacyHtml;
+    document.getElementById('prog-content-editor').innerHTML = legacyHtml;
+    if (cta) {
+        document.getElementById('prog-wa').value = cta.data.whatsapp_number || '';
+        document.getElementById('prog-wa-message').value = cta.data.whatsapp_message || '';
+        setDonationQrImage('prog', cta.data.qr_image || '');
+    } else {
+        document.getElementById('prog-wa').value = '';
+        document.getElementById('prog-wa-message').value = '';
+        setDonationQrImage('prog', '');
+    }
+}
+
+async function uploadProgramSectionFiles(files) {
+    if (!pendingProgramSectionUpload || !files.length) return;
+    const section = findProgramSection(pendingProgramSectionUpload.key);
+    if (!section) return;
+    const uploaded = [];
+    for (const file of files) {
+        if (file.type.startsWith('video/') || /\.(mp4|webm)$/i.test(file.name)) {
+            const form = new FormData();
+            form.append('video', file);
+            const result = await api('video_upload', { method: 'POST', body: form });
+            uploaded.push({ type: 'video', url: result.url });
+        } else {
+            uploaded.push({ type: 'image', url: await uploadImageFileWithRetry(file, 3, 'content') });
+        }
+    }
+    const task = pendingProgramSectionUpload;
+    if (task.mode === 'gallery') {
+        section.data.items = [...(section.data.items || []), ...uploaded.map(item => ({ type: item.type, url: item.url, alt: '', caption: '', link: '' }))].slice(0, 24);
+    } else if (task.mode === 'item') {
+        const item = section.data.items?.[task.index];
+        if (item && uploaded[0]) Object.assign(item, { type: uploaded[0].type, url: uploaded[0].url });
+    } else if (uploaded[0]) {
+        section.data[task.field] = uploaded[0].url;
+        if (task.field === 'media_url' && section.data.media_type === 'none') section.data.media_type = uploaded[0].type;
+    }
+    pendingProgramSectionUpload = null;
+    renderProgramSectionBuilder();
+    syncProgramLegacyFieldsFromSections();
+    updatePreview();
+}
+
+function setupProgramSectionBuilder() {
+    const list = document.getElementById('program-section-list');
+    const addButton = document.getElementById('program-add-section');
+    const fileInput = document.getElementById('program-section-media-file');
+    if (!list || !addButton || !fileInput) return;
+    programSections = [createProgramSection('hero'), createProgramSection('content'), createProgramSection('cta')];
+    renderProgramSectionBuilder();
+    addButton.addEventListener('click', () => {
+        const type = document.getElementById('program-section-type').value;
+        programSections.push(createProgramSection(type));
+        renderProgramSectionBuilder();
+        syncProgramLegacyFieldsFromSections();
+        updatePreview();
+    });
+    list.addEventListener('input', event => {
+        const card = event.target.closest('[data-section-key]');
+        const section = findProgramSection(card?.dataset.sectionKey);
+        if (!section) return;
+        const field = event.target.dataset.sectionField;
+        const itemField = event.target.dataset.itemField;
+        if (field) section.data[field] = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
+        if (itemField) {
+            const item = section.data.items?.[Number(event.target.dataset.itemIndex)];
+            if (item) item[itemField] = event.target.value;
+        }
+        syncProgramLegacyFieldsFromSections();
+    });
+    list.addEventListener('change', event => {
+        if (!event.target.matches('select[data-section-field="media_type"]')) return;
+        const card = event.target.closest('[data-section-key]');
+        const section = findProgramSection(card?.dataset.sectionKey);
+        if (section) section.data.media_type = event.target.value;
+        renderProgramSectionBuilder();
+    });
+    list.addEventListener('click', event => {
+        const button = event.target.closest('[data-section-action]');
+        if (!button) return;
+        const card = button.closest('[data-section-key]');
+        const index = programSections.findIndex(section => section.key === card?.dataset.sectionKey);
+        if (index < 0) return;
+        const section = programSections[index];
+        const action = button.dataset.sectionAction;
+        if (action === 'collapse') {
+            if (collapsedProgramSections.has(section.key)) collapsedProgramSections.delete(section.key);
+            else collapsedProgramSections.add(section.key);
+            renderProgramSectionBuilder();
+            return;
+        }
+        if (action === 'up' && index > 0) [programSections[index - 1], programSections[index]] = [programSections[index], programSections[index - 1]];
+        if (action === 'down' && index < programSections.length - 1) [programSections[index + 1], programSections[index]] = [programSections[index], programSections[index + 1]];
+        if (action === 'duplicate') {
+            const copy = JSON.parse(JSON.stringify(section));
+            copy.key = programSectionKey();
+            programSections.splice(index + 1, 0, copy);
+        }
+        if (action === 'toggle') section.visible = !section.visible;
+        if (action === 'delete' && confirm('Hapus section ini?')) {
+            collapsedProgramSections.delete(section.key);
+            programSections.splice(index, 1);
+        }
+        if (action === 'add-item') {
+            section.data.items ||= [];
+            section.data.items.push(section.type === 'impact' ? { value: '', label: '', note: '' } : section.type === 'faq' ? { question: '', answer: '' } : { type: 'image', url: '', alt: '', caption: '', link: '' });
+        }
+        if (action === 'remove-item') section.data.items?.splice(Number(button.dataset.itemIndex), 1);
+        if (['upload', 'upload-item', 'upload-gallery'].includes(action)) {
+            pendingProgramSectionUpload = { key: section.key, field: button.dataset.uploadField, index: Number(button.dataset.itemIndex), mode: action === 'upload-gallery' ? 'gallery' : action === 'upload-item' ? 'item' : 'field' };
+            fileInput.multiple = action === 'upload-gallery';
+            fileInput.accept = button.dataset.uploadKind === 'video' ? 'video/mp4,video/webm' : action === 'upload-gallery' || action === 'upload-item' ? 'image/jpeg,image/png,image/webp,video/mp4,video/webm' : 'image/jpeg,image/png,image/webp';
+            fileInput.click();
+            return;
+        }
+        renderProgramSectionBuilder();
+        syncProgramLegacyFieldsFromSections();
+        updatePreview();
+    });
+    fileInput.addEventListener('change', async () => {
+        try {
+            await uploadProgramSectionFiles([...fileInput.files]);
+        } catch (error) {
+            alert(error.message);
+        } finally {
+            fileInput.value = '';
+        }
+    });
+}
+
 async function saveForm(event, resource) {
     event.preventDefault();
+    if (resource === 'programs') syncProgramLegacyFieldsFromSections();
     updatePreview();
     const prefix = resource === 'posts' ? 'post' : 'prog';
     const title = document.getElementById(`${prefix}-title`).value.trim();
@@ -1364,6 +1731,7 @@ async function saveForm(event, resource) {
         published_at: document.getElementById(`${prefix}-published-at`).value
     };
     if (resource === 'programs') {
+        payload.sections = programSections;
         payload.hero_title = document.getElementById('prog-hero-title').value;
         payload.hero_subtitle = document.getElementById('prog-hero-subtitle').value;
         payload.hero_media_type = document.getElementById('prog-hero-media-type').value;
@@ -2183,6 +2551,18 @@ async function editItem(resource, id) {
                 : '';
             updateHeroMediaFields('prog');
             document.getElementById('prog-featured-order').value = data.featured_order ?? '';
+            collapsedProgramSections.clear();
+            programSections = normalizeProgramSections(data.sections);
+            if (!programSections.length) programSections = programSectionFromLegacy(data);
+            renderProgramSectionBuilder();
+            syncProgramLegacyFieldsFromSections();
+            const migrationAlert = document.getElementById('program-section-migration-alert');
+            if (migrationAlert) {
+                migrationAlert.classList.toggle('hidden', !data.sections_migration_required);
+                migrationAlert.textContent = data.sections_migration_required
+                    ? 'Aktifkan Section Builder dengan menjalankan database/add_program_section_builder.sql sebelum menyimpan.'
+                    : '';
+            }
         } else {
             document.getElementById('post-author-name').value = data.author_name || '';
             const heroImages = parseGalleryImages(data.hero_images, 10);
@@ -2256,6 +2636,7 @@ async function init() {
     setupContentListFilters('programs');
     setupAutomaticSlug('post');
     setupAutomaticSlug('prog');
+    setupProgramSectionBuilder();
     setupDropZone('article-drop-zone', 'post-image-file', 'post-image-url', 'image-preview', 'post');
     setupDropZone('prog-drop-zone', 'prog-image-file', 'prog-image-url', 'prog-image-preview', 'prog');
     setupHeroImageDropZone('post-hero-drop-zone', 'post-hero-image-file');
