@@ -1303,7 +1303,15 @@ body .main-header .logo span {
 .home-page .utility-bar {
     color: var(--ddu-deep);
     border-bottom: 1px solid rgba(6, 59, 158, .16);
-    transition: color .36s ease, border-color .36s ease;
+    background-color: transparent;
+    transition: color .36s ease, border-color .36s ease, background-color .42s cubic-bezier(.16, 1, .3, 1);
+}
+
+.home-page .main-header > .container {
+    background-color: transparent;
+    transition:
+        background-color .42s cubic-bezier(.16, 1, .3, 1),
+        box-shadow .42s cubic-bezier(.16, 1, .3, 1);
 }
 
 .home-page .utility-bar__inner {
@@ -1358,10 +1366,15 @@ body .main-header .logo span {
 .home-page .main-header.scrolled {
     border: 0;
     border-radius: 0;
-    background-color: rgba(7, 86, 214, .97);
-    box-shadow: 0 12px 30px rgba(6, 59, 158, .24);
+    background-color: transparent;
+    box-shadow: none;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
+}
+
+.home-page .main-header.scrolled > .container {
+    background-color: var(--ddu-warm);
+    box-shadow: 0 12px 30px rgba(23, 32, 51, .12);
 }
 
 .home-page .main-header.scrolled .logo,
@@ -1369,26 +1382,27 @@ body .main-header .logo span {
 .home-page .main-header.scrolled .logo:focus,
 .home-page .main-header.scrolled .logo:visited,
 .home-page .main-header.scrolled .nav-links > a {
-    color: var(--ddu-warm);
+    color: var(--ddu-deep);
     text-shadow: none;
 }
 
 .home-page .main-header.scrolled .nav-links > a::after {
-    background: var(--ddu-warm);
+    background: var(--ddu-primary);
 }
 
 .home-page .main-header.scrolled .menu-toggle {
-    border-color: rgba(250, 250, 247, .2);
-    background: rgba(250, 250, 247, .08);
+    border-color: rgba(7, 86, 214, .18);
+    background: var(--ddu-pale);
 }
 
 .home-page .main-header.scrolled .menu-toggle .bar {
-    background: var(--ddu-warm);
+    background: var(--ddu-deep);
 }
 
 .home-page .main-header.scrolled .utility-bar {
     color: var(--ddu-warm);
     border-bottom-color: rgba(250, 250, 247, .2);
+    background-color: var(--ddu-primary);
 }
 
 .home-page .main-header.scrolled .utility-bar__link:hover,
@@ -1406,7 +1420,16 @@ body .main-header .logo span {
     }
 
     .home-page .main-header.scrolled {
-        border-radius: 15px;
+        border-radius: 0;
+    }
+
+    .home-page .main-header.scrolled .utility-bar {
+        border-radius: 15px 15px 0 0;
+    }
+
+    .home-page .main-header.scrolled > .container {
+        border-radius: 0 0 15px 15px;
+        box-shadow: 0 12px 30px rgba(23, 32, 51, .14);
     }
 
     .home-page .utility-bar__inner {
