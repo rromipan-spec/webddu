@@ -90,11 +90,11 @@
     <link rel="preload" href="asset/fonts/metropolis/Metropolis-Regular.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="asset/fonts/metropolis/Metropolis-ExtraBold.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="metropolis.css?v=20260917-1">
-    <link rel="stylesheet" href="style.css?v=20260922-3">
+    <link rel="stylesheet" href="style.css?v=20260926-1">
     <link rel="stylesheet" href="navbar-mobile.css?v=20260917-2">
     <link rel="stylesheet" href="footer-shared.css?v=20260923-7">
     <link rel="stylesheet" href="mobile-experience.css?v=20260921-1">
-<link rel="stylesheet" href="ddu-theme.css?v=20260923-4">
+<link rel="stylesheet" href="ddu-theme.css?v=20260926-1">
 </head>
 <body class="home-page">
     <div class="page-progress" aria-hidden="true"><span></span></div>
@@ -352,7 +352,14 @@
 
     <script>
         // Scroll Animation Script
-        const observer = new IntersectionObserver((entries) => {
+        const elementsToFadeIn = document.querySelectorAll('.fade-in');
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        if (reduceMotion || !('IntersectionObserver' in window)) {
+            elementsToFadeIn.forEach((element) => element.classList.add('visible'));
+        }
+
+        const observer = !reduceMotion && 'IntersectionObserver' in window ? new IntersectionObserver((entries) => {
             entries.forEach((entry) => {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('visible');
@@ -360,11 +367,11 @@
                 }
             });
         }, {
-            threshold: 0.1 // Trigger when 10% of the element is visible
-        });
+            threshold: 0.08,
+            rootMargin: '0px 0px -8% 0px'
+        }) : null;
 
-        const elementsToFadeIn = document.querySelectorAll('.fade-in');
-        elementsToFadeIn.forEach((el) => observer.observe(el));
+        if (observer) elementsToFadeIn.forEach((element) => observer.observe(element));
 
         // Active Nav Link on Scroll Script
         const sections = document.querySelectorAll('section[id]');

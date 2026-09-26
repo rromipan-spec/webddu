@@ -1876,14 +1876,19 @@ p {
 /* SCROLL ANIMATION */
 .fade-in {
     opacity: 0;
-    transform: translateY(14px);
-    will-change: opacity, transform;
-    transition: opacity 1.05s cubic-bezier(.16, 1, .3, 1), transform 1.05s cubic-bezier(.16, 1, .3, 1);
+    filter: blur(7px);
+    transform: translate3d(0, 26px, 0) scale(.995);
+    will-change: opacity, filter, transform;
+    transition:
+        opacity 1.15s cubic-bezier(.16, 1, .3, 1),
+        filter 1.15s cubic-bezier(.16, 1, .3, 1),
+        transform 1.15s cubic-bezier(.16, 1, .3, 1);
 }
 
 .fade-in.visible {
     opacity: 1;
-    transform: translateY(0);
+    filter: blur(0);
+    transform: translate3d(0, 0, 0) scale(1);
     will-change: auto;
 }
 
@@ -3352,7 +3357,7 @@ select {
     .fade-in,
     .detail-image-slide,
     .hero-slider .slide { transition: none; }
-    .fade-in { opacity: 1; transform: none; }
+    .fade-in { opacity: 1; filter: none; transform: none; }
     .detail-program-hero video.program-hero-video { display: none; }
 }
 
