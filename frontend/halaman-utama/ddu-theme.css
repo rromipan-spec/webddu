@@ -1300,6 +1300,61 @@ body .main-header .logo span {
     transition: background-color .36s ease, transform .3s ease, opacity .3s ease;
 }
 
+.home-page .utility-bar {
+    color: var(--ddu-deep);
+    border-bottom: 1px solid rgba(6, 59, 158, .16);
+    transition: color .36s ease, border-color .36s ease;
+}
+
+.home-page .utility-bar__inner {
+    display: flex;
+    width: 100%;
+    min-height: 32px;
+    margin: 0 auto;
+    padding: 5px clamp(18px, 4vw, 72px);
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.home-page .utility-bar__message {
+    font-size: .72rem;
+    font-weight: 500;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.home-page .utility-bar__links {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.home-page .utility-bar__link {
+    display: inline-flex;
+    min-height: 22px;
+    align-items: center;
+    gap: 7px;
+    color: inherit;
+    font-size: .76rem;
+    font-weight: 500;
+    line-height: 1.2;
+    text-decoration: none;
+    text-shadow: none;
+    transition: color .25s ease, opacity .25s ease;
+}
+
+.home-page .utility-bar__link svg {
+    width: 15px;
+    height: 15px;
+    flex: 0 0 15px;
+}
+
+.home-page .utility-bar__link:hover,
+.home-page .utility-bar__link:focus-visible {
+    color: var(--ddu-primary);
+}
+
 .home-page .main-header.scrolled {
     border: 0;
     border-radius: 0;
@@ -1331,6 +1386,16 @@ body .main-header .logo span {
     background: var(--ddu-warm);
 }
 
+.home-page .main-header.scrolled .utility-bar {
+    color: var(--ddu-warm);
+    border-bottom-color: rgba(250, 250, 247, .2);
+}
+
+.home-page .main-header.scrolled .utility-bar__link:hover,
+.home-page .main-header.scrolled .utility-bar__link:focus-visible {
+    color: var(--ddu-pale);
+}
+
 @media (max-width: 768px) {
     .home-page .main-header {
         top: max(8px, env(safe-area-inset-top));
@@ -1342,6 +1407,26 @@ body .main-header .logo span {
 
     .home-page .main-header.scrolled {
         border-radius: 15px;
+    }
+
+    .home-page .utility-bar__inner {
+        min-height: 30px;
+        padding: 4px 14px;
+    }
+
+    .home-page .utility-bar__message {
+        display: none;
+    }
+
+    .home-page .utility-bar__links {
+        width: 100%;
+        justify-content: flex-end;
+        gap: 16px;
+    }
+
+    .home-page .utility-bar__link {
+        min-height: 24px;
+        font-size: .7rem;
     }
 
     /* Panel menu tetap kontras walaupun navbar sedang dalam state scrolled. */
@@ -1357,6 +1442,17 @@ body .main-header .logo span {
     .home-page .main-header .nav-links.active > a::after,
     .home-page .main-header.scrolled .nav-links.active > a::after {
         background: var(--ddu-gold);
+    }
+}
+
+@media (max-width: 390px) {
+    .home-page .utility-bar__links {
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .home-page .utility-bar__link {
+        font-size: .66rem;
     }
 }
 
