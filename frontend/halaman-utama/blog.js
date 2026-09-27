@@ -8,17 +8,23 @@ const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, char => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
 }[char]));
 
-function createBlogCard(post) {
+function createBlogCard(post, index = 0) {
     const slug = encodeURIComponent(post.slug);
-    return `<article class="blog-card">
+    const variant = index === 0 ? 'blog-card--featured' : 'blog-card--compact';
+    const author = post.author_name || 'Dompet Dana Umat';
+    const publishedAt = post.published_at || post.created_at;
+    return `<article class="blog-card ${variant}">
         <a href="/artikel/${slug}" class="blog-card-link">
             <div class="blog-img"><img src="${escapeHtml(post.image)}" alt="${escapeHtml(post.image_alt || post.title)}" width="800" height="520" loading="lazy" decoding="async"></div>
             <div class="blog-content">
                 <span class="content-category">${escapeHtml(post.category || 'Umum')}</span>
                 <h3>${escapeHtml(post.title)}</h3>
                 <p>${escapeHtml(post.excerpt)}</p>
-                <time class="blog-card-date" datetime="${escapeHtml(formatIsoDate(post.published_at || post.created_at))}">${escapeHtml(formatDate(post.published_at || post.created_at))}</time>
-                <span class="read-more">Baca Selengkapnya <span aria-hidden="true">→</span></span>
+                <div class="blog-card-meta">
+                    <span class="blog-card-author">${escapeHtml(author)}</span>
+                    <time class="blog-card-date" datetime="${escapeHtml(formatIsoDate(publishedAt))}">${escapeHtml(formatDate(publishedAt))}</time>
+                </div>
+                <span class="read-more">Baca Selengkapnya <span aria-hidden="true">&rarr;</span></span>
             </div>
         </a>
     </article>`;
@@ -40,7 +46,7 @@ function renderBlogPosts(posts = allPosts) {
     const empty = document.getElementById('noResultsMessage');
     if (!grid) return;
     const start = (currentPage - 1) * itemsPerPage;
-    grid.innerHTML = posts.slice(start, start + itemsPerPage).map(createBlogCard).join('');
+    grid.innerHTML = posts.slice(start, start + itemsPerPage).map((post, index) => createBlogCard(post, index)).join('');
     if (empty) empty.style.display = posts.length ? 'none' : 'block';
     renderPagination();
 }
