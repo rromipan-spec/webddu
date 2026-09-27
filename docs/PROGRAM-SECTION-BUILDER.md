@@ -31,7 +31,7 @@ Kanvas Fleksibel memakai alur kerja yang menyerupai aplikasi desain, tetapi hasi
 
 1. Pilih **Kanvas Fleksibel**, lalu tambahkan elemen dari panel kiri.
 2. Klik elemen pada kanvas untuk membuka pengaturan di panel kanan.
-3. Tarik elemen untuk mengubah urutan; tarik kartu section untuk mengubah urutan section.
+3. Tarik elemen ke bagian atas/bawah elemen lain untuk mengubah urutan. Jatuhkan di tepi kiri/kanan untuk membuat pasangan dua kolom 50:50 secara otomatis, misalnya foto di kiri dan paragraf di kanan. Pada layar mobile pasangan tersebut otomatis ditumpuk agar tetap terbaca.
 4. Atur lebar, perataan, ukuran dan ketebalan font, warna, radius, padding, tautan, serta visibilitas tablet/mobile.
 5. Gunakan tombol **Desktop**, **Tablet**, dan **Mobile** untuk memeriksa responsivitas sebelum menyimpan.
 

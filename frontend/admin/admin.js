@@ -15,6 +15,8 @@ let programBuilderRedoStack = [];
 let programBuilderAutosaveTimer = null;
 let draggedProgramSectionKey = '';
 let draggedProgramBlockId = '';
+let programCanvasDropMode = '';
+let programCanvasDropTargetId = '';
 let programBuilderFocusSnapshot = '';
 const contentListState = {
     posts: { prefix: 'post', page: 1, perPage: 10, searchTimer: null, requestId: 0 },
@@ -1437,7 +1439,7 @@ function createProgramCanvasBlock(type = 'paragraph') {
         link: '',
         label: safeType === 'button' ? 'Donasi Sekarang' : safeType === 'whatsapp' ? 'Hubungi WhatsApp' : '',
         align: 'left',
-        width: safeType === 'button' || safeType === 'qr' ? 6 : 12,
+        width: ['image', 'video', 'button', 'qr', 'whatsapp'].includes(safeType) ? 6 : 12,
         font_size: safeType === 'heading' ? 44 : 18,
         font_weight: safeType === 'heading' ? 700 : 400,
         color: '#172033',
@@ -1457,6 +1459,24 @@ function createProgramCanvasBlock(type = 'paragraph') {
     if (safeType === 'divider') Object.assign(block, { color: '#D4A84F', height: 2 });
     if (safeType === 'columns') Object.assign(block, { content: '2', width: 12 });
     return block;
+}
+
+function clearProgramCanvasDropGuides(scope = document) {
+    scope.querySelectorAll('.is-drop-left, .is-drop-right, .is-drop-before, .is-drop-after').forEach(node => {
+        node.classList.remove('is-drop-left', 'is-drop-right', 'is-drop-before', 'is-drop-after');
+    });
+    programCanvasDropMode = '';
+    programCanvasDropTargetId = '';
+}
+
+function getProgramCanvasDropMode(event, targetBlock) {
+    if (!targetBlock) return 'after';
+    const rect = targetBlock.getBoundingClientRect();
+    const relativeX = rect.width ? (event.clientX - rect.left) / rect.width : 0.5;
+    const relativeY = rect.height ? (event.clientY - rect.top) / rect.height : 0.5;
+    if (relativeX <= 0.32) return 'left';
+    if (relativeX >= 0.68) return 'right';
+    return relativeY <= 0.5 ? 'before' : 'after';
 }
 
 function createProgramTemplate(template = 'simple') {
@@ -1789,7 +1809,7 @@ function renderProgramCanvasFields(section) {
         : null;
     return `<div class="program-canvas-editor is-wide" data-canvas-editor>
         <aside class="program-canvas-palette"><strong>Elemen</strong><small>Klik untuk menambahkan.</small><div>${Object.entries(programCanvasBlockMeta).map(([type, meta]) => `<button type="button" data-section-action="add-block" data-block-type="${type}"><b>${escapeHtml(meta[1])}</b><span>${escapeHtml(meta[0])}</span></button>`).join('')}</div></aside>
-        <div class="program-canvas-stage-wrap"><div class="program-canvas-stage-toolbar"><span>Pratinjau ${escapeHtml(programBuilderDevice)}</span><small>Tarik elemen untuk mengubah urutan.</small></div><div class="program-canvas-stage program-canvas-stage--${escapeHtml(section.data.min_height || 'auto')}" style="--canvas-background:${escapeHtml(section.data.background || '#FAFAF7')}" data-canvas-dropzone>${blocks.length ? blocks.map(block => programCanvasBlockPreview(block, section.key)).join('') : '<div class="program-canvas-empty">Tambahkan elemen dari panel kiri.</div>'}</div></div>
+        <div class="program-canvas-stage-wrap"><div class="program-canvas-stage-toolbar"><span>Pratinjau ${escapeHtml(programBuilderDevice)}</span><small>Jatuhkan di tepi kiri/kanan elemen lain untuk membuat dua kolom.</small></div><div class="program-canvas-stage program-canvas-stage--${escapeHtml(section.data.min_height || 'auto')}" style="--canvas-background:${escapeHtml(section.data.background || '#FAFAF7')}" data-canvas-dropzone>${blocks.length ? blocks.map(block => programCanvasBlockPreview(block, section.key)).join('') : '<div class="program-canvas-empty">Tambahkan elemen dari panel kiri.</div>'}</div></div>
         <aside class="program-canvas-inspector">${programCanvasInspector(section, selected)}</aside>
         <details class="program-canvas-section-settings"><summary>Pengaturan kanvas</summary><div><label>Warna latar<input type="color" value="${escapeHtml(section.data.background || '#FAFAF7')}" data-section-field="background"></label><label>Tinggi minimum<select data-section-field="min_height">${selectOptions({ auto: 'Otomatis', compact: 'Ringkas', medium: 'Sedang', screen: 'Satu layar' }, section.data.min_height)}</select></label></div></details>
     </div>`;
@@ -2365,6 +2385,14 @@ function setupProgramSectionBuilder() {
         if (!draggedProgramSectionKey) return;
         event.preventDefault();
         event.dataTransfer.dropEffect = 'move';
+        if (!draggedProgramBlockId) return;
+        const targetBlock = event.target.closest('[data-canvas-block-id]');
+        const sameCanvas = event.target.closest('[data-section-key]')?.dataset.sectionKey === draggedProgramSectionKey;
+        clearProgramCanvasDropGuides(list);
+        if (!sameCanvas || !targetBlock || targetBlock.dataset.canvasBlockId === draggedProgramBlockId) return;
+        programCanvasDropMode = getProgramCanvasDropMode(event, targetBlock);
+        programCanvasDropTargetId = targetBlock.dataset.canvasBlockId;
+        targetBlock.classList.add(`is-drop-${programCanvasDropMode}`);
     });
     list.addEventListener('drop', event => {
         event.preventDefault();
@@ -2372,16 +2400,31 @@ function setupProgramSectionBuilder() {
             const targetBlock = event.target.closest('[data-canvas-block-id]');
             const section = findProgramSection(draggedProgramSectionKey);
             const sameCanvas = event.target.closest('[data-section-key]')?.dataset.sectionKey === draggedProgramSectionKey;
-            if (!section || !sameCanvas) return;
+            const targetId = targetBlock?.dataset.canvasBlockId || programCanvasDropTargetId;
+            const dropMode = targetBlock ? getProgramCanvasDropMode(event, targetBlock) : programCanvasDropMode || 'after';
+            clearProgramCanvasDropGuides(list);
+            if (!section || !sameCanvas || targetId === draggedProgramBlockId) return;
             const from = section.data.blocks.findIndex(item => item.id === draggedProgramBlockId);
-            const to = targetBlock ? section.data.blocks.findIndex(item => item.id === targetBlock.dataset.canvasBlockId) : section.data.blocks.length - 1;
-            if (from >= 0 && to >= 0 && from !== to) {
-                recordProgramBuilderHistory();
-                const [moved] = section.data.blocks.splice(from, 1);
-                section.data.blocks.splice(to, 0, moved);
-                renderProgramSectionBuilder();
-                scheduleProgramBuilderAutosave();
+            if (from < 0) return;
+            recordProgramBuilderHistory();
+            const [moved] = section.data.blocks.splice(from, 1);
+            const targetIndex = targetId
+                ? section.data.blocks.findIndex(item => item.id === targetId)
+                : section.data.blocks.length - 1;
+            let insertAt = section.data.blocks.length;
+            if (targetIndex >= 0) {
+                const target = section.data.blocks[targetIndex];
+                if (dropMode === 'left' || dropMode === 'right') {
+                    moved.width = 6;
+                    target.width = 6;
+                }
+                insertAt = ['right', 'after'].includes(dropMode) ? targetIndex + 1 : targetIndex;
             }
+            section.data.blocks.splice(insertAt, 0, moved);
+            renderProgramSectionBuilder();
+            syncProgramLegacyFieldsFromSections();
+            updatePreview();
+            scheduleProgramBuilderAutosave();
             return;
         }
         const target = event.target.closest('[data-section-key]');
@@ -2397,6 +2440,7 @@ function setupProgramSectionBuilder() {
         }
     });
     list.addEventListener('dragend', () => {
+        clearProgramCanvasDropGuides(list);
         draggedProgramSectionKey = '';
         draggedProgramBlockId = '';
         list.querySelectorAll('.is-dragging').forEach(node => node.classList.remove('is-dragging'));

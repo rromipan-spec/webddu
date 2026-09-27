@@ -3336,6 +3336,47 @@ body.admin-page {
 }
 .admin-page .program-canvas-block:hover { outline: 1px dashed #1769F5; outline-offset: 3px; }
 .admin-page .program-canvas-block.is-selected { outline: 2px solid #1769F5; outline-offset: 3px; }
+.admin-page .program-canvas-block.is-drop-left,
+.admin-page .program-canvas-block.is-drop-right,
+.admin-page .program-canvas-block.is-drop-before,
+.admin-page .program-canvas-block.is-drop-after { outline: 1px dashed #0756D6; outline-offset: 4px; }
+.admin-page .program-canvas-block.is-drop-left::after,
+.admin-page .program-canvas-block.is-drop-right::after,
+.admin-page .program-canvas-block.is-drop-before::after,
+.admin-page .program-canvas-block.is-drop-after::after {
+    content: '';
+    position: absolute;
+    z-index: 8;
+    border-radius: 999px;
+    background: #1769F5;
+    box-shadow: 0 0 0 4px rgba(23, 105, 245, .16), 0 0 16px rgba(23, 105, 245, .45);
+    pointer-events: none;
+}
+.admin-page .program-canvas-block.is-drop-left::after { top: 0; bottom: 0; left: -7px; width: 4px; }
+.admin-page .program-canvas-block.is-drop-right::after { top: 0; right: -7px; bottom: 0; width: 4px; }
+.admin-page .program-canvas-block.is-drop-before::after { top: -7px; right: 0; left: 0; height: 4px; }
+.admin-page .program-canvas-block.is-drop-after::after { right: 0; bottom: -7px; left: 0; height: 4px; }
+.admin-page .program-canvas-block:is(.is-drop-left, .is-drop-right, .is-drop-before, .is-drop-after)::before {
+    position: absolute;
+    z-index: 9;
+    top: 8px;
+    left: 50%;
+    padding: 5px 8px;
+    color: #fff;
+    border-radius: 999px;
+    background: #0756D6;
+    box-shadow: 0 6px 18px rgba(6, 59, 158, .25);
+    font-size: .58rem;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+.admin-page .program-canvas-block.is-drop-left::before { content: 'Letakkan di kiri (50%)'; }
+.admin-page .program-canvas-block.is-drop-right::before { content: 'Letakkan di kanan (50%)'; }
+.admin-page .program-canvas-block.is-drop-before::before { content: 'Letakkan di atas'; }
+.admin-page .program-canvas-block.is-drop-after::before { content: 'Letakkan di bawah'; }
 .admin-page .program-canvas-block--align-center { text-align: center; }
 .admin-page .program-canvas-block--align-right { text-align: right; }
 .admin-page .program-canvas-block--button,
