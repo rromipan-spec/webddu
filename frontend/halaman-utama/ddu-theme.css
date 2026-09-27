@@ -1585,6 +1585,8 @@ body .main-header .nav-links > a.active {
     opacity: 1;
     transform: none;
     font-weight: 500;
+    transform-origin: center;
+    transition: color .22s ease, transform .22s cubic-bezier(.2, .8, .2, 1);
 }
 
 body .main-header .logo:hover,
@@ -1593,6 +1595,13 @@ body .main-header .logo:focus-visible {
     filter: none;
     opacity: 1;
     transform: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    body .main-header .nav-links > a:hover {
+        color: rgba(23, 32, 51, .62);
+        transform: scale(1.045);
+    }
 }
 
 .credibility-page .credibility-hero { padding-top: 150px; }
