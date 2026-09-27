@@ -2017,3 +2017,68 @@ body .main-header .logo span {
         gap: 11px;
     }
 }
+
+/* Foto berita mengikuti rasio asli: tanpa bidang warna di sisi gambar. */
+.home-page .blog-card--featured,
+.home-page .blog-card--secondary {
+    border: 0;
+    background: transparent;
+}
+
+.home-page .blog-card--featured .blog-card-link,
+.home-page .blog-card--secondary .blog-card-link {
+    position: relative;
+    min-height: 0;
+}
+
+.home-page .blog-card--featured .blog-img,
+.home-page .blog-card--secondary .blog-img {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    aspect-ratio: auto;
+    background: transparent;
+}
+
+.home-page .blog-card--featured .blog-img img,
+.home-page .blog-card--secondary .blog-img img {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: initial;
+}
+
+.home-page .blog-card--featured .blog-content,
+.home-page .blog-card--secondary .blog-content {
+    position: absolute;
+    inset: 0;
+    min-height: 0;
+    justify-content: flex-end;
+}
+
+.home-page .blog-grid:not(.blog-grid--has-sidebar) {
+    width: min(100%, 1100px);
+    margin-right: auto;
+    margin-left: auto;
+}
+
+@media (max-width: 620px) {
+    .home-page .blog-card--featured .blog-content,
+    .home-page .blog-card--secondary .blog-content {
+        min-height: 0;
+    }
+
+    .home-page .blog-card--featured .blog-content {
+        padding: 22px 19px;
+    }
+
+    .home-page .blog-card--secondary .blog-content {
+        padding: 18px;
+    }
+
+    .home-page .blog-card--secondary .blog-content h3 {
+        font-size: clamp(.9rem, 4.6vw, 1.08rem);
+    }
+}
