@@ -1572,6 +1572,29 @@ body:not(.home-page) .main-header.main-header--solid {
 .main-header--solid .menu-toggle { border-color: rgba(7, 86, 214, .18); background: var(--ddu-pale); }
 .main-header--solid .menu-toggle .bar { background: var(--ddu-deep); }
 
+/* Hover navbar stabil: tidak membesar, bergeser, memudar, atau berubah ketebalan. */
+body .main-header .nav-links > a,
+body .main-header .nav-links > a:hover,
+body .main-header .nav-links > a:focus-visible,
+body .main-header .nav-links > a.active {
+    padding-left: 0;
+    color: var(--ddu-charcoal);
+    border-left: 0;
+    background: transparent;
+    filter: none;
+    opacity: 1;
+    transform: none;
+    font-weight: 500;
+}
+
+body .main-header .logo:hover,
+body .main-header .logo:focus-visible {
+    color: var(--ddu-charcoal);
+    filter: none;
+    opacity: 1;
+    transform: none;
+}
+
 .credibility-page .credibility-hero { padding-top: 150px; }
 .error-page { padding-top: 145px !important; }
 
@@ -1599,6 +1622,8 @@ body:not(.home-page) .main-header.main-header--solid {
     .main-header--solid .nav-links.active > a,
     .main-header--solid .nav-links.active .mobile-socials__label,
     .main-header--solid .close-menu-btn { color: var(--ddu-warm); }
+    body .main-header .nav-links.active > a:hover,
+    body .main-header .nav-links.active > a:focus-visible { color: var(--ddu-warm); }
     .main-header--solid .nav-links.active > a::after { background: var(--ddu-gold); }
     .credibility-page .credibility-hero { padding-top: 132px; }
     .error-page { padding-top: 128px !important; }
