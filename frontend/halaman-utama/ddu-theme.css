@@ -1611,6 +1611,12 @@ body .main-header .logo span {
     height: 100%;
     min-height: 210px;
     aspect-ratio: auto;
+    background: var(--ddu-pale);
+}
+
+.home-page .blog-card--compact .blog-img img {
+    object-fit: contain;
+    object-position: center;
 }
 
 .home-page .blog-card--compact .blog-content {
