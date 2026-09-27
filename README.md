@@ -13,6 +13,7 @@ Website resmi Dompet Dana Umat Daarul Uluum (DDU), dibangun dengan PHP, MySQL, H
 - Editor konten, kategori, penulis, media, hero gambar/video, QR donasi, dan WhatsApp.
 - Visual builder Program dengan kanvas blok, drag-and-drop, preview desktop/tablet/mobile, autosave, undo/redo, serta revisi lokal.
 - Hero homepage adaptif dengan daftar foto desktop/mobile terpisah, cross-fade otomatis, teks opsional, dan tautan foto.
+- Navbar dan utility bar memakai satu komponen bersama pada seluruh halaman publik, lengkap dengan status menu aktif dan menu mobile.
 - SEO per konten, Open Graph, robots.txt, sitemap dinamis, serta halaman 404.
 - Optimasi unggahan gambar ke WebP dan beberapa ukuran tampilan.
 - Profil lembaga, legalitas, rekening resmi, laporan, dan kebijakan privasi.

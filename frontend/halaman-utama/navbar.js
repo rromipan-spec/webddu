@@ -1,3 +1,5 @@
+import { mountSiteHeader } from './site-header.js?v=20260927-1';
+
 const anonymousId = (storage, key) => {
     try {
         let value = storage.getItem(key);
@@ -103,6 +105,7 @@ const loadOfficialWhatsapp = async () => {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+    mountSiteHeader();
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let pageNavigationStarted = false;
     loadOfficialWhatsapp();
@@ -202,10 +205,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const header = document.querySelector('.main-header');
     const backToTop = document.querySelector('.back-to-top');
-    window.addEventListener('scroll', () => {
+    const updateNavigationState = () => {
         header?.classList.toggle('scrolled', window.scrollY > 50);
         backToTop?.classList.toggle('visible', window.scrollY > 300);
-    });
+    };
+    window.addEventListener('scroll', updateNavigationState, { passive: true });
+    updateNavigationState();
     backToTop?.addEventListener('click', event => { event.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
 
     const toggle = document.querySelector('.menu-toggle');
@@ -227,6 +232,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     document.querySelector('.close-menu-btn')?.addEventListener('click', close);
     links?.querySelectorAll('a').forEach(link => link.addEventListener('click', close));
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape') close();
+    });
 
     document.querySelectorAll('a[href^="#"]').forEach(link => {
         link.addEventListener('click', event => {

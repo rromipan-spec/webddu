@@ -1489,6 +1489,130 @@ body .main-header .logo span {
     }
 }
 
+/* Header publik bersama: utility bar dan navbar identik di seluruh halaman. */
+.main-header .utility-bar__inner {
+    display: flex;
+    width: 100%;
+    min-height: 32px;
+    margin: 0 auto;
+    padding: 5px clamp(18px, 4vw, 72px);
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.main-header .utility-bar__message {
+    font-size: .72rem;
+    font-weight: 500;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.main-header .utility-bar__links {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.main-header .utility-bar__link {
+    display: inline-flex;
+    min-height: 22px;
+    align-items: center;
+    gap: 7px;
+    color: inherit;
+    font-family: "Metropolis", Arial, sans-serif;
+    font-size: .76rem;
+    font-weight: 500;
+    line-height: 1.2;
+    text-decoration: none;
+    text-shadow: none;
+    transition: color .25s ease, opacity .25s ease;
+}
+
+.main-header .utility-bar__link svg {
+    width: 15px;
+    height: 15px;
+    flex: 0 0 15px;
+}
+
+body:not(.home-page) .main-header.main-header--solid {
+    top: 0;
+    right: 0;
+    left: 0;
+    width: 100%;
+    max-width: none;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    transform: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+}
+
+.main-header--solid .utility-bar {
+    color: var(--ddu-warm);
+    border-bottom: 1px solid rgba(250, 250, 247, .2);
+    background: var(--ddu-primary);
+}
+
+.main-header--solid > .container {
+    background: var(--ddu-warm);
+    box-shadow: 0 10px 28px rgba(23, 32, 51, .1);
+}
+
+.main-header--solid .logo,
+.main-header--solid .logo:hover,
+.main-header--solid .logo:focus,
+.main-header--solid .logo:visited,
+.main-header--solid .nav-links > a {
+    color: var(--ddu-deep);
+    text-shadow: none;
+}
+
+.main-header--solid .nav-links > a::after { background: var(--ddu-primary); }
+.main-header--solid .utility-bar__link:hover,
+.main-header--solid .utility-bar__link:focus-visible { color: var(--ddu-pale); }
+.main-header--solid .menu-toggle { border-color: rgba(7, 86, 214, .18); background: var(--ddu-pale); }
+.main-header--solid .menu-toggle .bar { background: var(--ddu-deep); }
+
+.credibility-page .credibility-hero { padding-top: 150px; }
+.error-page { padding-top: 145px !important; }
+
+@media (max-width: 768px) {
+    body:not(.home-page) .main-header.main-header--solid {
+        top: 0;
+        left: 0;
+        width: 100%;
+        border-radius: 0;
+    }
+
+    .main-header .utility-bar__inner {
+        min-height: 30px;
+        padding: 4px 14px;
+    }
+
+    .main-header .utility-bar__message { display: none; }
+    .main-header .utility-bar__links {
+        width: 100%;
+        justify-content: flex-end;
+        gap: 16px;
+    }
+    .main-header .utility-bar__link { min-height: 24px; font-size: .7rem; }
+    .main-header--solid > .container { border-radius: 0; }
+    .main-header--solid .nav-links.active > a,
+    .main-header--solid .nav-links.active .mobile-socials__label,
+    .main-header--solid .close-menu-btn { color: var(--ddu-warm); }
+    .main-header--solid .nav-links.active > a::after { background: var(--ddu-gold); }
+    .credibility-page .credibility-hero { padding-top: 132px; }
+    .error-page { padding-top: 128px !important; }
+}
+
+@media (max-width: 390px) {
+    .main-header .utility-bar__links { justify-content: space-between; gap: 10px; }
+    .main-header .utility-bar__link { font-size: .66rem; }
+}
+
 /* Berita homepage: satu berita utama dan dua berita pendamping. */
 .home-page .blog .mobile-swipe-hint {
     display: none;
