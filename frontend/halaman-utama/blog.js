@@ -2,7 +2,7 @@ const API = '../api/index.php';
 let allPosts = [];
 let currentPosts = [];
 let currentPage = 1;
-const itemsPerPage = 3;
+const itemsPerPage = 8;
 
 const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, char => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
@@ -10,7 +10,9 @@ const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, char => ({
 
 function createBlogCard(post, index = 0) {
     const slug = encodeURIComponent(post.slug);
-    const variant = index === 0 ? 'blog-card--featured' : 'blog-card--compact';
+    const variant = index === 0
+        ? 'blog-card--featured'
+        : index < 3 ? 'blog-card--secondary' : 'blog-card--list';
     const author = post.author_name || 'Dompet Dana Umat';
     const publishedAt = post.published_at || post.created_at;
     return `<article class="blog-card ${variant}">
@@ -46,7 +48,9 @@ function renderBlogPosts(posts = allPosts) {
     const empty = document.getElementById('noResultsMessage');
     if (!grid) return;
     const start = (currentPage - 1) * itemsPerPage;
-    grid.innerHTML = posts.slice(start, start + itemsPerPage).map((post, index) => createBlogCard(post, index)).join('');
+    const pagePosts = posts.slice(start, start + itemsPerPage);
+    grid.classList.toggle('blog-grid--has-sidebar', pagePosts.length > 3);
+    grid.innerHTML = pagePosts.map((post, index) => createBlogCard(post, index)).join('');
     if (empty) empty.style.display = posts.length ? 'none' : 'block';
     renderPagination();
 }
