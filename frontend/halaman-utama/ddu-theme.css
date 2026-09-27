@@ -1527,6 +1527,18 @@ body .main-header .logo span {
     inset: 0;
     height: 100%;
     aspect-ratio: auto;
+    background: var(--ddu-deep);
+}
+
+.home-page .blog-card--featured .blog-img img,
+.home-page .blog-card--secondary .blog-img img {
+    object-fit: contain;
+    object-position: center;
+}
+
+.home-page .blog-card--featured:hover .blog-img img,
+.home-page .blog-card--secondary:hover .blog-img img {
+    transform: none;
 }
 
 .home-page .blog-card--featured .blog-img::after {
@@ -1804,6 +1816,7 @@ body .main-header .logo span {
     inset: 0;
     height: 100%;
     aspect-ratio: auto;
+    background: var(--ddu-deep);
 }
 
 .home-page .blog-card--secondary .blog-img::after {
