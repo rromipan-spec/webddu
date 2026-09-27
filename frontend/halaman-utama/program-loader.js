@@ -89,7 +89,8 @@ function renderProgramSection(section, program, index) {
         gallery: renderSectionGallery,
         impact: renderSectionImpact,
         cta: renderSectionCta,
-        faq: renderSectionFaq
+        faq: renderSectionFaq,
+        canvas: renderSectionCanvas
     }[type]?.(data, program) || '';
     if (!content) return '';
     return `<section class="${classes}" data-program-section="${escapeHtml(section.key || `${type}-${index}`)}">${content}</section>`;
@@ -204,6 +205,70 @@ function renderSectionFaq(data) {
     const items = Array.isArray(data.items) ? data.items : [];
     if (!items.length && !data.title && !data.subtitle && !data.body && !data.eyebrow) return '';
     return `<div class="program-section-inner program-faq">${renderSectionHeading(data, 'Pertanyaan yang Sering Ditanyakan')}<div class="program-faq-list">${items.map((item, index) => `<details${index === 0 ? ' open' : ''}><summary>${escapeHtml(item.question || 'Pertanyaan')}</summary><div>${multilineHtml(item.answer || '')}</div></details>`).join('')}</div></div>`;
+}
+
+function renderSectionCanvas(data, program) {
+    const blocks = Array.isArray(data.blocks) ? data.blocks : [];
+    if (!blocks.length) return '';
+    const background = safeColor(data.background, '#FAFAF7');
+    const height = safeChoice(data.min_height, ['auto', 'compact', 'medium', 'screen'], 'auto');
+    return `<div class="program-visual-canvas program-visual-canvas--${height}" style="--canvas-bg:${background}"><div class="program-visual-canvas__grid">${blocks.map(block => renderProgramCanvasBlock(block, program)).join('')}</div></div>`;
+}
+
+function renderProgramCanvasBlock(block, program) {
+    const type = safeChoice(block?.type, ['heading', 'paragraph', 'image', 'video', 'button', 'columns', 'spacer', 'divider', 'progress', 'qr', 'whatsapp'], 'paragraph');
+    const span = Math.max(1, Math.min(12, Number(block.width) || 12));
+    const styles = [
+        `--block-span:${span}`,
+        `--block-color:${safeColor(block.color, '#172033')}`,
+        `--block-bg:${safeColor(block.background, 'transparent', true)}`,
+        `--block-size:${Math.max(10, Math.min(96, Number(block.font_size) || 18))}px`,
+        `--block-weight:${Math.max(300, Math.min(900, Number(block.font_weight) || 400))}`,
+        `--block-radius:${Math.max(0, Math.min(80, Number(block.radius) || 0))}px`,
+        `--block-padding:${Math.max(0, Math.min(80, Number(block.padding) || 0))}px`,
+        `--block-height:${Math.max(0, Math.min(600, Number(block.height) || 0))}px`
+    ].join(';');
+    const align = safeChoice(block.align, ['left', 'center', 'right'], 'left');
+    const classes = `program-visual-block program-visual-block--${type} program-visual-block--align-${align}${block.hide_tablet ? ' program-visual-block--hide-tablet' : ''}${block.hide_mobile ? ' program-visual-block--hide-mobile' : ''}`;
+    const content = String(block.content || '');
+    const href = safeSectionHref(block.link);
+    let html = '';
+    if (type === 'heading') html = `<h2>${escapeHtml(content)}</h2>`;
+    if (type === 'paragraph') html = `<div class="program-visual-block__copy">${multilineHtml(content)}</div>`;
+    if (type === 'image' || type === 'qr') {
+        const media = safeMediaHref(block.url) ? `<img src="${escapeHtml(safeMediaHref(block.url))}" alt="${escapeHtml(block.alt || (type === 'qr' ? `QR donasi ${program.title}` : program.title))}" loading="lazy">` : '';
+        html = href ? `<a href="${escapeHtml(href)}"${externalLinkAttrs(href)}>${media}</a>` : media;
+    }
+    if (type === 'video') {
+        const mediaUrl = safeMediaHref(block.url);
+        const youtubeId = youtubeVideoId(mediaUrl);
+        const driveSource = driveDirectUrl(mediaUrl);
+        html = youtubeId
+            ? `<iframe src="https://www.youtube-nocookie.com/embed/${youtubeId}?rel=0&playsinline=1" title="${escapeHtml(block.alt || 'Video program')}" allow="encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe>`
+            : (mediaUrl ? `<video src="${escapeHtml(driveSource || mediaUrl)}" controls playsinline preload="metadata"></video>` : '');
+    }
+    if (type === 'button') html = href ? `<a class="program-visual-block__button" href="${escapeHtml(href)}"${externalLinkAttrs(href)}>${escapeHtml(block.label || 'Selengkapnya')} <span aria-hidden="true">→</span></a>` : '';
+    if (type === 'columns') html = `<div class="program-visual-block__columns">${Array.from({ length: Math.max(2, Math.min(4, Number(content) || 2)) }, () => '<span></span>').join('')}</div>`;
+    if (type === 'spacer') html = '<span class="program-visual-block__spacer" aria-hidden="true"></span>';
+    if (type === 'divider') html = '<hr>';
+    if (type === 'progress') {
+        const target = Math.max(0, Number(block.target) || 0);
+        const collected = Math.max(0, Number(block.collected) || 0);
+        const percent = target ? Math.min(100, Math.round(collected / target * 1000) / 10) : 0;
+        html = `<div class="program-visual-progress"><strong>${formatNumber(percent)}% tercapai</strong><span><i style="width:${percent}%"></i></span><div><small>Terkumpul ${formatCurrency(collected)}</small><small>Target ${formatCurrency(target)}</small></div></div>`;
+    }
+    if (type === 'whatsapp') {
+        const waUrl = href || whatsappLink(block.whatsapp_number || program.whatsapp_number, block.whatsapp_message || program.whatsapp_message || `Assalamualaikum, saya ingin berkonsultasi mengenai ${program.title}.`);
+        html = `<a class="program-visual-block__button program-visual-block__button--wa" href="${escapeHtml(waUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(block.label || 'Hubungi WhatsApp')}</a>`;
+    }
+    if (!html) return '';
+    return `<div class="${classes}" style="${styles}">${html}</div>`;
+}
+
+function safeColor(value, fallback, allowTransparent = false) {
+    const color = String(value || '').trim();
+    if (allowTransparent && color.toLowerCase() === 'transparent') return 'transparent';
+    return /^#[0-9a-f]{6}$/i.test(color) ? color : fallback;
 }
 
 function sectionMediaHtml(type, url, alt = '', options = {}) {

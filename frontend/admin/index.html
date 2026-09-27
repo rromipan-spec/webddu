@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#063B9E">
     <title>Admin Dashboard - DDU</title>
     <link rel="stylesheet" href="../halaman-utama/metropolis.css?v=20260917-1">
-    <link rel="stylesheet" href="../halaman-utama/style.css?v=20260924-1">
+    <link rel="stylesheet" href="../halaman-utama/style.css?v=20260927-2">
     <style>
         .admin-container { padding: 120px 20px; max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 400px 1fr; gap: 30px; }
         .admin-sidebar { display: flex; flex-direction: column; gap: 20px; position: sticky; top: 100px; height: calc(100vh - 120px); }
@@ -104,7 +104,7 @@
             .toolbar button, .toolbar select { flex: 1 1 auto; }
         }
     </style>
-    <link rel="stylesheet" href="admin.css?v=20260924-5">
+    <link rel="stylesheet" href="admin.css?v=20260927-2">
     <link rel="stylesheet" href="../halaman-utama/ddu-theme.css?v=20260917-6">
 </head>
 <body class="admin-page">
@@ -404,12 +404,29 @@
                                 <li><strong>2</strong><span><b>Isi konten</b><small>Kolom bertanda opsional boleh dikosongkan.</small></span></li>
                                 <li><strong>3</strong><span><b>Atur dan simpan</b><small>Naik-turunkan bagian lalu simpan program.</small></span></li>
                             </ol>
+                            <div class="program-visual-toolbar" role="toolbar" aria-label="Peralatan editor visual program">
+                                <div class="program-visual-toolbar__group">
+                                    <button type="button" id="program-builder-undo" title="Batalkan perubahan terakhir" disabled>↶ Undo</button>
+                                    <button type="button" id="program-builder-redo" title="Ulangi perubahan" disabled>↷ Redo</button>
+                                    <button type="button" id="program-builder-save-revision" title="Simpan titik pemulihan di browser">Simpan revisi</button>
+                                    <select id="program-builder-revisions" aria-label="Riwayat revisi lokal">
+                                        <option value="">Riwayat revisi</option>
+                                    </select>
+                                </div>
+                                <div class="program-visual-toolbar__group program-device-switcher" aria-label="Ukuran pratinjau">
+                                    <button type="button" data-program-device="desktop" class="is-active" aria-pressed="true">Desktop</button>
+                                    <button type="button" data-program-device="tablet" aria-pressed="false">Tablet</button>
+                                    <button type="button" data-program-device="mobile" aria-pressed="false">Mobile</button>
+                                </div>
+                                <span id="program-builder-save-status" class="program-builder-save-status" role="status">Siap</span>
+                            </div>
                             <div class="program-template-picker">
                                 <div><strong>Mulai cepat</strong><small>Pilih salah satu susunan rekomendasi. Isinya tetap bisa diubah.</small></div>
                                 <div class="program-template-actions">
                                     <button type="button" data-program-template="simple"><span class="program-template-mini program-template-mini--simple" aria-hidden="true"><i></i><i></i><i></i></span><span>Halaman Sederhana<small>Sampul · cerita · ajakan</small></span></button>
                                     <button type="button" data-program-template="fundraising"><span class="program-template-mini program-template-mini--fundraising" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span>Penggalangan Dana<small>Sampul · progres · dampak · QR</small></span></button>
                                     <button type="button" data-program-template="report"><span class="program-template-mini program-template-mini--report" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span>Laporan Kegiatan<small>Sampul · galeri · capaian</small></span></button>
+                                    <button type="button" data-program-template="canvas"><span class="program-template-mini program-template-mini--canvas" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span>Kanvas Visual<small>Layout fleksibel siap edit</small></span></button>
                                     <button type="button" data-program-template="waqf-quran"><span class="program-template-mini program-template-mini--waqf" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span>Isi Otomatis Wakaf Al-Qur’an<small>Teks lengkap · refleksi · dampak · ajakan wakaf</small></span></button>
                                 </div>
                             </div>
@@ -424,10 +441,11 @@
                                     <button type="button" data-program-section-choice="impact" aria-pressed="false"><span class="program-section-visual program-section-visual--impact" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span><b>Dampak</b><small>Angka dan hasil yang telah dicapai.</small></span></button>
                                     <button type="button" data-program-section-choice="cta" aria-pressed="false"><span class="program-section-visual program-section-visual--cta" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span><b>Ajakan Donasi</b><small>QR/barcode dan tombol WhatsApp.</small></span></button>
                                     <button type="button" data-program-section-choice="faq" aria-pressed="false"><span class="program-section-visual program-section-visual--faq" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span><b>Pertanyaan Umum</b><small>Daftar pertanyaan dan jawaban.</small></span></button>
+                                    <button type="button" data-program-section-choice="canvas" aria-pressed="false"><span class="program-section-visual program-section-visual--canvas" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span><b>Kanvas Fleksibel</b><small>Tarik teks, media, tombol, dan donasi sesuka Anda.</small></span></button>
                                 </div>
                                 <button type="button" class="btn-secondary" id="program-add-section">+ Tambahkan Bagian</button>
                             </div>
-                            <div id="program-section-list" class="program-section-list" aria-live="polite"></div>
+                            <div id="program-section-list" class="program-section-list program-section-list--desktop" data-program-device-preview="desktop" aria-live="polite"></div>
                             <input type="file" id="program-section-media-file" hidden accept="image/jpeg,image/png,image/webp,video/mp4,video/webm" multiple>
                             <p class="program-section-help">Tips: bagian yang disembunyikan tetap tersimpan, tetapi tidak terlihat oleh pengunjung website.</p>
                         </section>
@@ -999,6 +1017,6 @@
         </form>
     </dialog>
 
-    <script type="module" src="admin.js?v=20260924-5"></script>
+    <script type="module" src="admin.js?v=20260927-2"></script>
 </body>
 </html>

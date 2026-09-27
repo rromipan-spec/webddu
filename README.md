@@ -11,6 +11,7 @@ Website resmi Dompet Dana Umat Daarul Uluum (DDU), dibangun dengan PHP, MySQL, H
 
 - Artikel dan program dengan status draft, terjadwal, atau dipublikasikan.
 - Editor konten, kategori, penulis, media, hero gambar/video, QR donasi, dan WhatsApp.
+- Visual builder Program dengan kanvas blok, drag-and-drop, preview desktop/tablet/mobile, autosave, undo/redo, serta revisi lokal.
 - Hero homepage adaptif dengan daftar foto desktop/mobile terpisah, cross-fade otomatis, teks opsional, dan tautan foto.
 - SEO per konten, Open Graph, robots.txt, sitemap dinamis, serta halaman 404.
 - Optimasi unggahan gambar ke WebP dan beberapa ukuran tampilan.
@@ -123,10 +124,10 @@ Jangan memindahkan `backend/config/.env`, `backend/storage/`, atau `frontend/upl
 - [Keamanan akun admin](docs/ADMIN-ACCOUNT-SECURITY.md)
 - [Keamanan aplikasi](docs/SECURITY.md)
 - [Sistem publikasi](docs/PUBLICATION-SYSTEM.md)
+- [Visual Section Builder Program](docs/PROGRAM-SECTION-BUILDER.md)
 - [Optimasi gambar](docs/IMAGE-OPTIMIZATION.md)
 - [Hero video artikel](docs/ARTICLE-HERO-VIDEO.md)
 - [Hero video program](docs/PROGRAM-HERO-VIDEO.md)
-- [Section Builder program](docs/PROGRAM-SECTION-BUILDER.md)
 - [QR dan CTA donasi](docs/DONATION-QR-CTA.md)
 - [Profil dan kredibilitas](docs/CREDIBILITY-PROFILE.md)
 - [Google Search Console](docs/GOOGLE-SEARCH-CONSOLE.md)

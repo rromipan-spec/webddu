@@ -441,7 +441,7 @@ function validateProgramSections(mixed $input): array
         Http::json(['ok' => false, 'message' => 'Maksimal 50 bagian dalam satu program.'], 422);
     }
 
-    $allowedTypes = ['hero', 'content', 'progress', 'gallery', 'impact', 'cta', 'faq'];
+    $allowedTypes = ['hero', 'content', 'progress', 'gallery', 'impact', 'cta', 'faq', 'canvas'];
     $sections = [];
     $keys = [];
     foreach ($input as $index => $rawSection) {
@@ -537,8 +537,63 @@ function validateProgramSectionData(string $type, array $data): array
         ];
     } elseif ($type === 'faq') {
         $result['items'] = validateProgramSectionItems($data['items'] ?? [], 'faq');
+    } elseif ($type === 'canvas') {
+        $result['background'] = sectionColor($data['background'] ?? '#FAFAF7', '#FAFAF7');
+        $result['min_height'] = sectionChoice($data['min_height'] ?? 'auto', ['auto', 'compact', 'medium', 'screen'], 'auto');
+        $result['blocks'] = validateProgramCanvasBlocks($data['blocks'] ?? []);
     }
     return $result;
+}
+
+function validateProgramCanvasBlocks(mixed $blocks): array
+{
+    if (!is_array($blocks)) return [];
+    $allowed = ['heading', 'paragraph', 'image', 'video', 'button', 'columns', 'spacer', 'divider', 'progress', 'qr', 'whatsapp'];
+    $result = [];
+    $usedIds = [];
+    foreach (array_slice($blocks, 0, 80) as $index => $raw) {
+        if (!is_array($raw)) continue;
+        $type = sectionChoice($raw['type'] ?? 'paragraph', $allowed, 'paragraph');
+        $id = strtolower(trim((string) ($raw['id'] ?? '')));
+        if (!preg_match('/^[a-z0-9][a-z0-9_-]{5,63}$/', $id) || isset($usedIds[$id])) {
+            $id = 'block-' . ($index + 1) . '-' . substr(hash('sha256', $type . '-' . $index), 0, 10);
+        }
+        $usedIds[$id] = true;
+        $wa = preg_replace('/\D+/', '', (string) ($raw['whatsapp_number'] ?? ''));
+        if ($wa !== '' && (strlen($wa) < 8 || strlen($wa) > 16)) $wa = '';
+        $result[] = [
+            'id' => $id,
+            'type' => $type,
+            'content' => sectionText($raw['content'] ?? '', $type === 'paragraph' ? 12000 : 500, true),
+            'url' => in_array($type, ['image', 'video', 'qr'], true) ? sectionMediaUrl($raw['url'] ?? '') : '',
+            'alt' => sectionText($raw['alt'] ?? '', 180),
+            'link' => sectionLink($raw['link'] ?? ''),
+            'label' => sectionText($raw['label'] ?? '', 100),
+            'align' => sectionChoice($raw['align'] ?? 'left', ['left', 'center', 'right'], 'left'),
+            'width' => max(1, min(12, (int) ($raw['width'] ?? 12))),
+            'font_size' => max(10, min(96, (int) ($raw['font_size'] ?? 18))),
+            'font_weight' => max(300, min(900, (int) ($raw['font_weight'] ?? 400))),
+            'color' => sectionColor($raw['color'] ?? '#172033', '#172033'),
+            'background' => sectionColor($raw['background'] ?? 'transparent', 'transparent', true),
+            'radius' => max(0, min(80, (int) ($raw['radius'] ?? 0))),
+            'padding' => max(0, min(80, (int) ($raw['padding'] ?? 0))),
+            'height' => max(0, min(600, (int) ($raw['height'] ?? 0))),
+            'target' => sectionMoney($raw['target'] ?? 0),
+            'collected' => sectionMoney($raw['collected'] ?? 0),
+            'whatsapp_number' => $wa,
+            'whatsapp_message' => sectionText($raw['whatsapp_message'] ?? '', 500, true),
+            'hide_tablet' => sectionBool($raw['hide_tablet'] ?? false),
+            'hide_mobile' => sectionBool($raw['hide_mobile'] ?? false),
+        ];
+    }
+    return $result;
+}
+
+function sectionColor(mixed $value, string $fallback, bool $allowTransparent = false): string
+{
+    $color = trim((string) $value);
+    if ($allowTransparent && strtolower($color) === 'transparent') return 'transparent';
+    return preg_match('/^#[0-9a-f]{6}$/i', $color) ? strtoupper($color) : $fallback;
 }
 
 function validateProgramSectionItems(mixed $items, string $type): array

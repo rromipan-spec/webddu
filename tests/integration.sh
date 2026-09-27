@@ -140,7 +140,8 @@ echo '[8/14] CRUD program'
 PROGRAM_PAYLOAD="$(jq -nc --arg slug "$PROGRAM_SLUG" \
   '{title:"Program Integration Test",slug:$slug,excerpt:"Ringkasan program",content:"<p>Program pengujian.</p>",category:"Pengujian",status:"published",published_at:"",featured_order:1,gallery_images:[],sections:[
     {key:"section-integration-hero",type:"hero",visible:true,data:{eyebrow:"Program",title:"Program Integration Test",subtitle:"Hero modular",body:"",theme:"blue",width:"full",alignment:"left",spacing:"normal",media_type:"image",media_url:"",mobile_media_url:"",poster_url:"",media_alt:"",overlay:25,height:"medium",button_label:"",button_url:"",whole_link:""}},
-    {key:"section-integration-progress",type:"progress",visible:true,data:{eyebrow:"Transparansi",title:"Progres",subtitle:"",body:"",theme:"light",width:"boxed",alignment:"left",spacing:"normal",target:1000000,collected:250000,donors:5,deadline:"",show_amounts:true,show_percentage:true,button_label:"",button_url:""}}
+    {key:"section-integration-progress",type:"progress",visible:true,data:{eyebrow:"Transparansi",title:"Progres",subtitle:"",body:"",theme:"light",width:"boxed",alignment:"left",spacing:"normal",target:1000000,collected:250000,donors:5,deadline:"",show_amounts:true,show_percentage:true,button_label:"",button_url:""}},
+    {key:"section-integration-canvas",type:"canvas",visible:true,data:{theme:"light",width:"full",alignment:"left",spacing:"normal",background:"#FAFAF7",min_height:"auto",blocks:[{id:"block-integration-heading",type:"heading",content:"Judul visual",url:"",alt:"",link:"",label:"",align:"left",width:12,font_size:44,font_weight:700,color:"#172033",background:"transparent",radius:0,padding:0,height:0,target:0,collected:0,whatsapp_number:"",whatsapp_message:"",hide_tablet:false,hide_mobile:false}]}}
   ]}')"
 request 201 -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" -H 'Content-Type: application/json' \
   --data "$PROGRAM_PAYLOAD" "$BASE_URL/api/index.php?resource=programs"
@@ -149,7 +150,7 @@ PROGRAM_UPDATED="$(jq --argjson id "$PROGRAM_ID" '. + {id:$id,title:"Program Int
 request 200 -b "$COOKIE_JAR" -H "X-CSRF-Token: $CSRF" -H 'Content-Type: application/json' \
   --data "$PROGRAM_UPDATED" "$BASE_URL/api/index.php?resource=programs"
 request 200 "$BASE_URL/api/index.php?resource=programs&slug=$PROGRAM_SLUG"
-assert_json '.data.title == "Program Integration Diperbarui" and .data.featured_order == 2 and .data.status == "published" and (.data.sections | length) == 2 and .data.sections[1].type == "progress" and .data.sections[1].data.collected == 250000'
+assert_json '.data.title == "Program Integration Diperbarui" and .data.featured_order == 2 and .data.status == "published" and (.data.sections | length) == 3 and .data.sections[1].type == "progress" and .data.sections[1].data.collected == 250000 and .data.sections[2].type == "canvas" and .data.sections[2].data.blocks[0].content == "Judul visual"'
 
 echo '[9/14] Upload gambar valid'
 php -r '$image=imagecreatetruecolor(320,320); $white=imagecolorallocate($image,255,255,255); $blue=imagecolorallocate($image,20,80,160); imagefill($image,0,0,$white); imagefilledrectangle($image,40,40,280,280,$blue); imagepng($image,$argv[1]); imagedestroy($image);' "$WORK_DIR/test.png"
