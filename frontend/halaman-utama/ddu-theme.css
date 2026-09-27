@@ -1260,7 +1260,7 @@ body .main-header .nav-links > a.active {
 body .main-header .logo,
 body .main-header .logo span {
     font-family: "Metropolis", Arial, sans-serif;
-    font-weight: 700;
+    font-weight: 500;
 }
 
 /* Homepage navbar: transparan di atas hero, solid setelah halaman digulir. */
@@ -1283,7 +1283,7 @@ body .main-header .logo span {
 .home-page .main-header .logo:focus,
 .home-page .main-header .logo:visited,
 .home-page .main-header .nav-links > a {
-    color: var(--ddu-deep);
+    color: var(--ddu-charcoal);
     text-shadow: none;
     transition: color .36s ease;
 }
@@ -1301,7 +1301,7 @@ body .main-header .logo span {
 }
 
 .home-page .utility-bar {
-    color: var(--ddu-deep);
+    color: var(--ddu-charcoal);
     border-bottom: 1px solid rgba(6, 59, 158, .16);
     background-color: transparent;
     transition: color .36s ease, border-color .36s ease, background-color .42s cubic-bezier(.16, 1, .3, 1);
@@ -1352,12 +1352,6 @@ body .main-header .logo span {
     transition: color .25s ease, opacity .25s ease;
 }
 
-.home-page .utility-bar__link svg {
-    width: 15px;
-    height: 15px;
-    flex: 0 0 15px;
-}
-
 .home-page .utility-bar__link:hover,
 .home-page .utility-bar__link:focus-visible {
     color: var(--ddu-primary);
@@ -1382,7 +1376,7 @@ body .main-header .logo span {
 .home-page .main-header.scrolled .logo:focus,
 .home-page .main-header.scrolled .logo:visited,
 .home-page .main-header.scrolled .nav-links > a {
-    color: var(--ddu-deep);
+    color: var(--ddu-charcoal);
     text-shadow: none;
 }
 
@@ -1523,16 +1517,11 @@ body .main-header .logo span {
     font-family: "Metropolis", Arial, sans-serif;
     font-size: .76rem;
     font-weight: 500;
+    letter-spacing: 0;
     line-height: 1.2;
     text-decoration: none;
     text-shadow: none;
     transition: color .25s ease, opacity .25s ease;
-}
-
-.main-header .utility-bar__link svg {
-    width: 15px;
-    height: 15px;
-    flex: 0 0 15px;
 }
 
 body:not(.home-page) .main-header.main-header--solid {
@@ -1551,9 +1540,9 @@ body:not(.home-page) .main-header.main-header--solid {
 }
 
 .main-header--solid .utility-bar {
-    color: var(--ddu-warm);
-    border-bottom: 1px solid rgba(250, 250, 247, .2);
-    background: var(--ddu-primary);
+    color: var(--ddu-charcoal);
+    border-bottom: 1px solid rgba(23, 32, 51, .12);
+    background: var(--ddu-warm);
 }
 
 .main-header--solid > .container {
@@ -1566,13 +1555,20 @@ body:not(.home-page) .main-header.main-header--solid {
 .main-header--solid .logo:focus,
 .main-header--solid .logo:visited,
 .main-header--solid .nav-links > a {
-    color: var(--ddu-deep);
+    color: var(--ddu-charcoal);
     text-shadow: none;
 }
 
 .main-header--solid .nav-links > a::after { background: var(--ddu-primary); }
 .main-header--solid .utility-bar__link:hover,
-.main-header--solid .utility-bar__link:focus-visible { color: var(--ddu-pale); }
+.main-header--solid .utility-bar__link:focus-visible { color: var(--ddu-primary); }
+.main-header--solid.scrolled .utility-bar {
+    color: var(--ddu-warm);
+    border-bottom-color: rgba(250, 250, 247, .2);
+    background: var(--ddu-primary);
+}
+.main-header--solid.scrolled .utility-bar__link:hover,
+.main-header--solid.scrolled .utility-bar__link:focus-visible { color: var(--ddu-pale); }
 .main-header--solid .menu-toggle { border-color: rgba(7, 86, 214, .18); background: var(--ddu-pale); }
 .main-header--solid .menu-toggle .bar { background: var(--ddu-deep); }
 

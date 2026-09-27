@@ -1,4 +1,4 @@
-import { mountSiteHeader } from './site-header.js?v=20260927-1';
+import { mountSiteHeader } from './site-header.js?v=20260927-2';
 
 const anonymousId = (storage, key) => {
     try {
