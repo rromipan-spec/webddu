@@ -2870,11 +2870,14 @@ select {
 }
 
 .home-page .program-card .content-category {
+    min-height: 34px;
+    align-items: center;
+    justify-content: center;
     margin-bottom: 13px;
-    padding: 6px 11px;
-    color: #0756D6;
-    background: #EAF2FF;
-    border: 1px solid #EAF2FF;
+    padding: 7px 15px;
+    color: #FAFAF7;
+    background: #0756D6;
+    border: 1px solid #0756D6;
     border-radius: 999px;
     font-size: .7rem;
 }
@@ -2898,6 +2901,14 @@ select {
     color: #0756D6;
     font-size: 0.98rem;
     line-height: 1.7;
+}
+
+.home-page .program-card-body h3 {
+    color: #0756D6;
+}
+
+.home-page .program-card-body p {
+    color: #172033;
 }
 
 .home-page .blog-card-date {
