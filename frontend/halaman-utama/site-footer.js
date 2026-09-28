@@ -24,7 +24,6 @@ export function siteFooterHtml() {
                         <span>Dompet Dana Umat</span>
                     </div>
                     <p class="footer-profile-copy">Lembaga amil zakat, infak dan sedekah yang terpercaya, amanah, dan profesional dalam menghimpun dan mengelola dana umat untuk kesejahteraan masyarakat.</p>
-                    <p class="footer-profile-copy">Dompet Dana Umat berkomitmen menghadirkan pengelolaan zakat, infak, dan sedekah secara transparan, tepat sasaran, dan berkelanjutan guna meningkatkan kesejahteraan masyarakat serta memberdayakan para penerima manfaat.</p>
                 </div>
                 ${homeLocationHtml()}
                 <div class="footer-col">
