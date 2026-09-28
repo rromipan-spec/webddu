@@ -104,7 +104,7 @@
             .toolbar button, .toolbar select { flex: 1 1 auto; }
         }
     </style>
-    <link rel="stylesheet" href="admin.css?v=20260927-3">
+    <link rel="stylesheet" href="admin.css?v=20260928-1">
     <link rel="stylesheet" href="../halaman-utama/ddu-theme.css?v=20260917-6">
 </head>
 <body class="admin-page">
@@ -216,7 +216,7 @@
                         </label>
                     </div>
                     <div id="analytics-migration-alert" class="security-alert hidden" role="alert"></div>
-                    <div class="stats-grid-admin analytics-summary-grid">
+                    <div class="stats-grid-admin analytics-summary-grid dashboard-summary-grid" aria-label="Ringkasan statistik website">
                         <div class="stat-card-admin"><h4>Tampilan Halaman</h4><div id="count-visits" class="number">0</div><small id="trend-visits">–</small></div>
                         <div class="stat-card-admin"><h4>Pengunjung</h4><div id="count-visitors" class="number">0</div><small id="trend-visitors">–</small></div>
                         <div class="stat-card-admin"><h4>Sesi Kunjungan</h4><div id="count-sessions" class="number">0</div><small id="trend-sessions">–</small></div>
@@ -230,6 +230,10 @@
                     <div id="analytics-daily-chart" class="analytics-daily-chart" aria-label="Grafik aktivitas harian"></div>
                     <div class="analytics-chart-legend"><span><i class="legend-visit"></i>Kunjungan</span><span><i class="legend-wa"></i>WhatsApp</span></div>
                 </div>
+                <div class="dashboard-section-heading">
+                    <div><p class="section-kicker">Profil pengunjung</p><h3>Kenali audiens website</h3></div>
+                    <p>Perangkat, browser, sistem operasi, sumber kunjungan, dan ukuran layar yang paling sering digunakan.</p>
+                </div>
                 <div class="analytics-grid">
                     <section class="card analytics-card"><h3>Jenis Perangkat</h3><div id="analytics-devices" class="analytics-bars"></div></section>
                     <section class="card analytics-card"><h3>Pengunjung Baru/Kembali</h3><div id="analytics-visitor-types" class="analytics-bars"></div></section>
@@ -237,6 +241,10 @@
                     <section class="card analytics-card"><h3>Sistem Operasi</h3><div id="analytics-os" class="analytics-bars"></div></section>
                     <section class="card analytics-card"><h3>Sumber Kunjungan</h3><div id="analytics-sources" class="analytics-bars"></div></section>
                     <section class="card analytics-card"><h3>Ukuran Layar</h3><div id="analytics-screens" class="analytics-bars"></div></section>
+                </div>
+                <div class="dashboard-section-heading">
+                    <div><p class="section-kicker">Konten &amp; konversi</p><h3>Lihat halaman yang menghasilkan tindakan</h3></div>
+                    <p>Bandingkan konten populer, klik WhatsApp, sumber tombol, dan perjalanan pengunjung.</p>
                 </div>
                 <div class="analytics-grid">
                     <section class="card analytics-card"><h3>Halaman Terpopuler</h3><div id="analytics-pages" class="analytics-ranking"></div></section>
@@ -246,6 +254,10 @@
                 <div class="analytics-grid analytics-grid-wide">
                     <section class="card analytics-card"><h3>Funnel Pengunjung</h3><p class="analytics-help">Sesi unik dari masuk hingga menghubungi WhatsApp.</p><div id="analytics-funnel" class="analytics-bars"></div></section>
                     <section class="card analytics-card"><h3>Kampanye &amp; UTM</h3><p class="analytics-help">Sumber dan kampanye yang benar-benar menghasilkan sesi.</p><div id="analytics-campaigns" class="analytics-ranking"></div></section>
+                </div>
+                <div class="dashboard-section-heading">
+                    <div><p class="section-kicker">Kualitas</p><h3>Pastikan pengalaman dan datanya tepercaya</h3></div>
+                    <p>Pantau pengalaman nyata pengunjung serta kelengkapan data yang dipakai untuk mengambil keputusan.</p>
                 </div>
                 <div class="analytics-grid analytics-grid-wide">
                     <section class="card analytics-card"><h3>Core Web Vitals (p75)</h3><div id="analytics-vitals" class="analytics-ranking"></div></section>
@@ -260,7 +272,7 @@
                         <button type="button" class="btn-secondary" id="health-refresh">Periksa Sekarang</button>
                     </div>
                     <div id="health-alerts" class="health-alert-list"></div>
-                    <div class="stats-grid-admin analytics-summary-grid">
+                    <div class="stats-grid-admin analytics-summary-grid health-summary-grid" aria-label="Ringkasan kesehatan website">
                         <div class="stat-card-admin"><h4>Status</h4><div id="health-status" class="number health-status-text">–</div></div>
                         <div class="stat-card-admin"><h4>Respons Internal</h4><div id="health-response" class="number">–</div></div>
                         <div class="stat-card-admin"><h4>Uptime 30 Hari</h4><div id="health-uptime" class="number">–</div></div>
@@ -1017,6 +1029,6 @@
         </form>
     </dialog>
 
-    <script type="module" src="admin.js?v=20260927-3"></script>
+    <script type="module" src="admin.js?v=20260928-1"></script>
 </body>
 </html>

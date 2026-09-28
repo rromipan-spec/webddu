@@ -2616,25 +2616,44 @@ function renderDataQuality(quality) {
 
 async function fetchSystemHealth() {
     const status = document.getElementById('health-status');
+    const refreshButton = document.getElementById('health-refresh');
+    const healthContent = document.getElementById('content-health');
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 20000);
     if (status) status.textContent = 'Memeriksa…';
+    if (refreshButton) {
+        refreshButton.disabled = true;
+        refreshButton.textContent = 'Memeriksa…';
+    }
+    healthContent?.setAttribute('aria-busy', 'true');
     try {
-        const result = await api('system_health');
+        const result = await api('system_health', { signal: controller.signal });
         renderSystemHealth(result.data || {});
     } catch (error) {
         if (status) status.textContent = 'Gagal';
         const alerts = document.getElementById('health-alerts');
-        if (alerts) alerts.innerHTML = `<div class="health-alert is-critical"><strong>Pemeriksaan gagal</strong><span>${escapeHtml(error.message)}</span></div>`;
+        const message = error.name === 'AbortError'
+            ? 'Pemeriksaan melewati 20 detik. Periksa cron, ukuran folder upload, dan log server.'
+            : error.message;
+        if (alerts) alerts.innerHTML = `<div class="health-alert is-critical"><strong>Pemeriksaan gagal</strong><span>${escapeHtml(message)}</span></div>`;
+    } finally {
+        window.clearTimeout(timeout);
+        if (refreshButton) {
+            refreshButton.disabled = false;
+            refreshButton.textContent = 'Periksa Sekarang';
+        }
+        healthContent?.removeAttribute('aria-busy');
     }
 }
 
 function renderSystemHealth(data) {
     const set = (id, value) => { const element = document.getElementById(id); if (element) element.textContent = value; };
     set('health-status', ({ healthy: 'Sehat', warning: 'Peringatan', critical: 'Kritis' })[data.status] || 'Tidak diketahui');
-    set('health-response', `${numberLabel(data.response_ms)} ms`);
-    set('health-uptime', data.history?.uptime_percent === null ? 'Menunggu' : `${Number(data.history?.uptime_percent || 0).toLocaleString('id-ID')}%`);
+    set('health-response', Number(data.response_ms || 0) < 1 ? '<1 ms' : `${numberLabel(data.response_ms)} ms`);
+    set('health-uptime', data.history?.uptime_percent === null ? 'Menunggu data' : `${Number(data.history?.uptime_percent || 0).toLocaleString('id-ID')}%`);
     set('health-errors', numberLabel(data.logs?.errors_24h));
-    set('health-backup-age', data.backups?.age_hours === null ? 'Belum ada' : `${Number(data.backups.age_hours).toLocaleString('id-ID')} jam`);
-    set('health-analytics-age', data.analytics?.age_hours === null ? 'Belum ada' : `${Number(data.analytics.age_hours).toLocaleString('id-ID')} jam`);
+    set('health-backup-age', ageLabel(data.backups?.age_hours));
+    set('health-analytics-age', ageLabel(data.analytics?.age_hours));
 
     const alerts = document.getElementById('health-alerts');
     if (alerts) alerts.innerHTML = (data.alerts || []).length
@@ -2668,6 +2687,15 @@ function fileSizeLabel(bytes) {
     let value = Number(bytes || 0); const units = ['B', 'KB', 'MB', 'GB']; let index = 0;
     while (value >= 1024 && index < units.length - 1) { value /= 1024; index++; }
     return `${value.toLocaleString('id-ID', { maximumFractionDigits: index ? 1 : 0 })} ${units[index]}`;
+}
+
+function ageLabel(hours) {
+    if (hours === null || hours === undefined || hours === '') return 'Belum ada';
+    const value = Math.max(0, Number(hours) || 0);
+    if (value < 1) return '<1 jam';
+    if (value < 24) return `${value.toLocaleString('id-ID', { maximumFractionDigits: 1 })} jam`;
+    const days = value / 24;
+    return `${days.toLocaleString('id-ID', { maximumFractionDigits: 1 })} hari`;
 }
 
 function renderDailyChart(rows) {
