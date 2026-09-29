@@ -211,29 +211,44 @@ function renderSectionCanvas(data, program) {
     if (!blocks.length) return '';
     const background = safeColor(data.background, '#FAFAF7');
     const height = safeChoice(data.min_height, ['auto', 'compact', 'medium', 'screen'], 'auto');
-    return `<div class="program-visual-canvas program-visual-canvas--${height}" style="--canvas-bg:${background}"><div class="program-visual-canvas__grid">${blocks.map(block => renderProgramCanvasBlock(block, program)).join('')}</div></div>`;
+    const maxWidth = Math.max(320, Math.min(1600, Number(data.max_width) || 1180));
+    const gap = Math.max(0, Math.min(80, Number(data.gap) || 20));
+    const padding = Math.max(0, Math.min(160, Number(data.padding) || 48));
+    return `<div class="program-visual-canvas program-visual-canvas--${height}" style="--canvas-bg:${background};--canvas-max-width:${maxWidth}px;--canvas-gap:${gap}px;--canvas-padding:${padding}px"><div class="program-visual-canvas__grid">${blocks.map(block => renderProgramCanvasBlock(block, program)).join('')}</div></div>`;
 }
 
 function renderProgramCanvasBlock(block, program) {
-    const type = safeChoice(block?.type, ['heading', 'paragraph', 'image', 'video', 'button', 'columns', 'spacer', 'divider', 'progress', 'qr', 'whatsapp'], 'paragraph');
+    const type = safeChoice(block?.type, ['heading', 'paragraph', 'quote', 'list', 'image', 'video', 'button', 'columns', 'spacer', 'divider', 'progress', 'qr', 'whatsapp'], 'paragraph');
     const span = Math.max(1, Math.min(12, Number(block.width) || 12));
+    const columnStart = block.column_start === 'left' ? `1 / span ${Math.min(6, span)}` : block.column_start === 'right' ? `7 / span ${Math.min(6, span)}` : `span ${span}`;
     const styles = [
         `--block-span:${span}`,
+        `--block-column:${columnStart}`,
         `--block-color:${safeColor(block.color, '#172033')}`,
         `--block-bg:${safeColor(block.background, 'transparent', true)}`,
         `--block-size:${Math.max(10, Math.min(96, Number(block.font_size) || 18))}px`,
         `--block-weight:${Math.max(300, Math.min(900, Number(block.font_weight) || 400))}`,
+        `--block-line-height:${Math.max(0.8, Math.min(3, Number(block.line_height) || 1.65))}`,
+        `--block-letter-spacing:${Math.max(-5, Math.min(20, Number(block.letter_spacing) || 0))}px`,
+        `--block-border-color:${safeColor(block.border_color, '#CFE0FF')}`,
+        `--block-border-width:${Math.max(0, Math.min(12, Number(block.border_width) || 0))}px`,
         `--block-radius:${Math.max(0, Math.min(80, Number(block.radius) || 0))}px`,
         `--block-padding:${Math.max(0, Math.min(80, Number(block.padding) || 0))}px`,
-        `--block-height:${Math.max(0, Math.min(600, Number(block.height) || 0))}px`
+        `--block-height:${Math.max(0, Math.min(600, Number(block.height) || 0))}px`,
+        `--block-media-height:${Math.max(80, Math.min(1200, Number(block.media_height) || 360))}px`,
+        `--block-object-fit:${safeChoice(block.object_fit, ['cover', 'contain'], 'cover')}`,
+        `--block-object-position:${safeChoice(block.object_position, ['center', 'top', 'bottom', 'left', 'right'], 'center')}`
     ].join(';');
     const align = safeChoice(block.align, ['left', 'center', 'right'], 'left');
-    const classes = `program-visual-block program-visual-block--${type} program-visual-block--align-${align}${block.hide_tablet ? ' program-visual-block--hide-tablet' : ''}${block.hide_mobile ? ' program-visual-block--hide-mobile' : ''}`;
+    const shadow = safeChoice(block.shadow, ['none', 'soft', 'medium', 'strong'], 'none');
+    const classes = `program-visual-block program-visual-block--${type} program-visual-block--align-${align} program-visual-block--shadow-${shadow}${block.hide_desktop ? ' program-visual-block--hide-desktop' : ''}${block.hide_tablet ? ' program-visual-block--hide-tablet' : ''}${block.hide_mobile ? ' program-visual-block--hide-mobile' : ''}`;
     const content = String(block.content || '');
     const href = safeSectionHref(block.link);
     let html = '';
     if (type === 'heading') html = `<h2>${escapeHtml(content)}</h2>`;
     if (type === 'paragraph') html = `<div class="program-visual-block__copy">${multilineHtml(content)}</div>`;
+    if (type === 'quote') html = `<blockquote>${multilineHtml(content)}</blockquote>`;
+    if (type === 'list') html = `<ul>${content.split(/\r?\n/).filter(Boolean).map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`;
     if (type === 'image' || type === 'qr') {
         const media = safeMediaHref(block.url) ? `<img src="${escapeHtml(safeMediaHref(block.url))}" alt="${escapeHtml(block.alt || (type === 'qr' ? `QR donasi ${program.title}` : program.title))}" loading="lazy">` : '';
         html = href ? `<a href="${escapeHtml(href)}"${externalLinkAttrs(href)}>${media}</a>` : media;

@@ -18,6 +18,10 @@ let draggedProgramBlockId = '';
 let programCanvasDropMode = '';
 let programCanvasDropTargetId = '';
 let programBuilderFocusSnapshot = '';
+let programCanvasZoom = 100;
+let programCanvasShowGrid = false;
+let programCanvasStudioToken = '';
+let programCanvasLastRemoteSave = '';
 const contentListState = {
     posts: { prefix: 'post', page: 1, perPage: 10, searchTimer: null, requestId: 0 },
     programs: { prefix: 'program', page: 1, perPage: 10, searchTimer: null, requestId: 0 }
@@ -1402,6 +1406,9 @@ function createProgramSection(type = 'content') {
     if (safeType === 'canvas') Object.assign(data, {
         background: '#FAFAF7',
         min_height: 'auto',
+        max_width: 1180,
+        gap: 20,
+        padding: 48,
         blocks: [
             createProgramCanvasBlock('heading'),
             createProgramCanvasBlock('paragraph')
@@ -1413,6 +1420,8 @@ function createProgramSection(type = 'content') {
 const programCanvasBlockMeta = {
     heading: ['Judul', 'H'],
     paragraph: ['Paragraf', '¶'],
+    quote: ['Kutipan', '”'],
+    list: ['Daftar Poin', '•'],
     image: ['Gambar', '▧'],
     video: ['Video', '▶'],
     button: ['Tombol', '↗'],
@@ -1433,20 +1442,29 @@ function createProgramCanvasBlock(type = 'paragraph') {
     const block = {
         id: programCanvasBlockId(),
         type: safeType,
-        content: safeType === 'heading' ? 'Judul bagian' : safeType === 'paragraph' ? 'Tulis cerita program di sini.' : '',
+        content: safeType === 'heading' ? 'Judul bagian' : safeType === 'paragraph' ? 'Tulis cerita program di sini.' : safeType === 'quote' ? 'Tuliskan kutipan penting di sini.' : safeType === 'list' ? 'Poin pertama\nPoin kedua\nPoin ketiga' : '',
         url: '',
         alt: '',
         link: '',
         label: safeType === 'button' ? 'Donasi Sekarang' : safeType === 'whatsapp' ? 'Hubungi WhatsApp' : '',
         align: 'left',
         width: ['image', 'video', 'button', 'qr', 'whatsapp'].includes(safeType) ? 6 : 12,
+        column_start: 'auto',
         font_size: safeType === 'heading' ? 44 : 18,
         font_weight: safeType === 'heading' ? 700 : 400,
+        line_height: safeType === 'heading' ? 1.1 : 1.65,
+        letter_spacing: 0,
         color: '#172033',
         background: 'transparent',
+        border_color: '#CFE0FF',
+        border_width: 0,
+        shadow: 'none',
         radius: 16,
         padding: safeType === 'button' ? 16 : 0,
         height: safeType === 'spacer' ? 48 : 0,
+        media_height: 360,
+        object_fit: safeType === 'qr' ? 'contain' : 'cover',
+        object_position: 'center',
         target: 0,
         collected: 0,
         whatsapp_number: '',
@@ -1454,6 +1472,8 @@ function createProgramCanvasBlock(type = 'paragraph') {
         hide_tablet: false,
         hide_mobile: false
     };
+    if (safeType === 'quote') Object.assign(block, { width: 10, font_size: 24, font_weight: 600, color: '#063B9E', background: '#EAF2FF', padding: 24, border_width: 1 });
+    if (safeType === 'list') Object.assign(block, { width: 12, font_size: 18 });
     if (safeType === 'button') Object.assign(block, { color: '#FAFAF7', background: '#1769F5', align: 'center' });
     if (safeType === 'whatsapp') Object.assign(block, { color: '#FAFAF7', background: '#20C96B', align: 'center', width: 6, padding: 16 });
     if (safeType === 'divider') Object.assign(block, { color: '#D4A84F', height: 2 });
@@ -1678,19 +1698,31 @@ function normalizeProgramSectionData(type, data) {
         };
         block.align = ['left', 'center', 'right'].includes(block.align) ? block.align : 'left';
         block.width = Math.max(1, Math.min(12, Number(block.width) || 12));
+        block.column_start = ['auto', 'left', 'right'].includes(block.column_start) ? block.column_start : 'auto';
         block.font_size = Math.max(10, Math.min(96, Number(block.font_size) || 18));
         block.font_weight = Math.max(300, Math.min(900, Number(block.font_weight) || 400));
+        block.line_height = Math.max(0.8, Math.min(3, Number(block.line_height) || 1.65));
+        block.letter_spacing = Math.max(-5, Math.min(20, Number(block.letter_spacing) || 0));
+        block.border_width = Math.max(0, Math.min(12, Number(block.border_width) || 0));
         block.radius = Math.max(0, Math.min(80, Number(block.radius) || 0));
         block.padding = Math.max(0, Math.min(80, Number(block.padding) || 0));
         block.height = Math.max(0, Math.min(600, Number(block.height) || 0));
+        block.media_height = Math.max(80, Math.min(1200, Number(block.media_height) || 360));
+        block.object_fit = ['cover', 'contain'].includes(block.object_fit) ? block.object_fit : 'cover';
+        block.object_position = ['center', 'top', 'bottom', 'left', 'right'].includes(block.object_position) ? block.object_position : 'center';
+        block.shadow = ['none', 'soft', 'medium', 'strong'].includes(block.shadow) ? block.shadow : 'none';
         block.color = /^#[0-9a-f]{6}$/i.test(String(block.color)) ? block.color : '#172033';
         block.background = block.background === 'transparent' || /^#[0-9a-f]{6}$/i.test(String(block.background)) ? block.background : 'transparent';
+        block.border_color = /^#[0-9a-f]{6}$/i.test(String(block.border_color)) ? block.border_color : '#CFE0FF';
         block.url = /^(https:\/\/|\/uploads\/)/i.test(String(block.url || '')) ? block.url : '';
         block.link = /^(https:\/\/|\/|#)/i.test(String(block.link || '')) ? block.link : '';
         return block;
     });
     data.background = /^#[0-9a-f]{6}$/i.test(String(data.background || '')) ? data.background : '#FAFAF7';
     data.min_height = ['auto', 'compact', 'medium', 'screen'].includes(data.min_height) ? data.min_height : 'auto';
+    data.max_width = Math.max(320, Math.min(1600, Number(data.max_width) || 1180));
+    data.gap = Math.max(0, Math.min(80, Number(data.gap) || 20));
+    data.padding = Math.max(0, Math.min(160, Number(data.padding) || 48));
     return data;
 }
 
@@ -1747,21 +1779,35 @@ function programSectionSettings(section) {
 }
 
 function programCanvasBlockPreview(block, sectionKey) {
+    const width = Math.max(1, Math.min(12, Number(block.width) || 12));
+    const columnStart = block.column_start === 'left' ? `1 / span ${Math.min(6, width)}` : block.column_start === 'right' ? `7 / span ${Math.min(6, width)}` : `span ${width}`;
     const style = [
-        `--block-span:${Math.max(1, Math.min(12, Number(block.width) || 12))}`,
+        `--block-span:${width}`,
+        `--block-column:${columnStart}`,
         `--block-color:${escapeHtml(block.color || '#172033')}`,
         `--block-bg:${escapeHtml(block.background || 'transparent')}`,
         `--block-size:${Math.max(10, Math.min(96, Number(block.font_size) || 18))}px`,
         `--block-weight:${Math.max(300, Math.min(900, Number(block.font_weight) || 400))}`,
+        `--block-line-height:${Math.max(0.8, Math.min(3, Number(block.line_height) || 1.65))}`,
+        `--block-letter-spacing:${Math.max(-5, Math.min(20, Number(block.letter_spacing) || 0))}px`,
+        `--block-border-color:${escapeHtml(block.border_color || '#CFE0FF')}`,
+        `--block-border-width:${Math.max(0, Math.min(12, Number(block.border_width) || 0))}px`,
         `--block-radius:${Math.max(0, Math.min(80, Number(block.radius) || 0))}px`,
         `--block-padding:${Math.max(0, Math.min(80, Number(block.padding) || 0))}px`,
-        `--block-height:${Math.max(0, Math.min(600, Number(block.height) || 0))}px`
+        `--block-height:${Math.max(0, Math.min(600, Number(block.height) || 0))}px`,
+        `--block-media-height:${Math.max(80, Math.min(1200, Number(block.media_height) || 360))}px`,
+        `--block-object-fit:${['contain', 'cover'].includes(block.object_fit) ? block.object_fit : 'cover'}`,
+        `--block-object-position:${['center', 'top', 'bottom', 'left', 'right'].includes(block.object_position) ? block.object_position : 'center'}`
     ].join(';');
     const content = escapeHtml(block.content || '');
     const url = escapeHtml(block.url || '');
+    const align = ['left', 'center', 'right'].includes(block.align) ? block.align : 'left';
+    const shadow = ['none', 'soft', 'medium', 'strong'].includes(block.shadow) ? block.shadow : 'none';
     let preview = '';
     if (block.type === 'heading') preview = `<div class="program-canvas-heading">${content || 'Judul bagian'}</div>`;
     if (block.type === 'paragraph') preview = `<div class="program-canvas-paragraph">${content || 'Tulis paragraf di sini.'}</div>`;
+    if (block.type === 'quote') preview = `<blockquote class="program-canvas-quote">${content || 'Tuliskan kutipan penting di sini.'}</blockquote>`;
+    if (block.type === 'list') preview = `<ul class="program-canvas-list">${String(block.content || '').split(/\r?\n/).filter(Boolean).map(item => `<li>${escapeHtml(item)}</li>`).join('') || '<li>Poin daftar</li>'}</ul>`;
     if (block.type === 'image') preview = url ? `<img src="${url}" alt="${escapeHtml(block.alt || '')}">` : '<span class="program-canvas-placeholder">Pilih gambar</span>';
     if (block.type === 'video') preview = url ? `<video src="${url}" muted playsinline controls></video>` : '<span class="program-canvas-placeholder">Pilih video atau tempel tautan</span>';
     if (block.type === 'button') preview = `<span class="program-canvas-button">${escapeHtml(block.label || 'Tombol')}</span>`;
@@ -1776,7 +1822,7 @@ function programCanvasBlockPreview(block, sectionKey) {
     }
     if (block.type === 'qr') preview = url ? `<img class="program-canvas-qr" src="${url}" alt="${escapeHtml(block.alt || 'QR donasi')}">` : '<span class="program-canvas-placeholder">Upload QR / barcode</span>';
     if (block.type === 'whatsapp') preview = `<span class="program-canvas-button program-canvas-button--wa">${escapeHtml(block.label || 'Hubungi WhatsApp')}</span>`;
-    return `<div class="program-canvas-block program-canvas-block--${escapeHtml(block.type)}${selectedProgramCanvasBlock?.sectionKey === sectionKey && selectedProgramCanvasBlock?.blockId === block.id ? ' is-selected' : ''}${block.hide_tablet ? ' is-hidden-tablet' : ''}${block.hide_mobile ? ' is-hidden-mobile' : ''}" style="${style}" data-canvas-block-id="${escapeHtml(block.id)}" draggable="true" tabindex="0"><span class="program-canvas-block__handle" title="Tarik untuk memindahkan">⠿</span>${preview}<span class="program-canvas-block__type">${escapeHtml(programCanvasBlockMeta[block.type]?.[0] || block.type)}</span></div>`;
+    return `<div class="program-canvas-block program-canvas-block--${escapeHtml(block.type)} program-canvas-block--align-${align} program-canvas-block--shadow-${shadow}${selectedProgramCanvasBlock?.sectionKey === sectionKey && selectedProgramCanvasBlock?.blockId === block.id ? ' is-selected' : ''}${block.hide_desktop ? ' is-hidden-desktop' : ''}${block.hide_tablet ? ' is-hidden-tablet' : ''}${block.hide_mobile ? ' is-hidden-mobile' : ''}" style="${style}" data-canvas-block-id="${escapeHtml(block.id)}" draggable="true" tabindex="0"><span class="program-canvas-block__handle" title="Tarik untuk memindahkan">⠿</span>${preview}<span class="program-canvas-block__type">${escapeHtml(programCanvasBlockMeta[block.type]?.[0] || block.type)}</span></div>`;
 }
 
 function programCanvasInspector(section, block) {
@@ -1784,21 +1830,25 @@ function programCanvasInspector(section, block) {
     const textField = (field, label, type = 'text', value = block[field] ?? '') => `<label>${escapeHtml(label)}<input type="${type}" value="${escapeHtml(value)}" data-block-field="${field}"></label>`;
     const checkbox = (field, label) => `<label class="program-section-check"><input type="checkbox" data-block-field="${field}"${block[field] ? ' checked' : ''}><span>${escapeHtml(label)}</span></label>`;
     let specific = '';
-    if (['heading', 'paragraph'].includes(block.type)) specific += `<label>Isi teks<textarea rows="5" data-block-field="content">${escapeHtml(block.content || '')}</textarea></label>`;
-    if (['image', 'video', 'qr'].includes(block.type)) specific += `${textField('url', 'Alamat media')}<button type="button" class="program-section-add-item" data-section-action="upload-block" data-block-id="${escapeHtml(block.id)}" data-upload-kind="${block.type === 'video' ? 'video' : block.type === 'qr' ? 'qr' : 'image'}">Pilih file</button>${textField('alt', 'Teks alternatif')}${textField('link', 'Tautan saat diklik')}`;
+    if (['heading', 'paragraph', 'quote', 'list'].includes(block.type)) specific += `<label>Isi ${block.type === 'list' ? 'daftar (satu poin per baris)' : 'teks'}<textarea rows="5" data-block-field="content">${escapeHtml(block.content || '')}</textarea></label>`;
+    if (['image', 'video', 'qr'].includes(block.type)) specific += `${textField('url', 'Alamat media')}<button type="button" class="program-section-add-item" data-section-action="upload-block" data-block-id="${escapeHtml(block.id)}" data-upload-kind="${block.type === 'video' ? 'video' : block.type === 'qr' ? 'qr' : 'image'}">Pilih file</button>${textField('alt', 'Teks alternatif')}${textField('link', 'Tautan saat diklik')}<label>Penyesuaian media<select data-block-field="object_fit">${selectOptions({ cover: 'Penuhi area (crop)', contain: 'Tampilkan utuh' }, block.object_fit)}</select></label><label>Fokus media<select data-block-field="object_position">${selectOptions({ center: 'Tengah', top: 'Atas', bottom: 'Bawah', left: 'Kiri', right: 'Kanan' }, block.object_position)}</select></label>${textField('media_height', 'Tinggi media (px)', 'number')}`;
     if (['button', 'whatsapp'].includes(block.type)) specific += `${textField('label', 'Tulisan tombol')}${textField('link', block.type === 'whatsapp' ? 'Tautan khusus (opsional)' : 'Tujuan tombol')}`;
     if (block.type === 'whatsapp') specific += `${textField('whatsapp_number', 'Nomor WhatsApp')}` + `<label>Pesan otomatis<textarea rows="3" data-block-field="whatsapp_message">${escapeHtml(block.whatsapp_message || '')}</textarea></label>`;
     if (block.type === 'progress') specific += `${textField('target', 'Target dana', 'number')}${textField('collected', 'Dana terkumpul', 'number')}`;
     if (block.type === 'columns') specific += `<label>Jumlah kolom<select data-block-field="content">${selectOptions({ 2: '2 kolom', 3: '3 kolom', 4: '4 kolom' }, block.content)}</select></label>`;
     if (block.type === 'spacer') specific += textField('height', 'Tinggi jarak (px)', 'number');
     return `<div class="program-canvas-inspector__heading"><div><small>Elemen terpilih</small><strong>${escapeHtml(programCanvasBlockMeta[block.type]?.[0] || block.type)}</strong></div><div class="program-canvas-inspector__actions"><button type="button" data-section-action="block-up" data-block-id="${escapeHtml(block.id)}" title="Naikkan elemen">↑</button><button type="button" data-section-action="block-down" data-block-id="${escapeHtml(block.id)}" title="Turunkan elemen">↓</button><button type="button" data-section-action="duplicate-block" data-block-id="${escapeHtml(block.id)}" title="Salin elemen">Salin</button><button type="button" data-section-action="remove-block" data-block-id="${escapeHtml(block.id)}" class="is-danger">Hapus</button></div></div>
+        <div class="program-canvas-quick-layout" aria-label="Posisi cepat elemen"><button type="button" data-section-action="block-half-left" data-block-id="${escapeHtml(block.id)}">½ Kiri</button><button type="button" data-section-action="block-half-right" data-block-id="${escapeHtml(block.id)}">½ Kanan</button><button type="button" data-section-action="block-full" data-block-id="${escapeHtml(block.id)}">Lebar penuh</button></div>
         <div class="program-canvas-inspector__fields">${specific}
             <label>Lebar elemen<select data-block-field="width">${selectOptions({ 3: '25%', 4: '33%', 6: '50%', 8: '66%', 9: '75%', 12: '100%' }, String(block.width))}</select></label>
-            ${!['image', 'video', 'qr', 'spacer', 'divider', 'progress', 'columns'].includes(block.type) ? `${textField('font_size', 'Ukuran font (px)', 'number')}${textField('font_weight', 'Ketebalan font', 'number')}` : ''}
+            ${!['image', 'video', 'qr', 'spacer', 'divider', 'progress', 'columns'].includes(block.type) ? `${textField('font_size', 'Ukuran font (px)', 'number')}${textField('font_weight', 'Ketebalan font', 'number')}<label>Jarak baris<select data-block-field="line_height">${selectOptions({ 1: 'Rapat', 1.2: 'Agak rapat', 1.5: 'Normal', 1.65: 'Nyaman', 1.8: 'Lapang', 2: 'Sangat lapang' }, String(block.line_height))}</select></label>${textField('letter_spacing', 'Jarak huruf (px)', 'number')}` : ''}
             <label>Rata elemen<select data-block-field="align">${selectOptions({ left: 'Kiri', center: 'Tengah', right: 'Kanan' }, block.align)}</select></label>
             ${textField('color', 'Warna teks / garis', 'color')}${textField('background', 'Warna latar', 'color', block.background === 'transparent' ? '#FAFAF7' : block.background)}
+            <button type="button" class="program-section-add-item" data-section-action="clear-block-background" data-block-id="${escapeHtml(block.id)}">Latar transparan</button>
+            ${textField('border_color', 'Warna garis tepi', 'color')}${textField('border_width', 'Tebal garis tepi (px)', 'number')}
+            <label>Bayangan<select data-block-field="shadow">${selectOptions({ none: 'Tanpa bayangan', soft: 'Halus', medium: 'Sedang', strong: 'Tegas' }, block.shadow)}</select></label>
             ${textField('radius', 'Sudut membulat (px)', 'number')}${textField('padding', 'Ruang dalam (px)', 'number')}
-            ${checkbox('hide_tablet', 'Sembunyikan di tablet')}${checkbox('hide_mobile', 'Sembunyikan di mobile')}
+            ${checkbox('hide_desktop', 'Sembunyikan di desktop')}${checkbox('hide_tablet', 'Sembunyikan di tablet')}${checkbox('hide_mobile', 'Sembunyikan di mobile')}
         </div>`;
 }
 
@@ -1809,9 +1859,9 @@ function renderProgramCanvasFields(section) {
         : null;
     return `<div class="program-canvas-editor is-wide" data-canvas-editor>
         <aside class="program-canvas-palette"><strong>Elemen</strong><small>Klik untuk menambahkan.</small><div>${Object.entries(programCanvasBlockMeta).map(([type, meta]) => `<button type="button" data-section-action="add-block" data-block-type="${type}"><b>${escapeHtml(meta[1])}</b><span>${escapeHtml(meta[0])}</span></button>`).join('')}</div></aside>
-        <div class="program-canvas-stage-wrap"><div class="program-canvas-stage-toolbar"><span>Pratinjau ${escapeHtml(programBuilderDevice)}</span><small>Jatuhkan di tepi kiri/kanan elemen lain untuk membuat dua kolom.</small></div><div class="program-canvas-stage program-canvas-stage--${escapeHtml(section.data.min_height || 'auto')}" style="--canvas-background:${escapeHtml(section.data.background || '#FAFAF7')}" data-canvas-dropzone>${blocks.length ? blocks.map(block => programCanvasBlockPreview(block, section.key)).join('') : '<div class="program-canvas-empty">Tambahkan elemen dari panel kiri.</div>'}</div></div>
+        <div class="program-canvas-stage-wrap"><div class="program-canvas-stage-toolbar"><span>Pratinjau ${escapeHtml(programBuilderDevice)} · ${programCanvasZoom}%</span><small>Jatuhkan di tepi kiri/kanan elemen lain untuk membuat dua kolom.</small></div><div class="program-canvas-stage program-canvas-stage--${escapeHtml(section.data.min_height || 'auto')}${programCanvasShowGrid ? ' is-grid-visible' : ''}" style="--canvas-background:${escapeHtml(section.data.background || '#FAFAF7')};--canvas-zoom:${programCanvasZoom / 100};--canvas-gap:${Math.max(0, Math.min(80, Number(section.data.gap) || 20))}px;--canvas-padding:${Math.max(0, Math.min(160, Number(section.data.padding) || 48))}px;--canvas-max-width:${Math.max(320, Math.min(1600, Number(section.data.max_width) || 1180))}px" data-canvas-dropzone>${blocks.length ? blocks.map(block => programCanvasBlockPreview(block, section.key)).join('') : '<div class="program-canvas-empty">Tambahkan elemen dari panel kiri.</div>'}</div></div>
         <aside class="program-canvas-inspector">${programCanvasInspector(section, selected)}</aside>
-        <details class="program-canvas-section-settings"><summary>Pengaturan kanvas</summary><div><label>Warna latar<input type="color" value="${escapeHtml(section.data.background || '#FAFAF7')}" data-section-field="background"></label><label>Tinggi minimum<select data-section-field="min_height">${selectOptions({ auto: 'Otomatis', compact: 'Ringkas', medium: 'Sedang', screen: 'Satu layar' }, section.data.min_height)}</select></label></div></details>
+        <details class="program-canvas-section-settings"><summary>Pengaturan kanvas</summary><div><label>Warna latar<input type="color" value="${escapeHtml(section.data.background || '#FAFAF7')}" data-section-field="background"></label><label>Tinggi minimum<select data-section-field="min_height">${selectOptions({ auto: 'Otomatis', compact: 'Ringkas', medium: 'Sedang', screen: 'Satu layar' }, section.data.min_height)}</select></label><label>Lebar isi maksimum (px)<input type="number" min="320" max="1600" value="${escapeHtml(section.data.max_width || 1180)}" data-section-field="max_width"></label><label>Jarak antar elemen (px)<input type="number" min="0" max="80" value="${escapeHtml(section.data.gap ?? 20)}" data-section-field="gap"></label><label>Ruang tepi kanvas (px)<input type="number" min="0" max="160" value="${escapeHtml(section.data.padding ?? 48)}" data-section-field="padding"></label></div></details>
     </div>`;
 }
 
@@ -1895,7 +1945,7 @@ function renderProgramSectionBuilder() {
     }
     list.innerHTML = programSections.map((section, index) => {
         const meta = programSectionMeta[section.type];
-        return `<article class="program-section-card${section.visible ? '' : ' is-hidden-section'}${collapsedProgramSections.has(section.key) ? ' is-collapsed' : ''}" data-section-key="${escapeHtml(section.key)}" draggable="true">
+        return `<article class="program-section-card program-section-card--${escapeHtml(section.type)}${section.visible ? '' : ' is-hidden-section'}${collapsedProgramSections.has(section.key) ? ' is-collapsed' : ''}" data-section-key="${escapeHtml(section.key)}" draggable="true">
             <header class="program-section-card__header"><div class="program-section-card__identity"><span class="program-section-card__number">${String(index + 1).padStart(2, '0')}</span>${programSectionIllustration(section.type)}<div class="program-section-card__copy"><strong>${escapeHtml(meta[0])}</strong><small>${escapeHtml(section.data.title || meta[1])}</small></div></div>
             <div class="program-section-actions"><button type="button" data-section-action="collapse">${collapsedProgramSections.has(section.key) ? 'Isi bagian' : 'Tutup'}</button><button type="button" data-section-action="up" aria-label="Pindahkan ke atas">↑ Atas</button><button type="button" data-section-action="down" aria-label="Pindahkan ke bawah">↓ Bawah</button><button type="button" data-section-action="duplicate">Salin</button>${section.type !== 'canvas' ? '<button type="button" data-section-action="convert-canvas">Edit Visual</button>' : ''}<button type="button" data-section-action="toggle">${section.visible ? 'Sembunyikan' : 'Tampilkan'}</button><button type="button" class="is-danger" data-section-action="delete">Hapus</button></div></header>
             <div class="program-section-card__body">${renderProgramSectionTypeFields(section)}${section.type === 'canvas' ? '' : programSectionSettings(section)}</div>
@@ -2056,6 +2106,95 @@ function programBuilderStorageKey(kind = 'draft') {
     return `ddu-program-builder-${kind}-${id}`;
 }
 
+function persistProgramBuilderDraft(statusText = 'Draft tersimpan') {
+    const status = document.getElementById('program-builder-save-status');
+    try {
+        const payload = {
+            saved_at: new Date().toISOString(),
+            title: document.getElementById('prog-title')?.value.trim() || 'Program tanpa judul',
+            program_id: document.getElementById('prog-id')?.value || 'new',
+            sections: JSON.parse(programBuilderSnapshot())
+        };
+        localStorage.setItem(programBuilderStorageKey(), JSON.stringify(payload));
+        if (programCanvasStudioToken) localStorage.setItem(`ddu-program-canvas-studio-${programCanvasStudioToken}`, JSON.stringify(payload));
+        programCanvasLastRemoteSave = payload.saved_at;
+        if (status) status.textContent = statusText;
+        return payload;
+    } catch (error) {
+        if (status) status.textContent = 'Draft gagal disimpan';
+        console.warn(error);
+        return null;
+    }
+}
+
+function openProgramCanvasStudio() {
+    if (document.body.classList.contains('program-canvas-studio')) {
+        persistProgramBuilderDraft('Draft tersinkron');
+        window.close();
+        return;
+    }
+    const payload = persistProgramBuilderDraft('Membuka studio…');
+    if (!payload) return;
+    const token = globalThis.crypto?.randomUUID?.() || `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+    programCanvasStudioToken = token;
+    localStorage.setItem(`ddu-program-canvas-studio-${token}`, JSON.stringify(payload));
+    const url = new URL(location.href);
+    url.search = '';
+    url.hash = '';
+    url.searchParams.set('canvas_studio', '1');
+    url.searchParams.set('token', token);
+    const studio = window.open(url.toString(), '_blank');
+    if (studio) studio.opener = null;
+    const status = document.getElementById('program-builder-save-status');
+    if (status) status.textContent = studio ? 'Studio terbuka · sinkron aktif' : 'Izinkan pop-up untuk membuka studio';
+}
+
+function activateProgramCanvasStudio() {
+    const parameters = new URLSearchParams(location.search);
+    if (parameters.get('canvas_studio') !== '1') return false;
+    const token = parameters.get('token') || '';
+    let handoff = null;
+    try { handoff = JSON.parse(localStorage.getItem(`ddu-program-canvas-studio-${token}`) || 'null'); } catch { handoff = null; }
+    if (!handoff?.sections?.length) return false;
+    programCanvasStudioToken = token;
+    document.body.classList.add('program-canvas-studio');
+    document.title = `Studio Kanvas · ${handoff.title || 'Program DDU'}`;
+    const id = document.getElementById('prog-id');
+    const title = document.getElementById('prog-title');
+    if (id) id.value = handoff.program_id === 'new' ? '' : handoff.program_id;
+    if (title) title.value = handoff.title || '';
+    programCanvasLastRemoteSave = handoff.saved_at || '';
+    programSections = normalizeProgramSections(handoff.sections);
+    collapsedProgramSections.clear();
+    window.switchTab('programs-admin');
+    renderProgramSectionBuilder();
+    updateProgramBuilderHistoryControls();
+    loadProgramBuilderRevisions();
+    const shell = document.querySelector('.program-section-builder-shell');
+    if (shell && !shell.querySelector('.program-canvas-studio-note')) {
+        shell.insertAdjacentHTML('afterbegin', `<div class="program-canvas-studio-note"><div><span>Studio Kanvas</span><strong>${escapeHtml(handoff.title || 'Program tanpa judul')}</strong><small>Perubahan tersimpan sebagai draft dan langsung disinkronkan ke tab admin utama.</small></div><button type="button" data-close-canvas-studio>Tutup tab</button></div>`);
+    }
+    const studioButton = document.getElementById('program-builder-open-studio');
+    if (studioButton) studioButton.textContent = 'Tutup studio';
+    document.querySelector('[data-close-canvas-studio]')?.addEventListener('click', openProgramCanvasStudio);
+    return true;
+}
+
+function handleProgramBuilderStorageSync(event) {
+    const isDraft = event.key === programBuilderStorageKey();
+    const isStudio = programCanvasStudioToken && event.key === `ddu-program-canvas-studio-${programCanvasStudioToken}`;
+    if ((!isDraft && !isStudio) || !event.newValue) return;
+    let draft = null;
+    try { draft = JSON.parse(event.newValue); } catch { draft = null; }
+    if (!draft?.sections?.length || draft.saved_at === programCanvasLastRemoteSave) return;
+    programCanvasLastRemoteSave = draft.saved_at || '';
+    const id = document.getElementById('prog-id');
+    if (id && draft.program_id && draft.program_id !== 'new') id.value = draft.program_id;
+    applyProgramBuilderSnapshot(draft.sections, { skipAutosave: true });
+    const status = document.getElementById('program-builder-save-status');
+    if (status) status.textContent = 'Tersinkron dari tab lain';
+}
+
 function updateProgramBuilderHistoryControls() {
     const undo = document.getElementById('program-builder-undo');
     const redo = document.getElementById('program-builder-redo');
@@ -2076,14 +2215,7 @@ function scheduleProgramBuilderAutosave() {
     if (status) status.textContent = 'Menyimpan draft…';
     clearTimeout(programBuilderAutosaveTimer);
     programBuilderAutosaveTimer = setTimeout(() => {
-        try {
-            const snapshot = programBuilderSnapshot();
-            localStorage.setItem(programBuilderStorageKey(), JSON.stringify({ saved_at: new Date().toISOString(), sections: JSON.parse(snapshot) }));
-            if (status) status.textContent = 'Draft tersimpan';
-        } catch (error) {
-            if (status) status.textContent = 'Draft gagal disimpan';
-            console.warn(error);
-        }
+        persistProgramBuilderDraft();
     }, 650);
 }
 
@@ -2176,7 +2308,33 @@ function setupProgramSectionBuilder() {
     renderProgramSectionBuilder();
     document.getElementById('program-builder-undo')?.addEventListener('click', undoProgramBuilder);
     document.getElementById('program-builder-redo')?.addEventListener('click', redoProgramBuilder);
+    document.getElementById('program-builder-save-draft')?.addEventListener('click', () => persistProgramBuilderDraft('Draft disimpan sekarang'));
     document.getElementById('program-builder-save-revision')?.addEventListener('click', () => saveProgramBuilderRevision());
+    document.getElementById('program-builder-open-studio')?.addEventListener('click', openProgramCanvasStudio);
+    document.getElementById('program-builder-add-canvas')?.addEventListener('click', () => {
+        recordProgramBuilderHistory();
+        const section = createProgramSection('canvas');
+        programSections.push(section);
+        collapsedProgramSections.delete(section.key);
+        selectedProgramCanvasBlock = { sectionKey: section.key, blockId: section.data.blocks[0]?.id };
+        renderProgramSectionBuilder();
+        scheduleProgramBuilderAutosave();
+        requestAnimationFrame(() => document.querySelector(`[data-section-key="${section.key}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    });
+    document.getElementById('program-builder-zoom')?.addEventListener('change', event => {
+        programCanvasZoom = Math.max(50, Math.min(150, Number(event.target.value) || 100));
+        renderProgramSectionBuilder();
+    });
+    document.getElementById('program-builder-grid')?.addEventListener('click', event => {
+        programCanvasShowGrid = !programCanvasShowGrid;
+        event.currentTarget.classList.toggle('is-active', programCanvasShowGrid);
+        event.currentTarget.setAttribute('aria-pressed', String(programCanvasShowGrid));
+        renderProgramSectionBuilder();
+    });
+    window.addEventListener('storage', handleProgramBuilderStorageSync);
+    window.addEventListener('beforeunload', () => {
+        if (document.body.classList.contains('program-canvas-studio')) persistProgramBuilderDraft('Draft tersimpan');
+    });
     document.getElementById('program-builder-revisions')?.addEventListener('change', event => {
         if (event.target.value === '') return;
         let revisions = [];
@@ -2190,11 +2348,24 @@ function setupProgramSectionBuilder() {
     });
     document.querySelectorAll('[data-program-device]').forEach(button => button.addEventListener('click', () => setProgramBuilderDevice(button.dataset.programDevice)));
     document.addEventListener('keydown', event => {
-        if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== 'z') return;
         if (!document.getElementById('content-programs-admin')?.contains(document.activeElement)) return;
-        event.preventDefault();
-        if (event.shiftKey) redoProgramBuilder();
-        else undoProgramBuilder();
+        const editingField = document.activeElement?.matches('input, textarea, select, [contenteditable="true"]');
+        if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') {
+            event.preventDefault();
+            if (event.shiftKey) redoProgramBuilder();
+            else undoProgramBuilder();
+        }
+        if (!editingField && (event.key === 'Delete' || event.key === 'Backspace') && selectedProgramCanvasBlock) {
+            const section = findProgramSection(selectedProgramCanvasBlock.sectionKey);
+            const index = section?.data.blocks?.findIndex(block => block.id === selectedProgramCanvasBlock.blockId) ?? -1;
+            if (index >= 0 && confirm('Hapus elemen terpilih dari kanvas?')) {
+                recordProgramBuilderHistory();
+                section.data.blocks.splice(index, 1);
+                selectedProgramCanvasBlock = null;
+                renderProgramSectionBuilder();
+                scheduleProgramBuilderAutosave();
+            }
+        }
     });
     loadProgramBuilderRevisions();
     typeChoices.forEach(button => {
@@ -2255,7 +2426,10 @@ function setupProgramSectionBuilder() {
         }
         if (blockField) {
             const block = section.data.blocks?.find(item => item.id === selectedProgramCanvasBlock?.blockId);
-            if (block) block[blockField] = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
+            if (block) {
+                block[blockField] = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
+                if (blockField === 'width' && Number(event.target.value) > 6) block.column_start = 'auto';
+            }
         }
         syncProgramLegacyFieldsFromSections();
         scheduleProgramBuilderAutosave();
@@ -2342,6 +2516,13 @@ function setupProgramSectionBuilder() {
                 selectedProgramCanvasBlock = { sectionKey: section.key, blockId: copy.id };
             }
         }
+        if (['block-half-left', 'block-half-right', 'block-full', 'clear-block-background'].includes(action)) {
+            const block = section.data.blocks?.find(item => item.id === button.dataset.blockId);
+            if (block && action === 'block-half-left') Object.assign(block, { width: 6, column_start: 'left' });
+            if (block && action === 'block-half-right') Object.assign(block, { width: 6, column_start: 'right' });
+            if (block && action === 'block-full') Object.assign(block, { width: 12, column_start: 'left' });
+            if (block && action === 'clear-block-background') block.background = 'transparent';
+        }
         if (['upload', 'upload-item', 'upload-gallery', 'upload-block'].includes(action)) {
             pendingProgramSectionUpload = { key: section.key, field: button.dataset.uploadField, blockId: button.dataset.blockId, index: Number(button.dataset.itemIndex), mode: action === 'upload-block' ? 'block' : action === 'upload-gallery' ? 'gallery' : action === 'upload-item' ? 'item' : 'field' };
             fileInput.multiple = action === 'upload-gallery';
@@ -2417,6 +2598,8 @@ function setupProgramSectionBuilder() {
                 if (dropMode === 'left' || dropMode === 'right') {
                     moved.width = 6;
                     target.width = 6;
+                    moved.column_start = dropMode;
+                    target.column_start = dropMode === 'left' ? 'right' : 'left';
                 }
                 insertAt = ['right', 'after'].includes(dropMode) ? targetIndex + 1 : targetIndex;
             }
@@ -2752,6 +2935,7 @@ async function showDashboard() {
     document.querySelector('.preview-group')?.classList.add('hidden');
     await loadProfile();
     await Promise.all([fetchStats(), fetchSystemHealth(), loadLists()]);
+    activateProgramCanvasStudio();
 }
 
 async function loadLists() {

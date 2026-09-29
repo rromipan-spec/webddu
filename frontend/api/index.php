@@ -540,6 +540,9 @@ function validateProgramSectionData(string $type, array $data): array
     } elseif ($type === 'canvas') {
         $result['background'] = sectionColor($data['background'] ?? '#FAFAF7', '#FAFAF7');
         $result['min_height'] = sectionChoice($data['min_height'] ?? 'auto', ['auto', 'compact', 'medium', 'screen'], 'auto');
+        $result['max_width'] = max(320, min(1600, (int) ($data['max_width'] ?? 1180)));
+        $result['gap'] = max(0, min(80, (int) ($data['gap'] ?? 20)));
+        $result['padding'] = max(0, min(160, (int) ($data['padding'] ?? 48)));
         $result['blocks'] = validateProgramCanvasBlocks($data['blocks'] ?? []);
     }
     return $result;
@@ -548,7 +551,7 @@ function validateProgramSectionData(string $type, array $data): array
 function validateProgramCanvasBlocks(mixed $blocks): array
 {
     if (!is_array($blocks)) return [];
-    $allowed = ['heading', 'paragraph', 'image', 'video', 'button', 'columns', 'spacer', 'divider', 'progress', 'qr', 'whatsapp'];
+    $allowed = ['heading', 'paragraph', 'quote', 'list', 'image', 'video', 'button', 'columns', 'spacer', 'divider', 'progress', 'qr', 'whatsapp'];
     $result = [];
     $usedIds = [];
     foreach (array_slice($blocks, 0, 80) as $index => $raw) {
@@ -564,24 +567,34 @@ function validateProgramCanvasBlocks(mixed $blocks): array
         $result[] = [
             'id' => $id,
             'type' => $type,
-            'content' => sectionText($raw['content'] ?? '', $type === 'paragraph' ? 12000 : 500, true),
+            'content' => sectionText($raw['content'] ?? '', in_array($type, ['paragraph', 'quote', 'list'], true) ? 12000 : 500, true),
             'url' => in_array($type, ['image', 'video', 'qr'], true) ? sectionMediaUrl($raw['url'] ?? '') : '',
             'alt' => sectionText($raw['alt'] ?? '', 180),
             'link' => sectionLink($raw['link'] ?? ''),
             'label' => sectionText($raw['label'] ?? '', 100),
             'align' => sectionChoice($raw['align'] ?? 'left', ['left', 'center', 'right'], 'left'),
             'width' => max(1, min(12, (int) ($raw['width'] ?? 12))),
+            'column_start' => sectionChoice($raw['column_start'] ?? 'auto', ['auto', 'left', 'right'], 'auto'),
             'font_size' => max(10, min(96, (int) ($raw['font_size'] ?? 18))),
             'font_weight' => max(300, min(900, (int) ($raw['font_weight'] ?? 400))),
+            'line_height' => max(0.8, min(3, (float) ($raw['line_height'] ?? 1.65))),
+            'letter_spacing' => max(-5, min(20, (float) ($raw['letter_spacing'] ?? 0))),
             'color' => sectionColor($raw['color'] ?? '#172033', '#172033'),
             'background' => sectionColor($raw['background'] ?? 'transparent', 'transparent', true),
+            'border_color' => sectionColor($raw['border_color'] ?? '#CFE0FF', '#CFE0FF'),
+            'border_width' => max(0, min(12, (int) ($raw['border_width'] ?? 0))),
+            'shadow' => sectionChoice($raw['shadow'] ?? 'none', ['none', 'soft', 'medium', 'strong'], 'none'),
             'radius' => max(0, min(80, (int) ($raw['radius'] ?? 0))),
             'padding' => max(0, min(80, (int) ($raw['padding'] ?? 0))),
             'height' => max(0, min(600, (int) ($raw['height'] ?? 0))),
+            'media_height' => max(80, min(1200, (int) ($raw['media_height'] ?? 360))),
+            'object_fit' => sectionChoice($raw['object_fit'] ?? 'cover', ['cover', 'contain'], 'cover'),
+            'object_position' => sectionChoice($raw['object_position'] ?? 'center', ['center', 'top', 'bottom', 'left', 'right'], 'center'),
             'target' => sectionMoney($raw['target'] ?? 0),
             'collected' => sectionMoney($raw['collected'] ?? 0),
             'whatsapp_number' => $wa,
             'whatsapp_message' => sectionText($raw['whatsapp_message'] ?? '', 500, true),
+            'hide_desktop' => sectionBool($raw['hide_desktop'] ?? false),
             'hide_tablet' => sectionBool($raw['hide_tablet'] ?? false),
             'hide_mobile' => sectionBool($raw['hide_mobile'] ?? false),
         ];

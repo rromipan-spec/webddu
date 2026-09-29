@@ -21,7 +21,7 @@ Lakukan backup database sebelum migrasi. API tetap dapat membaca program lama ke
 - **Dampak / Statistik** — kartu angka dan capaian dalam 2–4 kolom.
 - **CTA Donasi** — QR/barcode dan WhatsApp yang dapat berbeda untuk setiap section.
 - **FAQ** — daftar pertanyaan dan jawaban lipat.
-- **Kanvas Fleksibel** — editor visual tiga panel untuk menyusun judul, paragraf, gambar, video, tombol, kolom, jarak, garis, progres, QR/barcode, dan WhatsApp.
+- **Kanvas Fleksibel** — editor visual tiga panel untuk menyusun judul, paragraf, kutipan, daftar poin, gambar, video, tombol, kolom, jarak, garis, progres, QR/barcode, dan WhatsApp.
 
 Semua judul, deskripsi, media, tombol, nominal, dan elemen CTA bersifat opsional. Section dapat dinaikkan, diturunkan, diduplikasi, disembunyikan, atau dihapus dari panel admin.
 
@@ -32,10 +32,12 @@ Kanvas Fleksibel memakai alur kerja yang menyerupai aplikasi desain, tetapi hasi
 1. Pilih **Kanvas Fleksibel**, lalu tambahkan elemen dari panel kiri.
 2. Klik elemen pada kanvas untuk membuka pengaturan di panel kanan.
 3. Tarik elemen ke bagian atas/bawah elemen lain untuk mengubah urutan. Jatuhkan di tepi kiri/kanan untuk membuat pasangan dua kolom 50:50 secara otomatis, misalnya foto di kiri dan paragraf di kanan. Pada layar mobile pasangan tersebut otomatis ditumpuk agar tetap terbaca.
-4. Atur lebar, perataan, ukuran dan ketebalan font, warna, radius, padding, tautan, serta visibilitas tablet/mobile.
-5. Gunakan tombol **Desktop**, **Tablet**, dan **Mobile** untuk memeriksa responsivitas sebelum menyimpan.
+4. Gunakan tombol **½ Kiri**, **½ Kanan**, atau **Lebar penuh** agar pasangan foto dan teks dapat ditempatkan secara pasti tanpa bergantung pada drag-and-drop.
+5. Atur lebar, perataan, tipografi, tinggi/fokus media, crop atau contain, warna, garis tepi, bayangan, radius, padding, tautan, serta visibilitas desktop/tablet/mobile.
+6. Gunakan tombol **Desktop**, **Tablet**, dan **Mobile**, kontrol **Zoom**, serta **Grid** untuk memeriksa responsivitas dan kerapian sebelum menyimpan.
+7. Klik **Buka tab baru** untuk memakai Studio Kanvas selebar layar. Draft pada studio dan tab admin utama disinkronkan otomatis melalui penyimpanan browser; penyimpanan akhir program tetap dilakukan dari tab admin utama.
 
-Editor menyimpan draft otomatis di browser, menyediakan undo/redo hingga 40 langkah, dan menyimpan sampai 15 titik revisi lokal. Setiap penyimpanan program ke server juga tetap tercatat di menu **Riwayat**. Program lama otomatis dinormalisasi saat diedit dan tidak perlu dibuat ulang.
+Editor menyimpan draft otomatis di browser, menyediakan tombol simpan draft langsung, undo/redo hingga 40 langkah, dan menyimpan sampai 15 titik revisi lokal. Setiap penyimpanan program ke server juga tetap tercatat di menu **Riwayat**. Program lama otomatis dinormalisasi saat diedit dan tidak perlu dibuat ulang.
 
 ## Batas aman
 
