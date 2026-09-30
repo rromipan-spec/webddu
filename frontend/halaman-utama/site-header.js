@@ -52,6 +52,7 @@ export function siteHeaderHtml() {
                     ${navigationLink('/#programs', 'Program', 'program', active)}
                     ${navigationLink('/#calculator', 'Kalkulator', 'calculator', active)}
                     ${navigationLink('/#contact', 'Contact', 'contact', active)}
+                    <a href="https://wa.me/6285121277046?text=Assalamualaikum%2C%20saya%20ingin%20berdonasi%20melalui%20Dompet%20Dana%20Umat." class="nav-donation-cta" data-official-whatsapp data-whatsapp-message="Assalamualaikum, saya ingin berdonasi melalui Dompet Dana Umat." data-analytics-cta="donasi-navbar" target="_blank" rel="noopener noreferrer">DONASI</a>
                     ${socialLinks}
                 </div>
             </nav>

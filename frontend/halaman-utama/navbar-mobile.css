@@ -89,6 +89,10 @@
         animation: slideInUp .5s ease forwards .6s;
     }
 
+    body .nav-links.active a:nth-of-type(7) {
+        animation: slideInUp .5s ease forwards .66s;
+    }
+
     body .close-menu-btn {
         top: 20px;
         right: 20px;

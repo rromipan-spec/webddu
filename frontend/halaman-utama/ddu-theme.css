@@ -1604,6 +1604,51 @@ body .main-header .logo:focus-visible {
     }
 }
 
+/* CTA utama navbar menggunakan nomor WhatsApp resmi dari profil lembaga. */
+body .main-header .nav-links > a.nav-donation-cta,
+body .main-header .nav-links > a.nav-donation-cta:visited {
+    display: inline-flex;
+    width: auto;
+    min-height: 42px;
+    margin-left: 6px;
+    padding: 10px 19px;
+    align-items: center;
+    justify-content: center;
+    color: var(--ddu-warm);
+    border: 1px solid var(--ddu-action);
+    border-radius: 999px;
+    background: var(--ddu-action);
+    box-shadow: 0 9px 22px rgba(23, 105, 245, .24);
+    font-weight: 600;
+    letter-spacing: .035em;
+    line-height: 1;
+    text-decoration: none;
+}
+
+body .main-header .nav-links > a.nav-donation-cta::after { display: none; }
+.home-page .main-header.scrolled .nav-links > a.nav-donation-cta,
+.home-page .main-header.scrolled .nav-links > a.nav-donation-cta:visited { color: var(--ddu-warm); }
+
+@media (hover: hover) and (pointer: fine) {
+    body .main-header .nav-links > a.nav-donation-cta:hover,
+    body .main-header .nav-links > a.nav-donation-cta:focus-visible {
+        color: var(--ddu-warm);
+        border-color: var(--ddu-deep);
+        background: var(--ddu-deep);
+        box-shadow: 0 13px 28px rgba(6, 59, 158, .3);
+        transform: translateY(-2px) scale(1.025);
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1160px) {
+    body .main-header .nav-links { gap: 11px; }
+    body .main-header .nav-links > a { font-size: .88rem; }
+    body .main-header .logo { gap: 8px; font-size: 1.2rem; }
+    body .main-header .logo img,
+    body .main-header.scrolled .logo img { width: 44px; height: 44px; flex-basis: 44px; }
+    body .main-header .nav-links > a.nav-donation-cta { min-height: 38px; padding: 9px 14px; }
+}
+
 .credibility-page .credibility-hero { padding-top: 150px; }
 .error-page { padding-top: 145px !important; }
 
@@ -1633,6 +1678,24 @@ body .main-header .logo:focus-visible {
     .main-header--solid .close-menu-btn { color: var(--ddu-warm); }
     body .main-header .nav-links.active > a:hover,
     body .main-header .nav-links.active > a:focus-visible { color: var(--ddu-warm); }
+    body .main-header .nav-links.active > a.nav-donation-cta,
+    body .main-header .nav-links.active > a.nav-donation-cta:visited {
+        width: 100%;
+        min-height: 50px;
+        margin: 8px 0 3px;
+        padding: 13px 18px;
+        color: var(--ddu-deep);
+        border: 0;
+        background: var(--ddu-gold);
+        box-shadow: 0 12px 26px rgba(23, 32, 51, .22);
+        font-size: .9rem;
+        font-weight: 700;
+    }
+    body .main-header .nav-links.active > a.nav-donation-cta:hover,
+    body .main-header .nav-links.active > a.nav-donation-cta:focus-visible {
+        color: var(--ddu-deep);
+        background: #E2BB68;
+    }
     .main-header--solid .nav-links.active > a::after { background: var(--ddu-gold); }
     .credibility-page .credibility-hero { padding-top: 132px; }
     .error-page { padding-top: 128px !important; }
