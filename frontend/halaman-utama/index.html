@@ -90,7 +90,7 @@
     <link rel="preload" href="asset/fonts/metropolis/Metropolis-Regular.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="asset/fonts/metropolis/Metropolis-ExtraBold.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="metropolis.css?v=20260917-1">
-    <link rel="stylesheet" href="style.css?v=20260928-2">
+    <link rel="stylesheet" href="style.css?v=20261019-1">
     <link rel="stylesheet" href="navbar-mobile.css?v=20260930-1">
     <link rel="stylesheet" href="footer-shared.css?v=20260923-7">
     <link rel="stylesheet" href="mobile-experience.css?v=20260921-1">
@@ -232,43 +232,62 @@
         <div class="container">
             <div class="section-header">
                 <h2>Kalkulator Zakat</h2>
-                <p>Hitung kewajiban zakat penghasilan Anda dengan mudah, akurat, dan sesuai syariat.</p>
+                <p>Pilih jenis zakat, masukkan nilai harta atau penghasilan, lalu dapatkan estimasi sesuai pedoman BAZNAS.</p>
             </div>
             
             <div class="calculator-container">
                 <!-- Info Side -->
                 <div class="calculator-info">
-                    <h3>Mengapa Berzakat?</h3>
+                    <span class="calculator-eyebrow">Panduan perhitungan</span>
+                    <h3>Hitung sesuai jenis zakat Anda</h3>
                     <div class="nishab-card">
-                        <h4><span class="icon">⚠️</span> Ketentuan Nishab</h4>
-                        <p>Nisab zakat penghasilan setara dengan <strong>85 gram emas</strong>. Berdasarkan acuan yang digunakan sistem, estimasinya adalah <strong id="nishabYearlyValue">Memuat...</strong> per tahun atau <strong id="nishabValue">Memuat...</strong> per bulan. Nilai acuan emas: <strong id="goldPrice">Memuat...</strong>.</p>
+                        <h4>Pedoman BAZNAS 2026</h4>
+                        <p>Nisab zakat penghasilan ditetapkan sebesar <strong id="nishabYearlyValue">Rp 91.681.728</strong> per tahun atau <strong id="nishabValue">Rp 7.640.144</strong> per bulan dengan kadar zakat <strong>2,5%</strong>.</p>
+                        <dl class="calculator-reference-list">
+                            <div><dt>Nisab emas</dt><dd>85 gram</dd></div>
+                            <div><dt>Harga emas sistem</dt><dd id="goldPrice">Memuat...</dd></div>
+                        </dl>
                         <p id="goldPriceMeta" class="gold-price-meta" aria-live="polite">Menyiapkan harga emas terbaru...</p>
-                        <p class="calculator-note"><em>*Hasil ini merupakan estimasi. Untuk penetapan kewajiban zakat, konsultasikan dengan amil atau lembaga zakat resmi.</em></p>
                     </div>
-                    <p>Zakat bukan hanya kewajiban, tapi juga cara untuk membersihkan harta dan memberkahi kehidupan. Gunakan kalkulator ini untuk menghitung estimasi zakat yang harus Anda keluarkan.</p>
+                    <div class="calculator-guidance" aria-live="polite">
+                        <span id="zakatGuidanceLabel">Zakat Penghasilan</span>
+                        <p id="zakatGuidance">Dihitung dari gaji dan penghasilan halal lainnya. Zakat sebesar 2,5% ditunaikan apabila penghasilan mencapai nisab.</p>
+                    </div>
+                    <p class="calculator-note">Hasil kalkulator merupakan estimasi. Untuk kondisi harta yang kompleks, konsultasikan dengan amil atau pihak yang memahami fikih zakat.</p>
                 </div>
 
                 <!-- Form Side -->
                 <div class="calculator-card">
-                    <form id="zakatForm">
-                        <div class="input-group">
-                            <label for="income">Penghasilan Bulanan</label>
-                            <div class="input-wrapper">
-                                <input type="text" id="income" class="form-input" placeholder="0" inputmode="numeric" autocomplete="off" required>
+                    <form id="zakatForm" data-zakat-calculator novalidate>
+                        <div class="input-group input-group--type">
+                            <label for="zakatType">Jenis zakat</label>
+                            <div class="input-wrapper input-wrapper--select">
+                                <select id="zakatType" class="form-input" required>
+                                    <option value="income">Zakat Penghasilan</option>
+                                    <option value="company">Zakat Perusahaan</option>
+                                    <option value="trade">Zakat Perdagangan</option>
+                                    <option value="gold">Zakat Emas</option>
+                                </select>
                             </div>
                         </div>
-                        <div class="input-group">
-                            <label for="bonus">Bonus / THR / Lainnya per Tahun</label>
-                            <div class="input-wrapper">
-                                <input type="text" id="bonus" class="form-input" placeholder="0" inputmode="numeric" autocomplete="off">
+
+                        <div class="input-group" id="companyTypeGroup" hidden>
+                            <label for="companyType">Jenis usaha perusahaan</label>
+                            <div class="input-wrapper input-wrapper--select">
+                                <select id="companyType" class="form-input">
+                                    <option value="service">Perusahaan Jasa</option>
+                                    <option value="industry">Perusahaan Dagang / Industri</option>
+                                </select>
                             </div>
                         </div>
-                        <div class="input-group">
-                            <label for="debt">Hutang / Cicilan Bulanan</label>
-                            <div class="input-wrapper">
-                                <input type="text" id="debt" class="form-input" placeholder="0" inputmode="numeric" autocomplete="off">
-                            </div>
+
+                        <div class="calculator-form-intro">
+                            <strong id="zakatFormTitle">Zakat Penghasilan</strong>
+                            <p id="zakatFormDescription">Masukkan penghasilan rutin dan penghasilan halal lainnya per bulan.</p>
                         </div>
+
+                        <div id="zakatFields"></div>
+
                         <div class="calc-buttons">
                             <button type="submit" class="btn-calc">Hitung Zakat</button>
                             <button type="button" id="resetBtn" class="btn-reset">Reset</button>
@@ -276,27 +295,22 @@
                     </form>
 
                     <div id="zakatResult" class="calc-result">
-                        <div class="result-row">
-                            <span>Penghasilan Bersih:</span>
-                            <span id="totalNetIncome">Rp 0</span>
+                        <span class="result-kicker">Hasil estimasi</span>
+                        <h3 id="zakatResultTitle">Zakat Penghasilan</h3>
+                        <div id="zakatResultDetails"></div>
+                        <div class="result-total result-total--primary">
+                            <span id="zakatAmountLabel">Zakat yang ditunaikan</span>
+                            <strong id="zakatAmount">Rp 0</strong>
                         </div>
-                        <div class="result-row">
-                            <span>Pendapatan Bersih Setahun:</span>
-                            <span id="annualNetIncome">Rp 0</span>
-                        </div>
-                        <div class="result-row">
-                            <span>Status Nishab:</span>
-                            <span id="nishabStatus" style="font-weight: bold;">-</span>
-                        </div>
-                        <div class="result-total">
-                            <span>Zakat Per Bulan:</span>
-                            <span id="zakatAmountMonthly">Rp 0</span>
-                        </div>
-                        <div class="result-row result-yearly">
-                            <span>Zakat Per Tahun (Estimasi):</span>
-                            <strong id="zakatAmountYearly">Rp 0</strong>
-                        </div>
+                        <p id="nishabStatus" class="result-status" aria-live="polite"></p>
                         <p id="zakatCalculationNote" class="result-note" aria-live="polite"></p>
+                        <a href="https://wa.me/6285121277046?text=Assalamualaikum%2C%20saya%20ingin%20berkonsultasi%20dan%20menunaikan%20zakat%20melalui%20Dompet%20Dana%20Umat."
+                           class="calculator-donation-link"
+                           data-official-whatsapp
+                           data-whatsapp-message="Assalamualaikum, saya ingin berkonsultasi dan menunaikan zakat melalui Dompet Dana Umat."
+                           data-analytics-cta="zakat-calculator-whatsapp"
+                           target="_blank"
+                           rel="noopener noreferrer">Konsultasi &amp; Tunaikan Zakat</a>
                     </div>
                 </div>
             </div>
@@ -446,7 +460,7 @@
         }
 
     </script>
-    <script src="calculator.js?v=20260921-1"></script>
+    <script src="calculator.js?v=20261019-1"></script>
     <script type="module" src="blog.js?v=20260927-2"></script>
     <script type="module" src="navbar.js?v=20260930-1"></script>
     <script type="module" src="programs-home.js?v=20260728-2"></script>
