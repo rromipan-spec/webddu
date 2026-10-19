@@ -72,17 +72,27 @@ function campaignCoverHtml(program, heroData = {}, sliderImages = []) {
     return '<div class="program-campaign-cover__placeholder" aria-hidden="true"></div>';
 }
 
-function campaignProgressHtml(data = {}, action) {
-    const target = Math.max(0, Number(data.target) || 0);
-    const collected = Math.max(0, Number(data.collected) || 0);
+function campaignSideDonationHtml(program, ctaData = {}, progressData = {}, action) {
+    const target = Math.max(0, Number(progressData.target) || 0);
+    const collected = Math.max(0, Number(progressData.collected) || 0);
     const percentage = target > 0 ? Math.round((collected / target) * 1000) / 10 : 0;
     const visualPercentage = Math.max(0, Math.min(100, percentage));
     const hasProgress = target > 0 || collected > 0;
-    return `<div class="program-campaign-donation">
-        <span class="program-campaign-donation__eyebrow">Dukung program ini</span>
-        ${hasProgress ? `<strong class="program-campaign-donation__amount">${formatCurrency(collected)}</strong><span class="program-campaign-donation__target">terkumpul dari target ${formatCurrency(target)}</span><div class="program-campaign-donation__bar" role="progressbar" aria-label="Progres donasi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${visualPercentage}"><span style="width:${visualPercentage}%"></span></div><div class="program-campaign-donation__facts"><strong>${formatNumber(percentage)}%</strong>${Number(data.donors) > 0 ? `<span><b>${formatNumber(data.donors)}</b> donatur</span>` : ''}${data.deadline ? `<span>Sampai <b>${formatDate(data.deadline)}</b></span>` : ''}</div>` : '<p>Setiap dukungan membantu program ini menjangkau lebih banyak penerima manfaat.</p>'}
-        <a class="program-campaign-donate" href="${escapeHtml(action.url)}"${externalLinkAttrs(action.url)}>${escapeHtml(action.label)} <span aria-hidden="true">→</span></a>
-        <small>Informasi dan konfirmasi donasi dilayani melalui kanal resmi Dompet Dana Umat.</small>
+    const sectionQr = safeMediaHref(ctaData.qr_image);
+    const qrImage = ctaData.show_qr === false ? '' : (sectionQr || donationQrUrl(program.donation_qr_image));
+    const showWhatsapp = ctaData.show_whatsapp !== false;
+    const whatsappNumber = ctaData.whatsapp_number || program.whatsapp_number || '6285121277046';
+    const heading = ctaData.title || 'Dukung Program Ini';
+    const description = ctaData.subtitle || ctaData.body || 'Setiap dukungan membantu program ini menjangkau lebih banyak penerima manfaat.';
+
+    return `<div class="program-campaign-donation program-campaign-donation--complete">
+        <div class="program-campaign-donation__intro"><span class="program-campaign-donation__eyebrow">${escapeHtml(ctaData.eyebrow || 'Langkah Kebaikan')}</span><h2>${escapeHtml(heading)}</h2>${description ? `<p>${escapeHtml(description)}</p>` : ''}</div>
+        ${hasProgress ? `<div class="program-campaign-donation__progress"><strong class="program-campaign-donation__amount">${formatCurrency(collected)}</strong><span class="program-campaign-donation__target">terkumpul dari target ${formatCurrency(target)}</span><div class="program-campaign-donation__bar" role="progressbar" aria-label="Progres donasi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${visualPercentage}"><span style="width:${visualPercentage}%"></span></div><div class="program-campaign-donation__facts"><strong>${formatNumber(percentage)}%</strong>${Number(progressData.donors) > 0 ? `<span><b>${formatNumber(progressData.donors)}</b> donatur</span>` : ''}${progressData.deadline ? `<span>Sampai <b>${formatDate(progressData.deadline)}</b></span>` : ''}</div></div>` : ''}
+        <div class="program-campaign-donation__methods${qrImage ? ' has-qr' : ''}">
+            ${qrImage ? `<div class="program-campaign-donation__qr"><span>Scan QR/Barcode</span><a href="${escapeHtml(qrImage)}" target="_blank" rel="noopener noreferrer" aria-label="Buka QR atau barcode donasi ${escapeHtml(program.title)}"><span class="program-campaign-donation__qr-glass"><img src="${escapeHtml(qrImage)}" alt="QR atau barcode donasi ${escapeHtml(program.title)}" loading="eager"></span></a><small>Ketuk untuk memperbesar</small></div>` : ''}
+            ${showWhatsapp ? `<div class="program-campaign-donation__contact"><span>WhatsApp Resmi</span><strong>${escapeHtml(whatsappDisplay(whatsappNumber))}</strong><p>Konfirmasi donasi dan dapatkan panduan penyaluran melalui admin resmi DDU.</p><a class="program-campaign-donate" href="${escapeHtml(action.url)}"${externalLinkAttrs(action.url)}>${escapeHtml(action.label)} <span aria-hidden="true">→</span></a></div>` : ''}
+        </div>
+        <small class="program-campaign-donation__notice">Pastikan tujuan pembayaran sesuai informasi resmi Dompet Dana Umat.</small>
     </div>`;
 }
 
@@ -107,7 +117,6 @@ function renderCampaignProgram(program, sections, sliderImages) {
         }).join('')
         : `<section class="program-campaign-empty"><h2>Tentang Program</h2><p>${escapeHtml(program.excerpt || 'Informasi lengkap program akan segera diperbarui.')}</p></section>`;
     const story = `${heroBody ? `<section class="program-campaign-hero-detail"><span class="program-section-eyebrow">Detail Program</span><div class="program-section-copy">${heroBody}</div></section>` : ''}${sectionStory}`;
-    const ctaHtml = cta ? renderProgramSection(cta, program, sections.indexOf(cta)) : '';
     const title = heroData.title || program.hero_title || program.title;
     const subtitle = heroData.subtitle || program.hero_subtitle || program.excerpt || '';
     const category = heroData.eyebrow || program.category || 'Program Kebaikan';
@@ -118,13 +127,12 @@ function renderCampaignProgram(program, sections, sliderImages) {
     return `<article class="program-campaign">
         <header class="program-campaign-header"><div class="program-campaign-header__inner">
             <div class="program-campaign-cover">${campaignCoverHtml(program, heroData, sliderImages)}</div>
-            <div class="program-campaign-overview"><div class="program-campaign-summary"><span class="program-campaign-category">${escapeHtml(category)}</span><h1>${escapeHtml(title)}</h1>${subtitle ? `<p>${escapeHtml(subtitle)}</p>` : ''}${heroData.button_label && heroButtonUrl ? `<a class="program-campaign-summary__link" href="${escapeHtml(heroButtonUrl)}"${externalLinkAttrs(heroButtonUrl)}>${escapeHtml(heroData.button_label)} →</a>` : ''}<div class="program-campaign-owner"><span aria-hidden="true">DDU</span><div><strong>Dompet Dana Umat</strong><small>Program resmi dan terverifikasi</small></div></div></div><div id="dukungan-program" class="program-campaign-top-donation">${campaignProgressHtml(progress?.data || {}, action)}</div></div>
+            <div class="program-campaign-overview"><div class="program-campaign-summary"><span class="program-campaign-category">${escapeHtml(category)}</span><h1>${escapeHtml(title)}</h1>${subtitle ? `<p>${escapeHtml(subtitle)}</p>` : ''}${heroData.button_label && heroButtonUrl ? `<a class="program-campaign-summary__link" href="${escapeHtml(heroButtonUrl)}"${externalLinkAttrs(heroButtonUrl)}>${escapeHtml(heroData.button_label)} →</a>` : ''}<div class="program-campaign-owner"><span aria-hidden="true">DDU</span><div><strong>Dompet Dana Umat</strong><small>Program resmi dan terverifikasi</small></div></div></div><div id="dukungan-program" class="program-campaign-top-donation">${campaignSideDonationHtml(program, cta?.data || {}, progress?.data || {}, action)}</div></div>
         </div></header>
         ${tabs}
         <div class="program-campaign-layout">
             <div id="detail-program" class="program-campaign-main"><div class="program-campaign-story">${story}</div></div>
         </div>
-        ${ctaHtml ? `<div class="program-campaign-final-cta">${ctaHtml}</div>` : ''}
         <a class="program-campaign-mobile-donate" href="${escapeHtml(action.url)}"${externalLinkAttrs(action.url)}>${escapeHtml(action.label)}</a>
     </article>`;
 }
@@ -137,10 +145,9 @@ function renderLegacyProgram(program, sliderImages) {
     const heroMedia = programHeroMediaHtml(program, sliderImages);
     const action = { label: /\bwakaf\b/i.test(program.title) ? 'Wakaf Sekarang' : 'Donasi Sekarang', url: whatsappUrl };
     return `<article class="program-campaign program-campaign--legacy">
-        <header class="program-campaign-header"><div class="program-campaign-header__inner"><div class="program-campaign-cover">${heroMedia || '<div class="program-campaign-cover__placeholder" aria-hidden="true"></div>'}</div><div class="program-campaign-overview"><div class="program-campaign-summary"><span class="program-campaign-category">${escapeHtml(program.category || 'Program Kebaikan')}</span><h1>${escapeHtml(program.hero_title || program.title)}</h1>${program.hero_subtitle || program.excerpt ? `<p>${escapeHtml(program.hero_subtitle || program.excerpt)}</p>` : ''}<div class="program-campaign-owner"><span aria-hidden="true">DDU</span><div><strong>Dompet Dana Umat</strong><small>Program resmi dan terverifikasi</small></div></div></div><div id="dukungan-program" class="program-campaign-top-donation">${campaignProgressHtml({}, action)}</div></div></div></header>
+        <header class="program-campaign-header"><div class="program-campaign-header__inner"><div class="program-campaign-cover">${heroMedia || '<div class="program-campaign-cover__placeholder" aria-hidden="true"></div>'}</div><div class="program-campaign-overview"><div class="program-campaign-summary"><span class="program-campaign-category">${escapeHtml(program.category || 'Program Kebaikan')}</span><h1>${escapeHtml(program.hero_title || program.title)}</h1>${program.hero_subtitle || program.excerpt ? `<p>${escapeHtml(program.hero_subtitle || program.excerpt)}</p>` : ''}<div class="program-campaign-owner"><span aria-hidden="true">DDU</span><div><strong>Dompet Dana Umat</strong><small>Program resmi dan terverifikasi</small></div></div></div><div id="dukungan-program" class="program-campaign-top-donation">${campaignSideDonationHtml(program, { qr_image: qrImage, whatsapp_number: wa, button_label: action.label }, {}, action)}</div></div></div></header>
         <nav class="program-campaign-tabs program-campaign-tabs--primary" aria-label="Menu informasi program"><a href="#detail-program">Detail</a><a href="#dukungan-program">Donatur</a></nav>
         <div class="program-campaign-layout"><div id="detail-program" class="program-campaign-main"><div class="program-campaign-legacy-content mock-content">${program.content || '<h2>Tentang Program</h2><p>Konten belum tersedia.</p>'}</div></div></div>
-        ${qrImage ? `<section class="program-campaign-legacy-qr"><div><span class="program-section-eyebrow">Scan Donasi</span><h2>QR/Barcode Resmi</h2><p>Pastikan tujuan pembayaran sesuai informasi resmi DDU.</p></div><a href="${escapeHtml(qrImage)}" target="_blank" rel="noopener noreferrer"><img src="${escapeHtml(qrImage)}" alt="QR atau barcode donasi ${escapeHtml(program.title)}" loading="lazy"></a></section>` : ''}
         <a class="program-campaign-mobile-donate" href="${escapeHtml(action.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(action.label)}</a>
     </article>`;
 }
