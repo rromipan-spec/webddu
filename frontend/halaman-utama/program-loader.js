@@ -125,15 +125,17 @@ function renderCampaignProgram(program, sections, sliderImages) {
     const tabs = `<nav class="program-campaign-tabs program-campaign-tabs--primary" aria-label="Menu informasi program"><a href="#detail-program">Detail</a>${firstGallery >= 0 ? '<a href="#kabar-program">Kabar Terbaru</a>' : ''}<a href="#dukungan-program">Donatur${donors > 0 ? ` ${formatNumber(donors)}` : ''}</a>${firstImpact >= 0 ? '<a href="#dampak-program">Dampak</a>' : ''}${firstFaq >= 0 ? '<a href="#faq-program">FAQ</a>' : ''}</nav>`;
     const contentHeading = `<div class="program-campaign-summary program-campaign-summary--content"><span class="program-campaign-category">${escapeHtml(category)}</span><h1>${escapeHtml(title)}</h1>${subtitle ? `<p>${escapeHtml(subtitle)}</p>` : ''}${heroData.button_label && heroButtonUrl ? `<a class="program-campaign-summary__link" href="${escapeHtml(heroButtonUrl)}"${externalLinkAttrs(heroButtonUrl)}>${escapeHtml(heroData.button_label)} →</a>` : ''}</div>`;
     const sideOwner = '<div class="program-campaign-side-owner"><span aria-hidden="true">DDU</span><div><strong>Dompet Dana Umat</strong><small>Program resmi dan terverifikasi</small></div></div>';
+    const donationCard = campaignSideDonationHtml(program, cta?.data || {}, progress?.data || {}, action);
 
     return `<article class="program-campaign">
         <header class="program-campaign-header"><div class="program-campaign-header__inner">
             <div class="program-campaign-cover">${campaignCoverHtml(program, heroData, sliderImages)}</div>
-            <div class="program-campaign-overview program-campaign-overview--donation">${sideOwner}<div id="dukungan-program" class="program-campaign-top-donation">${campaignSideDonationHtml(program, cta?.data || {}, progress?.data || {}, action)}</div></div>
+            <div class="program-campaign-overview program-campaign-overview--donation">${sideOwner}<div id="dukungan-program" class="program-campaign-top-donation">${donationCard}</div></div>
         </div></header>
         ${tabs}
         <div class="program-campaign-layout">
             <div id="detail-program" class="program-campaign-main">${contentHeading}<div class="program-campaign-story">${story}</div></div>
+            <aside class="program-campaign-aside" data-campaign-sticky-cta aria-label="Donasi program" aria-hidden="true">${donationCard}</aside>
         </div>
         <a class="program-campaign-mobile-donate" href="${escapeHtml(action.url)}"${externalLinkAttrs(action.url)}>${escapeHtml(action.label)}</a>
     </article>`;
@@ -151,10 +153,11 @@ function renderLegacyProgram(program, sliderImages) {
     const subtitle = program.hero_subtitle || program.excerpt || '';
     const contentHeading = `<div class="program-campaign-summary program-campaign-summary--content"><span class="program-campaign-category">${escapeHtml(category)}</span><h1>${escapeHtml(title)}</h1>${subtitle ? `<p>${escapeHtml(subtitle)}</p>` : ''}</div>`;
     const sideOwner = '<div class="program-campaign-side-owner"><span aria-hidden="true">DDU</span><div><strong>Dompet Dana Umat</strong><small>Program resmi dan terverifikasi</small></div></div>';
+    const donationCard = campaignSideDonationHtml(program, { qr_image: qrImage, whatsapp_number: wa, button_label: action.label }, {}, action);
     return `<article class="program-campaign program-campaign--legacy">
-        <header class="program-campaign-header"><div class="program-campaign-header__inner"><div class="program-campaign-cover">${heroMedia || '<div class="program-campaign-cover__placeholder" aria-hidden="true"></div>'}</div><div class="program-campaign-overview program-campaign-overview--donation">${sideOwner}<div id="dukungan-program" class="program-campaign-top-donation">${campaignSideDonationHtml(program, { qr_image: qrImage, whatsapp_number: wa, button_label: action.label }, {}, action)}</div></div></div></header>
+        <header class="program-campaign-header"><div class="program-campaign-header__inner"><div class="program-campaign-cover">${heroMedia || '<div class="program-campaign-cover__placeholder" aria-hidden="true"></div>'}</div><div class="program-campaign-overview program-campaign-overview--donation">${sideOwner}<div id="dukungan-program" class="program-campaign-top-donation">${donationCard}</div></div></div></header>
         <nav class="program-campaign-tabs program-campaign-tabs--primary" aria-label="Menu informasi program"><a href="#detail-program">Detail</a><a href="#dukungan-program">Donatur</a></nav>
-        <div class="program-campaign-layout"><div id="detail-program" class="program-campaign-main">${contentHeading}<div class="program-campaign-legacy-content mock-content">${program.content || '<h2>Tentang Program</h2><p>Konten belum tersedia.</p>'}</div></div></div>
+        <div class="program-campaign-layout"><div id="detail-program" class="program-campaign-main">${contentHeading}<div class="program-campaign-legacy-content mock-content">${program.content || '<h2>Tentang Program</h2><p>Konten belum tersedia.</p>'}</div></div><aside class="program-campaign-aside" data-campaign-sticky-cta aria-label="Donasi program" aria-hidden="true">${donationCard}</aside></div>
         <a class="program-campaign-mobile-donate" href="${escapeHtml(action.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(action.label)}</a>
     </article>`;
 }
@@ -545,7 +548,27 @@ function initProgramHeroVideo(container) {
 
 function setupPage() {
     const top = document.querySelector('.back-to-top');
-    window.addEventListener('scroll', () => top?.classList.toggle('visible', scrollY > 300));
+    const campaign = document.querySelector('.program-campaign');
+    const campaignHeader = campaign?.querySelector('.program-campaign-header');
+    const stickyCta = campaign?.querySelector('[data-campaign-sticky-cta]');
+    const desktopCampaign = matchMedia('(min-width: 961px)');
+    let framePending = false;
+    const updateFloatingUi = () => {
+        framePending = false;
+        top?.classList.toggle('visible', scrollY > 300);
+        const showStickyCta = Boolean(desktopCampaign.matches && campaignHeader && campaignHeader.getBoundingClientRect().bottom <= 150);
+        campaign?.classList.toggle('is-campaign-aside-visible', showStickyCta);
+        stickyCta?.setAttribute('aria-hidden', String(!showStickyCta));
+    };
+    const scheduleFloatingUi = () => {
+        if (framePending) return;
+        framePending = true;
+        requestAnimationFrame(updateFloatingUi);
+    };
+    window.addEventListener('scroll', scheduleFloatingUi, { passive: true });
+    window.addEventListener('resize', scheduleFloatingUi);
+    desktopCampaign.addEventListener?.('change', scheduleFloatingUi);
+    updateFloatingUi();
     top?.addEventListener('click', event => { event.preventDefault(); scrollTo({ top: 0, behavior: 'smooth' }); });
     const observer = new IntersectionObserver(entries => entries.forEach(entry => entry.isIntersecting && entry.target.classList.add('visible')), { threshold: .1 });
     document.querySelectorAll('.fade-in').forEach(element => observer.observe(element));

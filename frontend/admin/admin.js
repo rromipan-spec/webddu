@@ -621,10 +621,10 @@ function updatePreview() {
 }
 
 const friendlyProgramSteps = [
-    ['Informasi Program', 'Judul, kategori, dan ringkasan'],
-    ['Media Program', 'Sampul, galeri, atau video'],
-    ['Konten Landing Page', 'Susun cerita dan bagian halaman'],
-    ['Pengaturan Donasi', 'WhatsApp dan QR program'],
+    ['Informasi Program', 'Judul, kategori, dan ringkasan utama'],
+    ['Media Utama', 'Foto atau video di sisi kiri halaman'],
+    ['Donasi & CTA', 'Target, QR/barcode, dan WhatsApp di sisi kanan'],
+    ['Cerita Program', 'Paragraf, dokumentasi, dampak, dan FAQ'],
     ['Tampilan di Beranda', 'Atur urutan kartu program'],
     ['SEO & Publikasi', 'Pencarian, jadwal, dan status']
 ];
@@ -669,9 +669,94 @@ function friendlyProgramCurrency(value) {
     return `Rp ${Math.max(0, Number(value) || 0).toLocaleString('id-ID')}`;
 }
 
+function permanentProgramSection(type) {
+    let section = programSections.find(item => item.type === type);
+    if (section) return section;
+    section = createProgramSection(type);
+    if (type === 'hero') programSections.unshift(section);
+    else if (type === 'progress') {
+        const heroIndex = programSections.findIndex(item => item.type === 'hero');
+        programSections.splice(Math.max(0, heroIndex + 1), 0, section);
+    } else programSections.push(section);
+    return section;
+}
+
+function syncPermanentProgramFormToSections() {
+    const hero = permanentProgramSection('hero');
+    const progress = permanentProgramSection('progress');
+    const cta = permanentProgramSection('cta');
+    const mediaType = document.getElementById('prog-hero-media-type')?.value || 'images';
+    const cover = document.getElementById('prog-image-url')?.value || '';
+
+    hero.visible = true;
+    hero.data.title = document.getElementById('prog-title')?.value.trim() || '';
+    hero.data.subtitle = document.getElementById('prog-excerpt')?.value.trim() || '';
+    hero.data.eyebrow = document.getElementById('prog-category')?.value.trim() || 'Program Kebaikan';
+    hero.data.media_alt = document.getElementById('prog-image-alt')?.value.trim() || hero.data.title;
+    hero.data.poster_url = cover;
+    hero.data.mobile_media_url = '';
+    hero.data.button_label = '';
+    hero.data.button_url = '';
+    hero.data.whole_link = '';
+    if (mediaType === 'images') {
+        hero.data.media_type = 'image';
+        hero.data.media_url = '';
+    } else if (mediaType === 'video') {
+        hero.data.media_type = 'video';
+        hero.data.media_url = document.getElementById('prog-hero-video-url')?.value || '';
+    } else {
+        hero.data.media_type = mediaType;
+        hero.data.media_url = document.getElementById('prog-hero-video-link')?.value.trim() || '';
+    }
+
+    progress.visible = true;
+    progress.data.target = Math.max(0, Number(document.getElementById('prog-campaign-target')?.value) || 0);
+    progress.data.collected = Math.max(0, Number(document.getElementById('prog-campaign-collected')?.value) || 0);
+    progress.data.donors = Math.max(0, Number(document.getElementById('prog-campaign-donors')?.value) || 0);
+    progress.data.deadline = document.getElementById('prog-campaign-deadline')?.value || '';
+    progress.data.button_label = '';
+    progress.data.button_url = '';
+
+    cta.visible = true;
+    cta.data.eyebrow = document.getElementById('prog-campaign-cta-eyebrow')?.value.trim() || '';
+    cta.data.title = document.getElementById('prog-campaign-cta-title')?.value.trim() || '';
+    cta.data.subtitle = document.getElementById('prog-campaign-cta-description')?.value.trim() || '';
+    cta.data.button_label = document.getElementById('prog-campaign-button-label')?.value.trim() || 'Donasi Sekarang';
+    cta.data.button_url = '';
+    cta.data.whatsapp_number = document.getElementById('prog-wa')?.value.trim() || '';
+    cta.data.whatsapp_message = document.getElementById('prog-wa-message')?.value.trim() || '';
+    cta.data.qr_image = document.getElementById('prog-donation-qr-image')?.value || '';
+    cta.data.show_qr = document.getElementById('prog-campaign-show-qr')?.checked !== false;
+    cta.data.show_whatsapp = document.getElementById('prog-campaign-show-whatsapp')?.checked !== false;
+}
+
+function hydratePermanentProgramControls() {
+    const progress = programSections.find(section => section.type === 'progress');
+    const cta = programSections.find(section => section.type === 'cta');
+    const values = {
+        'prog-campaign-target': progress?.data.target || '',
+        'prog-campaign-collected': progress?.data.collected || '',
+        'prog-campaign-donors': progress?.data.donors || '',
+        'prog-campaign-deadline': progress?.data.deadline || '',
+        'prog-campaign-cta-eyebrow': cta?.data.eyebrow || 'Langkah Kebaikan',
+        'prog-campaign-cta-title': cta?.data.title || 'Dukung Program Ini',
+        'prog-campaign-cta-description': cta?.data.subtitle || cta?.data.body || 'Setiap dukungan membantu program ini menjangkau lebih banyak penerima manfaat.',
+        'prog-campaign-button-label': cta?.data.button_label || 'Donasi Sekarang'
+    };
+    Object.entries(values).forEach(([id, value]) => {
+        const input = document.getElementById(id);
+        if (input) input.value = value;
+    });
+    const showQr = document.getElementById('prog-campaign-show-qr');
+    const showWhatsapp = document.getElementById('prog-campaign-show-whatsapp');
+    if (showQr) showQr.checked = cta?.data.show_qr !== false;
+    if (showWhatsapp) showWhatsapp.checked = cta?.data.show_whatsapp !== false;
+}
+
 function updateFriendlyProgramPreview() {
     const shell = document.querySelector('.program-editor-shell');
     if (!shell) return;
+    syncPermanentProgramFormToSections();
     const title = document.getElementById('prog-title')?.value.trim() || 'Judul program Anda';
     const excerpt = document.getElementById('prog-excerpt')?.value.trim() || 'Ringkasan singkat program akan tampil di area ini.';
     const category = document.getElementById('prog-category')?.value.trim() || 'Program Kebaikan';
@@ -687,7 +772,11 @@ function updateFriendlyProgramPreview() {
     const target = Math.max(0, Number(progress?.data.target) || 0);
     const collected = Math.max(0, Number(progress?.data.collected) || 0);
     const percentage = target ? Math.min(100, Math.round((collected / target) * 100)) : 0;
-    const buttonLabel = hero?.data.button_label?.trim() || cta?.data.button_label?.trim() || 'Donasi Sekarang';
+    const buttonLabel = cta?.data.button_label?.trim() || 'Donasi Sekarang';
+    const donationTitle = cta?.data.title?.trim() || 'Dukung Program Ini';
+    const donationDescription = cta?.data.subtitle?.trim() || cta?.data.body?.trim() || 'Setiap dukungan membantu program ini menjangkau lebih banyak penerima manfaat.';
+    const hasQr = cta?.data.show_qr !== false && Boolean(cta?.data.qr_image || document.getElementById('prog-donation-qr-image')?.value);
+    const showWhatsapp = cta?.data.show_whatsapp !== false;
     const status = document.getElementById('prog-status')?.value || 'draft';
 
     shell.querySelectorAll('[data-friendly-preview-title]').forEach(node => { node.textContent = previewTitle; });
@@ -702,6 +791,10 @@ function updateFriendlyProgramPreview() {
     shell.querySelectorAll('[data-friendly-preview-percent]').forEach(node => { node.textContent = `${percentage}%`; });
     shell.querySelectorAll('[data-friendly-preview-collected]').forEach(node => { node.textContent = friendlyProgramCurrency(collected); });
     shell.querySelectorAll('[data-friendly-preview-target]').forEach(node => { node.textContent = friendlyProgramCurrency(target); });
+    shell.querySelectorAll('[data-friendly-preview-donation-title]').forEach(node => { node.textContent = donationTitle; });
+    shell.querySelectorAll('[data-friendly-preview-donation-description]').forEach(node => { node.textContent = donationDescription; });
+    shell.querySelectorAll('[data-friendly-preview-qr]').forEach(node => { node.hidden = !hasQr; });
+    shell.querySelectorAll('[data-friendly-preview-whatsapp]').forEach(node => { node.hidden = !showWhatsapp; });
     const badge = shell.querySelector('[data-friendly-preview-status]');
     if (badge) {
         badge.textContent = status === 'published' ? 'Siap dipublikasikan' : 'Masih berupa draft';
@@ -774,7 +867,7 @@ function setupFriendlyProgramEditor() {
                 <div class="program-editor-preview__header"><div><span class="admin-eyebrow">Preview Tampilan</span><h3>Hasil sementara</h3></div><div class="program-editor-device-switch"><button type="button" class="is-active" data-friendly-preview-device="desktop">Desktop</button><button type="button" data-friendly-preview-device="mobile">Mobile</button></div></div>
                 <div class="program-preview-status" data-friendly-preview-status>Masih berupa draft</div>
                 <section class="program-preview-block"><div class="program-preview-block__title"><b>Kartu di Beranda</b><small>Yang dilihat pengunjung di daftar program</small></div><article class="friendly-program-card"><div class="friendly-program-card__image" data-friendly-preview-image><span data-friendly-preview-category>Program Kebaikan</span></div><div class="friendly-program-card__body"><h4 data-friendly-preview-title>Judul program Anda</h4><p data-friendly-preview-excerpt>Ringkasan singkat program akan tampil di area ini.</p><div class="friendly-program-progress"><i data-friendly-preview-progress></i></div><div class="friendly-program-amount"><strong data-friendly-preview-collected>Rp 0</strong><span><b data-friendly-preview-percent>0%</b> dari <span data-friendly-preview-target>Rp 0</span></span></div><button type="button" data-friendly-preview-button>Donasi Sekarang</button></div></article></section>
-                <section class="program-preview-block"><div class="program-preview-block__title"><b>Landing Page</b><small>Tampilan pembuka halaman program</small></div><div class="friendly-program-landing"><div class="friendly-program-landing__nav"><span>DDU</span><i></i><i></i><b>Donasi</b></div><div class="friendly-program-landing__hero" data-friendly-preview-image><div><span data-friendly-preview-category>Program Kebaikan</span><h4 data-friendly-preview-title>Judul program Anda</h4><p data-friendly-preview-excerpt>Ringkasan program akan tampil di sini.</p><button type="button" data-friendly-preview-button>Donasi Sekarang</button></div></div><div class="friendly-program-landing__facts"><span></span><span></span><span></span><span></span></div></div></section>
+                <section class="program-preview-block"><div class="program-preview-block__title"><b>Landing Page Permanen</b><small>Sesuai halaman program publik terbaru</small></div><div class="friendly-program-landing"><div class="friendly-program-landing__nav"><span>DDU</span><i></i><i></i><b>Donasi</b></div><div class="friendly-program-landing__top"><div class="friendly-program-landing__media" data-friendly-preview-image><span>Media utama</span></div><div class="friendly-program-landing__donation"><small>Dompet Dana Umat</small><strong data-friendly-preview-donation-title>Dukung Program Ini</strong><p data-friendly-preview-donation-description>Setiap dukungan membantu program ini menjangkau lebih banyak penerima manfaat.</p><div class="friendly-program-landing__progress"><b data-friendly-preview-collected>Rp 0</b><span><i data-friendly-preview-progress></i></span><small><b data-friendly-preview-percent>0%</b> dari <span data-friendly-preview-target>Rp 0</span></small></div><div class="friendly-program-landing__methods"><span data-friendly-preview-qr>QR</span><span data-friendly-preview-whatsapp>WhatsApp</span></div><button type="button" data-friendly-preview-button>Donasi Sekarang</button></div></div><div class="friendly-program-landing__tabs"><i></i><i></i><i></i></div><div class="friendly-program-landing__summary"><span data-friendly-preview-category>Program Kebaikan</span><h4 data-friendly-preview-title>Judul program Anda</h4><p data-friendly-preview-excerpt>Ringkasan program akan tampil di sini.</p></div></div></section>
             </aside>
         </div>`;
 
@@ -805,8 +898,31 @@ function setupFriendlyProgramEditor() {
     panels[0].insertAdjacentHTML('beforeend', '<div class="program-editor-help-card"><strong>Tips ringkasan yang baik</strong><p>Jelaskan siapa penerima manfaat, kebutuhan utama, dan dampak donasi dalam 1–2 kalimat yang mudah dipahami.</p></div>');
 
     [coverGroup, heroMedia].forEach(node => node && panels[1].append(node));
-    if (builder) panels[2].append(builder);
-    if (donation) panels[3].append(donation);
+    panels[2].insertAdjacentHTML('beforeend', `
+        <section id="program-campaign-settings" class="program-campaign-admin-settings" aria-labelledby="program-campaign-settings-title">
+            <div class="program-campaign-admin-settings__heading">
+                <div><span class="admin-eyebrow">Kotak donasi atas</span><h3 id="program-campaign-settings-title">Isi CTA di Samping Media</h3><p>Bagian ini selalu tampil di sisi kanan foto/video pada desktop dan tepat di bawah media pada mobile.</p></div>
+                <div class="program-layout-map" aria-label="Posisi media dan CTA pada halaman"><span>Media utama</span><strong>CTA donasi</strong><i>Judul dan cerita berada di bawah</i></div>
+            </div>
+            <div class="program-campaign-admin-grid">
+                <label>Target donasi (Rp)<input type="number" id="prog-campaign-target" min="0" step="1000" placeholder="Contoh: 50000000"></label>
+                <label>Sudah terkumpul (Rp)<input type="number" id="prog-campaign-collected" min="0" step="1000" placeholder="Contoh: 15000000"></label>
+                <label>Jumlah donatur (Opsional)<input type="number" id="prog-campaign-donors" min="0" step="1" placeholder="0"></label>
+                <label>Batas waktu (Opsional)<input type="date" id="prog-campaign-deadline"></label>
+                <label>Label kecil CTA<input type="text" id="prog-campaign-cta-eyebrow" maxlength="80" placeholder="Langkah Kebaikan"></label>
+                <label>Judul CTA<input type="text" id="prog-campaign-cta-title" maxlength="160" placeholder="Dukung Program Ini"></label>
+                <label class="program-editor-field--wide">Penjelasan singkat CTA<textarea id="prog-campaign-cta-description" rows="3" maxlength="500" placeholder="Jelaskan secara singkat manfaat dari dukungan donatur."></textarea></label>
+                <label>Tulisan tombol<input type="text" id="prog-campaign-button-label" maxlength="80" placeholder="Donasi Sekarang"></label>
+                <div class="program-campaign-admin-toggles"><label><input type="checkbox" id="prog-campaign-show-qr" checked> Tampilkan QR/barcode</label><label><input type="checkbox" id="prog-campaign-show-whatsapp" checked> Tampilkan WhatsApp</label></div>
+            </div>
+        </section>`);
+    if (donation) panels[2].append(donation);
+    if (builder) panels[3].append(builder);
+
+    ['hero', 'progress', 'cta'].forEach(type => {
+        const choice = builder?.querySelector(`[data-program-section-choice="${type}"]`);
+        if (choice) choice.hidden = true;
+    });
 
     panels[4].insertAdjacentHTML('beforeend', '<div class="program-homepage-setting"><div><span class="program-setting-icon">★</span><div><strong>Tampilkan sebagai Program Unggulan</strong><p>Isi nomor urutan untuk menempatkan program pada bagian utama beranda. Angka paling kecil tampil lebih dahulu.</p></div></div></div>');
     if (featuredGroup) panels[4].append(featuredGroup);
@@ -835,12 +951,33 @@ function setupFriendlyProgramEditor() {
             item.setAttribute('aria-pressed', String(active));
         });
     }));
+    panels[0].addEventListener('input', () => {
+        syncPermanentProgramFormToSections();
+        scheduleProgramBuilderAutosave();
+    });
+    panels[1].addEventListener('input', () => {
+        syncPermanentProgramFormToSections();
+        scheduleProgramBuilderAutosave();
+    });
+    panels[1].addEventListener('change', () => {
+        syncPermanentProgramFormToSections();
+        scheduleProgramBuilderAutosave();
+    });
+    panels[2].addEventListener('input', () => {
+        syncPermanentProgramFormToSections();
+        scheduleProgramBuilderAutosave();
+    });
+    panels[2].addEventListener('change', () => {
+        syncPermanentProgramFormToSections();
+        scheduleProgramBuilderAutosave();
+    });
     document.querySelectorAll('[data-program-sidebar-target]').forEach(button => button.addEventListener('click', () => {
         window.switchTab('programs-admin');
         document.querySelectorAll('[data-program-sidebar-target]').forEach(item => item.classList.toggle('is-active', item === button));
         document.getElementById(button.dataset.programSidebarTarget)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }));
     form.addEventListener('change', updateFriendlyProgramPreview);
+    hydratePermanentProgramControls();
     setFriendlyProgramStep(1, { scroll: false });
     updateFriendlyProgramPreview();
 }
@@ -2313,12 +2450,17 @@ function renderProgramSectionItems(section) {
 function renderProgramSectionBuilder() {
     const list = document.getElementById('program-section-list');
     if (!list) return;
-    document.getElementById('program-section-count').textContent = `${programSections.length} bagian`;
-    if (!programSections.length) {
-        list.innerHTML = '<div class="program-section-empty"><strong>Halaman program masih kosong.</strong><br>Pilih susunan siap pakai di atas atau tambahkan bagian sendiri.</div>';
+    const permanentTypes = new Set(['hero', 'progress', 'cta']);
+    const entries = programSections.map((section, index) => ({ section, index }));
+    const displayedEntries = document.body.classList.contains('program-canvas-studio')
+        ? entries
+        : entries.filter(({ section }) => !permanentTypes.has(section.type));
+    document.getElementById('program-section-count').textContent = `${displayedEntries.length} bagian cerita`;
+    if (!displayedEntries.length) {
+        list.innerHTML = '<div class="program-section-empty"><strong>Cerita program masih kosong.</strong><br>Tambahkan paragraf, galeri, dampak, FAQ, atau kanvas fleksibel.</div>';
         return;
     }
-    list.innerHTML = programSections.map((section, index) => {
+    list.innerHTML = displayedEntries.map(({ section, index }) => {
         const meta = programSectionMeta[section.type];
         return `<article class="program-section-card program-section-card--${escapeHtml(section.type)}${section.visible ? '' : ' is-hidden-section'}${collapsedProgramSections.has(section.key) ? ' is-collapsed' : ''}" data-section-key="${escapeHtml(section.key)}" draggable="true">
             <header class="program-section-card__header"><div class="program-section-card__identity"><span class="program-section-card__number">${String(index + 1).padStart(2, '0')}</span>${programSectionIllustration(section.type)}<div class="program-section-card__copy"><strong>${escapeHtml(meta[0])}</strong><small>${escapeHtml(section.data.title || meta[1])}</small></div></div>
@@ -2422,6 +2564,7 @@ function syncProgramLegacyFieldsFromSections() {
         document.getElementById('prog-wa-message').value = '';
         setDonationQrImage('prog', '');
     }
+    hydratePermanentProgramControls();
 }
 
 async function uploadProgramSectionFiles(files) {
@@ -3018,7 +3161,10 @@ function setupProgramSectionBuilder() {
 
 async function saveForm(event, resource) {
     event.preventDefault();
-    if (resource === 'programs') syncProgramLegacyFieldsFromSections();
+    if (resource === 'programs') {
+        syncPermanentProgramFormToSections();
+        syncProgramLegacyFieldsFromSections();
+    }
     updatePreview();
     const prefix = resource === 'posts' ? 'post' : 'prog';
     const title = document.getElementById(`${prefix}-title`).value.trim();
