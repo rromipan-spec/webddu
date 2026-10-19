@@ -123,15 +123,17 @@ function renderCampaignProgram(program, sections, sliderImages) {
     const heroButtonUrl = safeSectionHref(heroData.button_url);
     const donors = Math.max(0, Number(progress?.data?.donors) || 0);
     const tabs = `<nav class="program-campaign-tabs program-campaign-tabs--primary" aria-label="Menu informasi program"><a href="#detail-program">Detail</a>${firstGallery >= 0 ? '<a href="#kabar-program">Kabar Terbaru</a>' : ''}<a href="#dukungan-program">Donatur${donors > 0 ? ` ${formatNumber(donors)}` : ''}</a>${firstImpact >= 0 ? '<a href="#dampak-program">Dampak</a>' : ''}${firstFaq >= 0 ? '<a href="#faq-program">FAQ</a>' : ''}</nav>`;
+    const contentHeading = `<div class="program-campaign-summary program-campaign-summary--content"><span class="program-campaign-category">${escapeHtml(category)}</span><h1>${escapeHtml(title)}</h1>${subtitle ? `<p>${escapeHtml(subtitle)}</p>` : ''}${heroData.button_label && heroButtonUrl ? `<a class="program-campaign-summary__link" href="${escapeHtml(heroButtonUrl)}"${externalLinkAttrs(heroButtonUrl)}>${escapeHtml(heroData.button_label)} →</a>` : ''}</div>`;
+    const sideOwner = '<div class="program-campaign-side-owner"><span aria-hidden="true">DDU</span><div><strong>Dompet Dana Umat</strong><small>Program resmi dan terverifikasi</small></div></div>';
 
     return `<article class="program-campaign">
         <header class="program-campaign-header"><div class="program-campaign-header__inner">
             <div class="program-campaign-cover">${campaignCoverHtml(program, heroData, sliderImages)}</div>
-            <div class="program-campaign-overview"><div class="program-campaign-summary"><span class="program-campaign-category">${escapeHtml(category)}</span><h1>${escapeHtml(title)}</h1>${subtitle ? `<p>${escapeHtml(subtitle)}</p>` : ''}${heroData.button_label && heroButtonUrl ? `<a class="program-campaign-summary__link" href="${escapeHtml(heroButtonUrl)}"${externalLinkAttrs(heroButtonUrl)}>${escapeHtml(heroData.button_label)} →</a>` : ''}<div class="program-campaign-owner"><span aria-hidden="true">DDU</span><div><strong>Dompet Dana Umat</strong><small>Program resmi dan terverifikasi</small></div></div></div><div id="dukungan-program" class="program-campaign-top-donation">${campaignSideDonationHtml(program, cta?.data || {}, progress?.data || {}, action)}</div></div>
+            <div class="program-campaign-overview program-campaign-overview--donation">${sideOwner}<div id="dukungan-program" class="program-campaign-top-donation">${campaignSideDonationHtml(program, cta?.data || {}, progress?.data || {}, action)}</div></div>
         </div></header>
         ${tabs}
         <div class="program-campaign-layout">
-            <div id="detail-program" class="program-campaign-main"><div class="program-campaign-story">${story}</div></div>
+            <div id="detail-program" class="program-campaign-main">${contentHeading}<div class="program-campaign-story">${story}</div></div>
         </div>
         <a class="program-campaign-mobile-donate" href="${escapeHtml(action.url)}"${externalLinkAttrs(action.url)}>${escapeHtml(action.label)}</a>
     </article>`;
@@ -144,10 +146,15 @@ function renderLegacyProgram(program, sliderImages) {
     const qrImage = donationQrUrl(program.donation_qr_image);
     const heroMedia = programHeroMediaHtml(program, sliderImages);
     const action = { label: /\bwakaf\b/i.test(program.title) ? 'Wakaf Sekarang' : 'Donasi Sekarang', url: whatsappUrl };
+    const category = program.category || 'Program Kebaikan';
+    const title = program.hero_title || program.title;
+    const subtitle = program.hero_subtitle || program.excerpt || '';
+    const contentHeading = `<div class="program-campaign-summary program-campaign-summary--content"><span class="program-campaign-category">${escapeHtml(category)}</span><h1>${escapeHtml(title)}</h1>${subtitle ? `<p>${escapeHtml(subtitle)}</p>` : ''}</div>`;
+    const sideOwner = '<div class="program-campaign-side-owner"><span aria-hidden="true">DDU</span><div><strong>Dompet Dana Umat</strong><small>Program resmi dan terverifikasi</small></div></div>';
     return `<article class="program-campaign program-campaign--legacy">
-        <header class="program-campaign-header"><div class="program-campaign-header__inner"><div class="program-campaign-cover">${heroMedia || '<div class="program-campaign-cover__placeholder" aria-hidden="true"></div>'}</div><div class="program-campaign-overview"><div class="program-campaign-summary"><span class="program-campaign-category">${escapeHtml(program.category || 'Program Kebaikan')}</span><h1>${escapeHtml(program.hero_title || program.title)}</h1>${program.hero_subtitle || program.excerpt ? `<p>${escapeHtml(program.hero_subtitle || program.excerpt)}</p>` : ''}<div class="program-campaign-owner"><span aria-hidden="true">DDU</span><div><strong>Dompet Dana Umat</strong><small>Program resmi dan terverifikasi</small></div></div></div><div id="dukungan-program" class="program-campaign-top-donation">${campaignSideDonationHtml(program, { qr_image: qrImage, whatsapp_number: wa, button_label: action.label }, {}, action)}</div></div></div></header>
+        <header class="program-campaign-header"><div class="program-campaign-header__inner"><div class="program-campaign-cover">${heroMedia || '<div class="program-campaign-cover__placeholder" aria-hidden="true"></div>'}</div><div class="program-campaign-overview program-campaign-overview--donation">${sideOwner}<div id="dukungan-program" class="program-campaign-top-donation">${campaignSideDonationHtml(program, { qr_image: qrImage, whatsapp_number: wa, button_label: action.label }, {}, action)}</div></div></div></header>
         <nav class="program-campaign-tabs program-campaign-tabs--primary" aria-label="Menu informasi program"><a href="#detail-program">Detail</a><a href="#dukungan-program">Donatur</a></nav>
-        <div class="program-campaign-layout"><div id="detail-program" class="program-campaign-main"><div class="program-campaign-legacy-content mock-content">${program.content || '<h2>Tentang Program</h2><p>Konten belum tersedia.</p>'}</div></div></div>
+        <div class="program-campaign-layout"><div id="detail-program" class="program-campaign-main">${contentHeading}<div class="program-campaign-legacy-content mock-content">${program.content || '<h2>Tentang Program</h2><p>Konten belum tersedia.</p>'}</div></div></div>
         <a class="program-campaign-mobile-donate" href="${escapeHtml(action.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(action.label)}</a>
     </article>`;
 }

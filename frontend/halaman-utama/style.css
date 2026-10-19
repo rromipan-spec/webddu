@@ -3706,6 +3706,54 @@ select {
     background: #fff;
 }
 
+.program-campaign-overview--donation {
+    padding: clamp(26px, 3vw, 42px);
+    background: linear-gradient(145deg, #FFFFFF, #F6F9FF);
+}
+
+.program-campaign-overview--donation .program-campaign-top-donation {
+    width: 100%;
+    padding: 0;
+}
+
+.program-campaign-side-owner {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 0 4px;
+}
+
+.program-campaign-side-owner > span {
+    display: grid;
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+    place-items: center;
+    color: #FFFFFF;
+    border-radius: 50%;
+    background: #0756D6;
+    font-size: .62rem;
+    font-weight: 750;
+}
+
+.program-campaign-side-owner strong,
+.program-campaign-side-owner small {
+    display: block;
+}
+
+.program-campaign-side-owner strong {
+    color: #172033;
+    font-size: .82rem;
+}
+
+.program-campaign-side-owner small {
+    margin-top: 2px;
+    color: #657187;
+    font-size: .68rem;
+}
+
 .program-campaign-summary {
     display: flex;
     flex-direction: column;
@@ -3743,6 +3791,9 @@ select {
 .program-campaign-owner small { display: block; }
 .program-campaign-owner strong { color: #172033; font-size: .92rem; }
 .program-campaign-owner small { margin-top: 3px; color: #657187; font-size: .76rem; }
+.program-campaign-summary--content { padding: 42px 34px 34px; border-bottom: 1px solid #E6EDF8; }
+.program-campaign-summary--content h1 { max-width: 760px; font-size: clamp(2rem, 4vw, 3.5rem); }
+.program-campaign-summary--content > p { max-width: 740px; -webkit-line-clamp: unset; }
 
 .program-campaign-layout { width: min(900px, calc(100% - 40px)); padding-block: 30px 82px; }
 .program-campaign-main { min-width: 0; overflow: hidden; border: 1px solid var(--campaign-border); border-radius: 24px; background: #fff; box-shadow: 0 18px 52px rgba(6, 59, 158, .07); }
@@ -3964,6 +4015,8 @@ select {
     .program-campaign-header__inner { border-radius: 20px; }
     .program-campaign-cover { aspect-ratio: 4 / 3; }
     .program-campaign-summary { padding: 26px 22px 30px; }
+    .program-campaign-overview--donation { padding: 22px; }
+    .program-campaign-summary--content { padding: 30px 22px 26px; }
     .program-campaign-summary h1 { font-size: clamp(1.8rem, 9vw, 2.65rem); }
     .program-campaign-summary > p { margin-top: 15px; font-size: .94rem; }
     .program-campaign-owner { margin-top: 22px; padding-top: 18px; }
