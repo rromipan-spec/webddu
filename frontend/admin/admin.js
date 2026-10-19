@@ -314,7 +314,7 @@ window.switchTab = tab => {
     document.getElementById('content-profile')?.classList.toggle('hidden', tab !== 'profile');
     document.getElementById('content-history')?.classList.toggle('hidden', tab !== 'history');
     document.getElementById('content-institution')?.classList.toggle('hidden', tab !== 'institution');
-    document.querySelector('.preview-group')?.classList.toggle('hidden', tab === 'dashboard' || tab === 'health' || tab === 'homepage' || tab === 'admins' || tab === 'profile' || tab === 'history' || tab === 'institution');
+    document.querySelector('.preview-group')?.classList.toggle('hidden', tab === 'dashboard' || tab === 'health' || tab === 'homepage' || tab === 'programs-admin' || tab === 'admins' || tab === 'profile' || tab === 'history' || tab === 'institution');
     document.getElementById('tab-dashboard')?.classList.toggle('active', tab === 'dashboard');
     document.getElementById('tab-health')?.classList.toggle('active', tab === 'health');
     document.getElementById('tab-homepage')?.classList.toggle('active', tab === 'homepage');
@@ -617,6 +617,232 @@ function updatePreview() {
         pHero.style.backgroundImage = heroImage ? `linear-gradient(rgba(6, 59, 158, .76), rgba(6, 59, 158, .76)), url("${heroImage.replace(/["\\]/g, '\\$&')}")` : '';
     }
     if (pBody) pBody.innerHTML = content || 'Mulai mengetik untuk melihat hasil...';
+    if (program) updateFriendlyProgramPreview();
+}
+
+const friendlyProgramSteps = [
+    ['Informasi Program', 'Judul, kategori, dan ringkasan'],
+    ['Media Program', 'Sampul, galeri, atau video'],
+    ['Konten Landing Page', 'Susun cerita dan bagian halaman'],
+    ['Pengaturan Donasi', 'WhatsApp dan QR program'],
+    ['Tampilan di Beranda', 'Atur urutan kartu program'],
+    ['SEO & Publikasi', 'Pencarian, jadwal, dan status']
+];
+
+let activeFriendlyProgramStep = 1;
+
+function friendlyProgramPanel(step, title, description) {
+    const panel = document.createElement('section');
+    panel.className = `program-editor-panel${step === 1 ? ' is-active' : ''}`;
+    panel.dataset.programEditorPanel = String(step);
+    panel.hidden = step !== 1;
+    panel.innerHTML = `<div class="program-editor-panel__heading"><span>${String(step).padStart(2, '0')}</span><div><h3>${escapeHtml(title)}</h3><p>${escapeHtml(description)}</p></div></div><div class="program-editor-panel__body"></div>`;
+    return panel;
+}
+
+function setFriendlyProgramStep(step, options = {}) {
+    const normalized = Math.max(1, Math.min(friendlyProgramSteps.length, Number(step) || 1));
+    activeFriendlyProgramStep = normalized;
+    document.querySelectorAll('[data-program-editor-step]').forEach(button => {
+        const active = Number(button.dataset.programEditorStep) === normalized;
+        button.classList.toggle('is-active', active);
+        button.setAttribute('aria-current', active ? 'step' : 'false');
+    });
+    document.querySelectorAll('[data-program-editor-panel]').forEach(panel => {
+        const active = Number(panel.dataset.programEditorPanel) === normalized;
+        panel.hidden = !active;
+        panel.classList.toggle('is-active', active);
+    });
+    const previous = document.querySelector('[data-program-editor-previous]');
+    const next = document.querySelector('[data-program-editor-next]');
+    if (previous) previous.disabled = normalized === 1;
+    if (next) {
+        next.hidden = normalized === friendlyProgramSteps.length;
+        next.textContent = `Lanjut: ${friendlyProgramSteps[normalized]?.[0] || ''}`;
+    }
+    if (options.scroll !== false) {
+        document.querySelector('.program-editor-shell')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+function friendlyProgramCurrency(value) {
+    return `Rp ${Math.max(0, Number(value) || 0).toLocaleString('id-ID')}`;
+}
+
+function updateFriendlyProgramPreview() {
+    const shell = document.querySelector('.program-editor-shell');
+    if (!shell) return;
+    const title = document.getElementById('prog-title')?.value.trim() || 'Judul program Anda';
+    const excerpt = document.getElementById('prog-excerpt')?.value.trim() || 'Ringkasan singkat program akan tampil di area ini.';
+    const category = document.getElementById('prog-category')?.value.trim() || 'Program Kebaikan';
+    const hero = programSections.find(section => section.type === 'hero' && section.visible);
+    const progress = programSections.find(section => section.type === 'progress' && section.visible);
+    const cta = programSections.find(section => section.type === 'cta' && section.visible);
+    const fallbackImage = document.getElementById('prog-image-url')?.value || '';
+    const heroImage = hero?.data.media_type === 'image'
+        ? (hero.data.media_url || hero.data.mobile_media_url || fallbackImage)
+        : (hero?.data.poster_url || fallbackImage);
+    const previewTitle = hero?.data.title?.trim() || title;
+    const previewExcerpt = hero?.data.subtitle?.trim() || excerpt;
+    const target = Math.max(0, Number(progress?.data.target) || 0);
+    const collected = Math.max(0, Number(progress?.data.collected) || 0);
+    const percentage = target ? Math.min(100, Math.round((collected / target) * 100)) : 0;
+    const buttonLabel = hero?.data.button_label?.trim() || cta?.data.button_label?.trim() || 'Donasi Sekarang';
+    const status = document.getElementById('prog-status')?.value || 'draft';
+
+    shell.querySelectorAll('[data-friendly-preview-title]').forEach(node => { node.textContent = previewTitle; });
+    shell.querySelectorAll('[data-friendly-preview-excerpt]').forEach(node => { node.textContent = previewExcerpt; });
+    shell.querySelectorAll('[data-friendly-preview-category]').forEach(node => { node.textContent = category; });
+    shell.querySelectorAll('[data-friendly-preview-button]').forEach(node => { node.textContent = buttonLabel; });
+    shell.querySelectorAll('[data-friendly-preview-image]').forEach(node => {
+        node.style.backgroundImage = heroImage ? `url("${heroImage.replace(/["\\]/g, '\\$&')}")` : '';
+        node.classList.toggle('has-image', Boolean(heroImage));
+    });
+    shell.querySelectorAll('[data-friendly-preview-progress]').forEach(node => { node.style.width = `${percentage}%`; });
+    shell.querySelectorAll('[data-friendly-preview-percent]').forEach(node => { node.textContent = `${percentage}%`; });
+    shell.querySelectorAll('[data-friendly-preview-collected]').forEach(node => { node.textContent = friendlyProgramCurrency(collected); });
+    shell.querySelectorAll('[data-friendly-preview-target]').forEach(node => { node.textContent = friendlyProgramCurrency(target); });
+    const badge = shell.querySelector('[data-friendly-preview-status]');
+    if (badge) {
+        badge.textContent = status === 'published' ? 'Siap dipublikasikan' : 'Masih berupa draft';
+        badge.classList.toggle('is-published', status === 'published');
+    }
+    const heading = shell.querySelector('[data-program-editor-heading]');
+    if (heading) heading.textContent = document.getElementById('prog-id')?.value ? 'Edit Program Donasi' : 'Tambah Program Donasi';
+}
+
+function openFriendlyProgramPreview() {
+    const slug = document.getElementById('prog-slug')?.value.trim() || slugify(document.getElementById('prog-title')?.value || '');
+    const id = document.getElementById('prog-id')?.value;
+    if (id && slug) {
+        window.open(`/${encodeURIComponent(slug)}?preview=1`, '_blank', 'noopener');
+        return;
+    }
+    setFriendlyProgramStep(1, { scroll: false });
+    const preview = document.querySelector('.program-editor-preview');
+    preview?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const status = document.getElementById('program-friendly-action-status');
+    if (status) status.textContent = 'Pratinjau langsung sudah diperbarui. Simpan sebagai draft untuk membuka halaman penuh.';
+}
+
+function submitFriendlyProgram(status) {
+    const form = document.getElementById('program-form');
+    const title = document.getElementById('prog-title');
+    if (!form || !title) return;
+    if (!title.value.trim()) {
+        setFriendlyProgramStep(1);
+        requestAnimationFrame(() => {
+            title.focus({ preventScroll: true });
+            title.reportValidity();
+        });
+        return;
+    }
+    document.getElementById('prog-status').value = status;
+    updateFriendlyProgramPreview();
+    form.requestSubmit();
+}
+
+function setupFriendlyProgramEditor() {
+    const form = document.getElementById('program-form');
+    if (!form || form.dataset.friendlyEditorReady === 'true') return;
+    form.dataset.friendlyEditorReady = 'true';
+    form.classList.add('program-editor-form');
+
+    const oldHeading = form.closest('.card')?.querySelector(':scope > h2');
+    oldHeading?.classList.add('program-editor-old-heading');
+    const nativeSubmit = form.querySelector(':scope > button[type="submit"]');
+    nativeSubmit?.classList.add('program-editor-native-submit');
+
+    const shell = document.createElement('div');
+    shell.className = 'program-editor-shell';
+    shell.innerHTML = `
+        <header class="program-editor-header">
+            <div class="program-editor-header__copy"><span class="admin-eyebrow">Program Donasi</span><h2 data-program-editor-heading>Tambah Program Donasi</h2><p>Lengkapi program secara bertahap. Perubahan tampilan dapat dilihat langsung tanpa keluar dari halaman.</p></div>
+            <div class="program-editor-actions">
+                <button type="button" class="btn-secondary" data-program-save-draft>Simpan Draft</button>
+                <button type="button" class="btn-secondary" data-program-open-preview>Preview</button>
+                <button type="button" class="btn btn-primary" data-program-publish>Terbitkan Program</button>
+            </div>
+            <p id="program-friendly-action-status" class="program-editor-action-status" role="status"></p>
+        </header>
+        <nav class="program-editor-steps" aria-label="Tahapan pembuatan program">
+            ${friendlyProgramSteps.map(([label], index) => `<button type="button" data-program-editor-step="${index + 1}" class="${index === 0 ? 'is-active' : ''}"><span>${index + 1}</span><b>${escapeHtml(label)}</b></button>`).join('')}
+        </nav>
+        <div class="program-editor-layout">
+            <main class="program-editor-main"></main>
+            <aside class="program-editor-preview" aria-label="Pratinjau program">
+                <div class="program-editor-preview__header"><div><span class="admin-eyebrow">Preview Tampilan</span><h3>Hasil sementara</h3></div><div class="program-editor-device-switch"><button type="button" class="is-active" data-friendly-preview-device="desktop">Desktop</button><button type="button" data-friendly-preview-device="mobile">Mobile</button></div></div>
+                <div class="program-preview-status" data-friendly-preview-status>Masih berupa draft</div>
+                <section class="program-preview-block"><div class="program-preview-block__title"><b>Kartu di Beranda</b><small>Yang dilihat pengunjung di daftar program</small></div><article class="friendly-program-card"><div class="friendly-program-card__image" data-friendly-preview-image><span data-friendly-preview-category>Program Kebaikan</span></div><div class="friendly-program-card__body"><h4 data-friendly-preview-title>Judul program Anda</h4><p data-friendly-preview-excerpt>Ringkasan singkat program akan tampil di area ini.</p><div class="friendly-program-progress"><i data-friendly-preview-progress></i></div><div class="friendly-program-amount"><strong data-friendly-preview-collected>Rp 0</strong><span><b data-friendly-preview-percent>0%</b> dari <span data-friendly-preview-target>Rp 0</span></span></div><button type="button" data-friendly-preview-button>Donasi Sekarang</button></div></article></section>
+                <section class="program-preview-block"><div class="program-preview-block__title"><b>Landing Page</b><small>Tampilan pembuka halaman program</small></div><div class="friendly-program-landing"><div class="friendly-program-landing__nav"><span>DDU</span><i></i><i></i><b>Donasi</b></div><div class="friendly-program-landing__hero" data-friendly-preview-image><div><span data-friendly-preview-category>Program Kebaikan</span><h4 data-friendly-preview-title>Judul program Anda</h4><p data-friendly-preview-excerpt>Ringkasan program akan tampil di sini.</p><button type="button" data-friendly-preview-button>Donasi Sekarang</button></div></div><div class="friendly-program-landing__facts"><span></span><span></span><span></span><span></span></div></div></section>
+            </aside>
+        </div>`;
+
+    form.prepend(shell);
+    const main = shell.querySelector('.program-editor-main');
+    const panels = friendlyProgramSteps.map(([title, description], index) => {
+        const panel = friendlyProgramPanel(index + 1, title, description);
+        main.append(panel);
+        return panel.querySelector('.program-editor-panel__body');
+    });
+
+    const titleGroup = document.getElementById('prog-title')?.closest('.form-group');
+    const categoryGroup = document.getElementById('prog-category')?.closest('.form-group');
+    const statusGroup = document.getElementById('prog-status')?.closest('.form-group');
+    const publishedGroup = document.getElementById('prog-published-at')?.closest('.form-group');
+    const featuredGroup = document.getElementById('prog-featured-order')?.closest('.form-group');
+    const coverGroup = document.getElementById('prog-drop-zone')?.closest('.form-group');
+    const heroMedia = document.getElementById('prog-hero-media-heading')?.closest('section');
+    const excerptGroup = document.getElementById('prog-excerpt')?.closest('.form-group');
+    const builder = form.querySelector('.program-section-builder-shell');
+    const donation = form.querySelector('.donation-admin-settings');
+    const seo = form.querySelector('.seo-settings');
+    const publication = document.getElementById('prog-publication-heading')?.closest('section');
+
+    [titleGroup, categoryGroup, excerptGroup].forEach(node => node && panels[0].append(node));
+    titleGroup?.classList.add('program-editor-field--wide');
+    excerptGroup?.classList.add('program-editor-field--wide');
+    panels[0].insertAdjacentHTML('beforeend', '<div class="program-editor-help-card"><strong>Tips ringkasan yang baik</strong><p>Jelaskan siapa penerima manfaat, kebutuhan utama, dan dampak donasi dalam 1–2 kalimat yang mudah dipahami.</p></div>');
+
+    [coverGroup, heroMedia].forEach(node => node && panels[1].append(node));
+    if (builder) panels[2].append(builder);
+    if (donation) panels[3].append(donation);
+
+    panels[4].insertAdjacentHTML('beforeend', '<div class="program-homepage-setting"><div><span class="program-setting-icon">★</span><div><strong>Tampilkan sebagai Program Unggulan</strong><p>Isi nomor urutan untuk menempatkan program pada bagian utama beranda. Angka paling kecil tampil lebih dahulu.</p></div></div></div>');
+    if (featuredGroup) panels[4].append(featuredGroup);
+    panels[4].insertAdjacentHTML('beforeend', '<div class="program-editor-help-card"><strong>Pratinjau kartu selalu aktif</strong><p>Periksa foto, judul, ringkasan, dan progres pada panel sebelah kanan sebelum menerbitkan.</p></div>');
+
+    [statusGroup, publishedGroup, seo].forEach(node => node && panels[5].append(node));
+    publication?.remove();
+
+    const footer = document.createElement('footer');
+    footer.className = 'program-editor-panel-footer';
+    footer.innerHTML = '<button type="button" class="btn-secondary" data-program-editor-previous>Kembali</button><span>Semua perubahan tersimpan saat Anda memilih Draft atau Terbitkan.</span><button type="button" class="btn btn-primary" data-program-editor-next>Lanjut</button>';
+    main.append(footer);
+
+    shell.querySelectorAll('[data-program-editor-step]').forEach(button => button.addEventListener('click', () => setFriendlyProgramStep(button.dataset.programEditorStep)));
+    shell.querySelector('[data-program-editor-previous]')?.addEventListener('click', () => setFriendlyProgramStep(activeFriendlyProgramStep - 1));
+    shell.querySelector('[data-program-editor-next]')?.addEventListener('click', () => setFriendlyProgramStep(activeFriendlyProgramStep + 1));
+    shell.querySelector('[data-program-save-draft]')?.addEventListener('click', () => submitFriendlyProgram('draft'));
+    shell.querySelector('[data-program-publish]')?.addEventListener('click', () => submitFriendlyProgram('published'));
+    shell.querySelector('[data-program-open-preview]')?.addEventListener('click', openFriendlyProgramPreview);
+    shell.querySelectorAll('[data-friendly-preview-device]').forEach(button => button.addEventListener('click', () => {
+        const mobile = button.dataset.friendlyPreviewDevice === 'mobile';
+        shell.querySelector('.program-editor-preview')?.classList.toggle('is-mobile-preview', mobile);
+        shell.querySelectorAll('[data-friendly-preview-device]').forEach(item => {
+            const active = item === button;
+            item.classList.toggle('is-active', active);
+            item.setAttribute('aria-pressed', String(active));
+        });
+    }));
+    document.querySelectorAll('[data-program-sidebar-target]').forEach(button => button.addEventListener('click', () => {
+        window.switchTab('programs-admin');
+        document.querySelectorAll('[data-program-sidebar-target]').forEach(item => item.classList.toggle('is-active', item === button));
+        document.getElementById(button.dataset.programSidebarTarget)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }));
+    form.addEventListener('change', updateFriendlyProgramPreview);
+    setFriendlyProgramStep(1, { scroll: false });
+    updateFriendlyProgramPreview();
 }
 
 document.addEventListener('input', event => {
@@ -3763,6 +3989,7 @@ async function init() {
     setupAutomaticSlug('post');
     setupAutomaticSlug('prog');
     setupProgramSectionBuilder();
+    setupFriendlyProgramEditor();
     setupDropZone('article-drop-zone', 'post-image-file', 'post-image-url', 'image-preview', 'post');
     setupDropZone('prog-drop-zone', 'prog-image-file', 'prog-image-url', 'prog-image-preview', 'prog');
     setupHeroImageDropZone('post-hero-drop-zone', 'post-hero-image-file');
