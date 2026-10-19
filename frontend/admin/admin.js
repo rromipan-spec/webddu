@@ -1512,6 +1512,29 @@ function createProgramTemplate(template = 'simple') {
     cta.data.eyebrow = 'Langkah Kebaikan';
     cta.data.title = title ? `Mari Berkontribusi untuk ${title}` : 'Mari Berkontribusi';
 
+    if (template === 'campaign') {
+        hero.data.eyebrow = document.getElementById('prog-category')?.value.trim() || 'Program Kebaikan';
+        hero.data.subtitle = document.getElementById('prog-excerpt')?.value.trim() || '';
+        hero.data.height = 'compact';
+
+        const progress = createProgramSection('progress');
+        progress.data.button_label = 'Donasi Sekarang';
+
+        content.data.eyebrow = 'Cerita Program';
+        content.data.title = 'Tentang Program';
+
+        const gallery = createProgramSection('gallery');
+        gallery.data.layout = 'grid-2';
+
+        const faq = createProgramSection('faq');
+
+        cta.data.button_label = 'Donasi Sekarang';
+        cta.data.whatsapp_number = document.getElementById('prog-wa')?.value.trim() || '';
+        cta.data.whatsapp_message = document.getElementById('prog-wa-message')?.value.trim() || '';
+        cta.data.qr_image = document.getElementById('prog-donation-qr-image')?.value || '';
+        return [hero, progress, content, gallery, faq, cta];
+    }
+
     if (template === 'canvas') {
         const canvas = createProgramSection('canvas');
         canvas.data.blocks = [
@@ -1947,7 +1970,7 @@ function renderProgramSectionBuilder() {
         const meta = programSectionMeta[section.type];
         return `<article class="program-section-card program-section-card--${escapeHtml(section.type)}${section.visible ? '' : ' is-hidden-section'}${collapsedProgramSections.has(section.key) ? ' is-collapsed' : ''}" data-section-key="${escapeHtml(section.key)}" draggable="true">
             <header class="program-section-card__header"><div class="program-section-card__identity"><span class="program-section-card__number">${String(index + 1).padStart(2, '0')}</span>${programSectionIllustration(section.type)}<div class="program-section-card__copy"><strong>${escapeHtml(meta[0])}</strong><small>${escapeHtml(section.data.title || meta[1])}</small></div></div>
-            <div class="program-section-actions"><button type="button" data-section-action="collapse">${collapsedProgramSections.has(section.key) ? 'Isi bagian' : 'Tutup'}</button><button type="button" data-section-action="up" aria-label="Pindahkan ke atas">↑ Atas</button><button type="button" data-section-action="down" aria-label="Pindahkan ke bawah">↓ Bawah</button><button type="button" data-section-action="duplicate">Salin</button>${section.type !== 'canvas' ? '<button type="button" data-section-action="convert-canvas">Edit Visual</button>' : ''}<button type="button" data-section-action="toggle">${section.visible ? 'Sembunyikan' : 'Tampilkan'}</button><button type="button" class="is-danger" data-section-action="delete">Hapus</button></div></header>
+            <div class="program-section-actions"><button type="button" data-section-action="collapse">${collapsedProgramSections.has(section.key) ? 'Isi bagian' : 'Tutup'}</button><button type="button" data-section-action="up" aria-label="Pindahkan ke atas">↑</button><button type="button" data-section-action="down" aria-label="Pindahkan ke bawah">↓</button><details class="program-section-more"><summary>Opsi</summary><div><button type="button" data-section-action="duplicate">Salin bagian</button>${section.type !== 'canvas' ? '<button type="button" data-section-action="convert-canvas">Edit di kanvas</button>' : ''}<button type="button" data-section-action="toggle">${section.visible ? 'Sembunyikan' : 'Tampilkan'}</button><button type="button" class="is-danger" data-section-action="delete">Hapus bagian</button></div></details></div></header>
             <div class="program-section-card__body">${renderProgramSectionTypeFields(section)}${section.type === 'canvas' ? '' : programSectionSettings(section)}</div>
         </article>`;
     }).join('');
@@ -2303,7 +2326,7 @@ function setupProgramSectionBuilder() {
     const typeInput = document.getElementById('program-section-type');
     const typeChoices = [...document.querySelectorAll('[data-program-section-choice]')];
     if (!list || !addButton || !fileInput || !typeInput) return;
-    programSections = [createProgramSection('hero'), createProgramSection('content'), createProgramSection('cta')];
+    programSections = createProgramTemplate('campaign');
     programSections.slice(1).forEach(section => collapsedProgramSections.add(section.key));
     renderProgramSectionBuilder();
     document.getElementById('program-builder-undo')?.addEventListener('click', undoProgramBuilder);

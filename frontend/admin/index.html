@@ -104,7 +104,7 @@
             .toolbar button, .toolbar select { flex: 1 1 auto; }
         }
     </style>
-    <link rel="stylesheet" href="admin.css?v=20260929-1">
+    <link rel="stylesheet" href="admin.css?v=20261019-1">
     <link rel="stylesheet" href="../halaman-utama/ddu-theme.css?v=20260917-6">
 </head>
 <body class="admin-page">
@@ -405,17 +405,24 @@
                             <div class="program-section-builder-heading">
                                 <div>
                                     <span class="admin-eyebrow">Penyusun Halaman Program</span>
-                                    <h3 id="program-section-builder-heading">Susun Halaman Program</h3>
-                                    <p>Susun halaman seperti menyusun balok: pilih bagian, isi kontennya, lalu atur urutannya.</p>
+                                    <h3 id="program-section-builder-heading">Isi Halaman Program</h3>
+                                    <p>Isi dari atas ke bawah. Sistem akan merapikannya otomatis menjadi halaman kampanye yang konsisten.</p>
                                 </div>
                                 <span id="program-section-count" class="program-section-count">0 bagian</span>
                             </div>
                             <div id="program-section-migration-alert" class="security-alert hidden" role="alert"></div>
                             <ol class="program-builder-steps" aria-label="Cara menyusun halaman program">
-                                <li><strong>1</strong><span><b>Pilih susunan</b><small>Gunakan susunan siap pakai atau tambahkan sendiri.</small></span></li>
-                                <li><strong>2</strong><span><b>Isi konten</b><small>Kolom bertanda opsional boleh dikosongkan.</small></span></li>
-                                <li><strong>3</strong><span><b>Atur dan simpan</b><small>Naik-turunkan bagian lalu simpan program.</small></span></li>
+                                <li><strong>1</strong><span><b>Isi sampul</b><small>Judul, ringkasan, dan foto utama program.</small></span></li>
+                                <li><strong>2</strong><span><b>Isi target &amp; cerita</b><small>Tambahkan progres, cerita, galeri, dan FAQ seperlunya.</small></span></li>
+                                <li><strong>3</strong><span><b>Aktifkan donasi</b><small>Periksa WhatsApp atau QR, lalu simpan program.</small></span></li>
                             </ol>
+                            <div class="program-campaign-quickstart">
+                                <div><span class="admin-eyebrow">Rekomendasi</span><strong>Gunakan Layout Kampanye DDU</strong><small>Sampul, progres donasi, cerita, dokumentasi, pertanyaan umum, dan ajakan donasi tersusun otomatis.</small></div>
+                                <button type="button" class="btn btn-primary" data-program-template="campaign">Gunakan Susunan Ini</button>
+                            </div>
+                            <details class="program-builder-advanced-tools">
+                                <summary>Peralatan dan susunan lanjutan <span>Opsional</span></summary>
+                                <div class="program-builder-advanced-tools__body">
                             <div class="program-visual-toolbar" role="toolbar" aria-label="Peralatan editor visual program">
                                 <div class="program-visual-toolbar__group">
                                     <button type="button" id="program-builder-undo" title="Batalkan perubahan terakhir" disabled>↶ Undo</button>
@@ -472,6 +479,8 @@
                                 </div>
                                 <button type="button" class="btn-secondary" id="program-add-section">+ Tambahkan Bagian</button>
                             </div>
+                                </div>
+                            </details>
                             <div id="program-section-list" class="program-section-list program-section-list--desktop" data-program-device-preview="desktop" aria-live="polite"></div>
                             <input type="file" id="program-section-media-file" hidden accept="image/jpeg,image/png,image/webp,video/mp4,video/webm" multiple>
                             <p class="program-section-help">Tips: bagian yang disembunyikan tetap tersimpan, tetapi tidak terlihat oleh pengunjung website.</p>
@@ -1044,6 +1053,6 @@
         </form>
     </dialog>
 
-    <script type="module" src="admin.js?v=20260929-1"></script>
+    <script type="module" src="admin.js?v=20261019-1"></script>
 </body>
 </html>
