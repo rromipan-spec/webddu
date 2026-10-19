@@ -2795,6 +2795,29 @@ body.admin-page {
 .admin-page .program-campaign-quickstart small { max-width: 680px; margin-top: 5px; color: #52627A; line-height: 1.5; }
 .admin-page .program-campaign-quickstart .btn { flex: 0 0 auto; margin: 0; white-space: nowrap; }
 
+.admin-page .program-draft-preset {
+    display: grid;
+    grid-template-columns: 82px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 18px;
+    margin: 0 0 18px;
+    padding: 16px;
+    border: 1px solid rgba(212, 168, 79, .44);
+    border-radius: 16px;
+    background: #FFFBEF;
+}
+.admin-page .program-draft-preset strong,
+.admin-page .program-draft-preset small { display: block; }
+.admin-page .program-draft-preset strong { margin-top: 3px; color: #063B9E; }
+.admin-page .program-draft-preset small { margin-top: 4px; color: #657187; font-size: .77rem; line-height: 1.5; }
+.admin-page .program-draft-preset > button { white-space: nowrap; }
+.admin-page .program-draft-preset__visual { position: relative; width: 82px; aspect-ratio: 1.15; overflow: hidden; border-radius: 12px; background: linear-gradient(145deg, #EAF2FF 0 48%, #8DB4EE 48% 100%); box-shadow: inset 0 0 0 1px rgba(7, 86, 214, .16); }
+.admin-page .program-draft-preset__visual span { position: absolute; right: 12px; bottom: 8px; left: 12px; height: 20px; border-radius: 6px; background: #0756D6; }
+.admin-page .program-draft-preset__visual i { position: absolute; bottom: 31px; width: 16px; height: 22px; border-radius: 50% 50% 42% 42%; background: #D4A84F; }
+.admin-page .program-draft-preset__visual i:nth-child(2) { left: 15px; }
+.admin-page .program-draft-preset__visual i:nth-child(3) { left: 33px; height: 28px; }
+.admin-page .program-draft-preset__visual i:nth-child(4) { left: 52px; }
+
 .admin-page .program-builder-advanced-tools {
     margin: 16px 0 22px;
     overflow: hidden;
@@ -2825,6 +2848,9 @@ body.admin-page {
 @media (max-width: 760px) {
     .admin-page .program-campaign-quickstart { align-items: stretch; flex-direction: column; }
     .admin-page .program-campaign-quickstart .btn { width: 100%; }
+    .admin-page .program-draft-preset { grid-template-columns: 64px minmax(0, 1fr); }
+    .admin-page .program-draft-preset__visual { width: 64px; }
+    .admin-page .program-draft-preset > button { grid-column: 1 / -1; width: 100%; }
 }
 
 .admin-page .program-template-picker {

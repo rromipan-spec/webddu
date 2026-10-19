@@ -1512,6 +1512,112 @@ function createProgramTemplate(template = 'simple') {
     cta.data.eyebrow = 'Langkah Kebaikan';
     cta.data.title = title ? `Mari Berkontribusi untuk ${title}` : 'Mari Berkontribusi';
 
+    if (template === 'staples-widows') {
+        const currentHero = programSections.find(section => section.type === 'hero');
+        const currentCta = programSections.find(section => section.type === 'cta' && section.visible)
+            || programSections.find(section => section.type === 'cta');
+        const waNumber = currentCta?.data.whatsapp_number
+            || document.getElementById('prog-wa')?.value.trim()
+            || '';
+        const existingQrImage = currentCta?.data.qr_image
+            || document.getElementById('prog-donation-qr-image')?.value
+            || '';
+        const qrImage = /^\/uploads\/qrcodes\/[a-f0-9]{32}\.png$/i.test(existingQrImage) ? existingQrImage : '';
+
+        Object.assign(hero.data, {
+            eyebrow: 'Sedekah Pangan',
+            title: 'Sedekah Paket Sembako untuk Janda Dhuafa',
+            subtitle: 'Ringankan kebutuhan dapur mereka, hadirkan ketenangan untuk hari-hari yang penuh perjuangan.',
+            body: 'Di balik pintu rumah sederhana, ada ibu-ibu tangguh yang terus berjuang memenuhi kebutuhan keluarga seorang diri. Mari hadir bersama mereka melalui paket sembako yang layak dan penuh kepedulian.',
+            overlay: 24,
+            height: 'compact',
+            button_label: 'Sedekah Sekarang',
+            button_url: ''
+        });
+        if (currentHero) {
+            ['media_type', 'media_url', 'mobile_media_url', 'poster_url', 'media_alt'].forEach(field => {
+                hero.data[field] = currentHero.data[field] || hero.data[field];
+            });
+        }
+
+        const progress = createProgramSection('progress');
+        Object.assign(progress.data, {
+            title: 'Target Awal 100 Paket Sembako',
+            subtitle: 'Estimasi kebutuhan Rp250.000 per paket. Sesuaikan kembali target dan nilai paket sebelum program dipublikasikan.',
+            target: 25000000,
+            collected: 0,
+            donors: 0,
+            button_label: 'Sedekah Sekarang',
+            button_url: ''
+        });
+
+        const introduction = createProgramSection('content');
+        Object.assign(introduction.data, {
+            eyebrow: 'Menjaga Dapur Tetap Menyala',
+            title: 'Saat kebutuhan sehari-hari menjadi perjuangan yang tak terlihat',
+            subtitle: 'Mereka tidak meminta hidup yang mudah—mereka hanya terus berusaha agar keluarga tetap bisa makan dengan layak.',
+            body: 'Sebagian janda dhuafa menjalani hari dengan penghasilan yang terbatas dan tidak menentu. Setelah kebutuhan tempat tinggal, kesehatan, dan pendidikan keluarga dipenuhi, kebutuhan pangan sering kali harus dicukupkan dengan apa yang tersisa.\n\nMelalui program ini, Dompet Dana Umat mengajak Sahabat Kebaikan menghadirkan paket sembako untuk membantu meringankan kebutuhan dasar mereka. Bukan sekadar beras dan bahan pangan, bantuan ini adalah pesan bahwa perjuangan mereka tidak dijalani sendirian.',
+            media_type: 'none',
+            media_position: 'right'
+        });
+
+        const packageImpact = createProgramSection('impact');
+        Object.assign(packageImpact.data, {
+            eyebrow: 'Isi Paket',
+            title: 'Satu paket sederhana, banyak kebutuhan yang terbantu',
+            subtitle: 'Isi dapat disesuaikan dengan hasil asesmen, ketersediaan barang, dan kebutuhan penerima manfaat.',
+            columns: 2,
+            items: [
+                { value: 'Beras', label: 'Pangan utama keluarga', note: 'Membantu mencukupi kebutuhan makan harian.' },
+                { value: 'Minyak & Gula', label: 'Kebutuhan dapur', note: 'Bahan pokok yang digunakan setiap hari.' },
+                { value: 'Bahan Pendamping', label: 'Kebutuhan pelengkap', note: 'Dapat berupa mi, tepung, teh, atau bahan lain sesuai kebutuhan.' },
+                { value: 'Penyaluran', label: 'Sampai kepada penerima', note: 'Termasuk pengemasan, distribusi, dan dokumentasi program.' }
+            ]
+        });
+
+        const distribution = createProgramSection('content');
+        Object.assign(distribution.data, {
+            eyebrow: 'Amanah dalam Penyaluran',
+            title: 'Dari titipan Anda, menuju keluarga yang membutuhkan',
+            body: 'Tim Dompet Dana Umat melakukan pendataan dan verifikasi calon penerima manfaat agar bantuan diberikan secara tepat sasaran. Paket kemudian disiapkan sesuai kebutuhan dan disalurkan langsung atau melalui jaringan penyaluran resmi.\n\nDokumentasi dan perkembangan program akan dihimpun sebagai bentuk pertanggungjawaban kepada para donatur. Data pribadi penerima manfaat tetap dijaga agar bantuan tersalurkan dengan hormat dan bermartabat.',
+            media_type: 'none',
+            media_position: 'left'
+        });
+
+        const gallery = createProgramSection('gallery');
+        gallery.visible = false;
+        gallery.data.title = 'Dokumentasi Penyaluran';
+        gallery.data.subtitle = 'Aktifkan bagian ini setelah foto kegiatan tersedia.';
+
+        const faq = createProgramSection('faq');
+        Object.assign(faq.data, {
+            eyebrow: 'Informasi Program',
+            title: 'Pertanyaan yang Sering Ditanyakan',
+            items: [
+                { question: 'Siapa penerima manfaat program ini?', answer: 'Program diprioritaskan untuk janda dari keluarga dhuafa yang telah melalui pendataan atau verifikasi kebutuhan oleh tim Dompet Dana Umat dan jaringan penyaluran resminya.' },
+                { question: 'Apa saja isi paket sembako?', answer: 'Isi paket disesuaikan dengan kebutuhan penerima, ketersediaan barang, dan kondisi harga saat pengadaan. Umumnya mencakup beras, minyak goreng, gula, serta bahan pangan pendamping.' },
+                { question: 'Bagaimana bantuan disalurkan?', answer: 'Bantuan disiapkan, dikemas, lalu disalurkan langsung kepada penerima manfaat atau melalui jaringan penyaluran resmi yang telah dikoordinasikan.' },
+                { question: 'Apakah tersedia dokumentasi penyaluran?', answer: 'Ya. Dokumentasi dan perkembangan program akan dihimpun sebagai bentuk transparansi, dengan tetap menjaga privasi dan martabat penerima manfaat.' },
+                { question: 'Bagaimana cara melakukan konfirmasi sedekah?', answer: 'Klik tombol Sedekah Sekarang untuk terhubung ke WhatsApp resmi Dompet Dana Umat. Tim kami akan membantu informasi penyaluran dan konfirmasi donasi.' }
+            ]
+        });
+
+        Object.assign(cta.data, {
+            eyebrow: 'Hadirkan Ketenangan Hari Ini',
+            title: 'Sedekah Anda mungkin sederhana, tetapi artinya besar bagi mereka',
+            subtitle: 'Mari bantu janda dhuafa memenuhi kebutuhan pangan keluarga dengan lebih tenang dan bermartabat.',
+            body: 'Setiap paket yang tersalurkan membawa bahan pangan, kepedulian, dan harapan bahwa masih ada banyak tangan baik yang membersamai perjuangan mereka.',
+            whatsapp_number: waNumber,
+            whatsapp_message: currentCta?.data.whatsapp_message || 'Assalamualaikum, saya ingin ikut Sedekah Paket Sembako untuk Janda Dhuafa. Mohon informasi cara berdonasi dan konfirmasinya.',
+            qr_image: qrImage,
+            button_label: 'Sedekah Sekarang',
+            show_qr: true,
+            show_whatsapp: true
+        });
+
+        return [hero, progress, introduction, packageImpact, distribution, gallery, faq, cta];
+    }
+
     if (template === 'campaign') {
         hero.data.eyebrow = document.getElementById('prog-category')?.value.trim() || 'Program Kebaikan';
         hero.data.subtitle = document.getElementById('prog-excerpt')?.value.trim() || '';
@@ -1693,6 +1799,26 @@ function fillWaqfQuranProgramBasics() {
     if (excerpt && !excerpt.value.trim()) {
         excerpt.value = 'Gerakan Wakaf Quran adalah program yang dipnaungi oleh Dompet Dana Umat (DDU) Daarul Uluum.';
     }
+}
+
+function fillStaplesWidowsProgramBasics() {
+    const title = document.getElementById('prog-title');
+    const slug = document.getElementById('prog-slug');
+    const id = document.getElementById('prog-id');
+    const category = document.getElementById('prog-category');
+    const excerpt = document.getElementById('prog-excerpt');
+    const status = document.getElementById('prog-status');
+    const seoTitle = document.getElementById('prog-seo-title');
+    const seoDescription = document.getElementById('prog-seo-description');
+    const imageAlt = document.getElementById('prog-image-alt');
+    if (title) title.value = 'Sedekah Paket Sembako untuk Janda Dhuafa';
+    if (slug && !id?.value) slug.value = 'sedekah-sembako-janda-dhuafa';
+    if (category) category.value = 'Sedekah Pangan';
+    if (excerpt) excerpt.value = 'Bantu ringankan kebutuhan pangan janda dhuafa melalui paket sembako yang layak, tepat sasaran, dan disalurkan dengan penuh amanah.';
+    if (status) status.value = 'draft';
+    if (seoTitle) seoTitle.value = 'Sedekah Sembako untuk Janda Dhuafa | Dompet Dana Umat';
+    if (seoDescription) seoDescription.value = 'Hadirkan paket sembako untuk membantu kebutuhan pangan janda dhuafa. Sedekah Anda disalurkan secara amanah, tepat sasaran, dan bermartabat.';
+    if (imageAlt) imageAlt.value = 'Penyaluran paket sembako Dompet Dana Umat kepada janda dhuafa';
 }
 
 function normalizeProgramSections(sections) {
@@ -2416,6 +2542,7 @@ function setupProgramSectionBuilder() {
             recordProgramBuilderHistory();
             const template = button.dataset.programTemplate;
             if (template === 'waqf-quran') fillWaqfQuranProgramBasics();
+            if (template === 'staples-widows') fillStaplesWidowsProgramBasics();
             programSections = createProgramTemplate(template);
             collapsedProgramSections.clear();
             programSections.slice(1).forEach(section => collapsedProgramSections.add(section.key));
