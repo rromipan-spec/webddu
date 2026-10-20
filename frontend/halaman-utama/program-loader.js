@@ -81,7 +81,6 @@ function campaignSideDonationHtml(program, ctaData = {}, progressData = {}, acti
     const sectionQr = safeMediaHref(ctaData.qr_image);
     const qrImage = ctaData.show_qr === false ? '' : (sectionQr || donationQrUrl(program.donation_qr_image));
     const showWhatsapp = ctaData.show_whatsapp !== false;
-    const whatsappNumber = ctaData.whatsapp_number || program.whatsapp_number || '6285121277046';
     const heading = ctaData.title || 'Dukung Program Ini';
     const description = ctaData.subtitle || ctaData.body || 'Setiap dukungan membantu program ini menjangkau lebih banyak penerima manfaat.';
 
@@ -89,8 +88,8 @@ function campaignSideDonationHtml(program, ctaData = {}, progressData = {}, acti
         <div class="program-campaign-donation__intro"><span class="program-campaign-donation__eyebrow">${escapeHtml(ctaData.eyebrow || 'Langkah Kebaikan')}</span><h2>${escapeHtml(heading)}</h2>${description ? `<p>${escapeHtml(description)}</p>` : ''}</div>
         ${hasProgress ? `<div class="program-campaign-donation__progress"><strong class="program-campaign-donation__amount">${formatCurrency(collected)}</strong><span class="program-campaign-donation__target">terkumpul dari target ${formatCurrency(target)}</span><div class="program-campaign-donation__bar" role="progressbar" aria-label="Progres donasi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${visualPercentage}"><span style="width:${visualPercentage}%"></span></div><div class="program-campaign-donation__facts"><strong>${formatNumber(percentage)}%</strong>${Number(progressData.donors) > 0 ? `<span><b>${formatNumber(progressData.donors)}</b> donatur</span>` : ''}${progressData.deadline ? `<span>Sampai <b>${formatDate(progressData.deadline)}</b></span>` : ''}</div></div>` : ''}
         <div class="program-campaign-donation__methods${qrImage ? ' has-qr' : ''}">
-            ${qrImage ? `<div class="program-campaign-donation__qr"><span>Scan QR/Barcode</span><a href="${escapeHtml(qrImage)}" target="_blank" rel="noopener noreferrer" aria-label="Buka QR atau barcode donasi ${escapeHtml(program.title)}"><span class="program-campaign-donation__qr-glass"><img src="${escapeHtml(qrImage)}" alt="QR atau barcode donasi ${escapeHtml(program.title)}" loading="eager"></span></a><small>Ketuk untuk memperbesar</small></div>` : ''}
-            ${showWhatsapp ? `<div class="program-campaign-donation__contact"><span>WhatsApp Resmi</span><strong>${escapeHtml(whatsappDisplay(whatsappNumber))}</strong><p>Konfirmasi donasi dan dapatkan panduan penyaluran melalui admin resmi DDU.</p><a class="program-campaign-donate" href="${escapeHtml(action.url)}"${externalLinkAttrs(action.url)}>${escapeHtml(action.label)} <span aria-hidden="true">→</span></a></div>` : ''}
+            ${qrImage ? `<div class="program-campaign-donation__qr"><a href="${escapeHtml(qrImage)}" target="_blank" rel="noopener noreferrer" aria-label="Buka QR atau barcode donasi ${escapeHtml(program.title)}"><span class="program-campaign-donation__qr-glass"><img src="${escapeHtml(qrImage)}" alt="QR atau barcode donasi ${escapeHtml(program.title)}" loading="eager"></span></a><small>Ketuk untuk memperbesar</small></div>` : ''}
+            ${showWhatsapp ? `<div class="program-campaign-donation__contact"><a class="program-campaign-donate" href="${escapeHtml(action.url)}"${externalLinkAttrs(action.url)}>${escapeHtml(action.label)} <span aria-hidden="true">→</span></a></div>` : ''}
         </div>
         <small class="program-campaign-donation__notice">Pastikan tujuan pembayaran sesuai informasi resmi Dompet Dana Umat.</small>
     </div>`;
