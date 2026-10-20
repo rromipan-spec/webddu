@@ -3916,9 +3916,9 @@ select {
 .program-campaign-donation__qr-glass {
     position: relative;
     display: block;
-    width: min(100%, 240px);
+    width: min(100%, 260px);
     margin-inline: auto;
-    padding: 9px;
+    padding: 4px;
     overflow: hidden;
     border: 1px solid rgba(250, 250, 247, .8);
     border-radius: 17px;
@@ -4108,7 +4108,7 @@ select {
 
     .program-campaign-aside .program-campaign-donation__qr-glass {
         width: min(100%, 198px);
-        padding: 7px;
+        padding: 4px;
         border-radius: 14px;
     }
 
@@ -4210,7 +4210,7 @@ select {
     .program-campaign-legacy-content { padding: 34px 22px 42px; }
     .program-campaign-donation { padding: 24px 22px; }
     .program-campaign-donation__methods.has-qr { grid-template-columns: 1fr; }
-    .program-campaign-donation__qr-glass { width: min(100%, 240px); }
+    .program-campaign-donation__qr-glass { width: min(100%, 260px); }
     .program-campaign-donation__contact { text-align: center; }
     .program-campaign-mobile-donate {
         position: fixed;
@@ -4252,7 +4252,7 @@ select {
 }
 
 @media (max-width: 430px) {
-    .program-campaign-donation__qr-glass { width: min(100%, 224px); }
+    .program-campaign-donation__qr-glass { width: min(100%, 240px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
