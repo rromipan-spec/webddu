@@ -4036,26 +4036,40 @@ select {
         display: block;
         width: 400px;
         overflow: visible;
-        opacity: 0;
+        opacity: 1;
         visibility: hidden;
         pointer-events: none;
-        transform: translateY(calc(18px + var(--campaign-aside-footer-shift)));
-        transition: opacity .28s ease, visibility .28s ease;
+        transform: translateY(var(--campaign-aside-footer-shift));
+        transition: visibility 0s linear .38s;
     }
 
     .program-campaign.is-campaign-aside-visible .program-campaign-aside {
-        opacity: 1;
         visibility: visible;
         pointer-events: auto;
         transform: translateY(var(--campaign-aside-footer-shift));
+        transition-delay: 0s;
     }
 
     .program-campaign-aside .program-campaign-donation--complete {
         padding: 20px;
         overflow: visible;
+        opacity: 0;
         border-radius: 20px;
         background: #FFFFFF;
         box-shadow: 0 18px 48px rgba(6, 59, 158, .13);
+        clip-path: inset(14% 10% round 30px);
+        filter: blur(5px);
+        transform: translate3d(22px, -12px, 0) scale(.68);
+        transform-origin: right top;
+        transition: opacity .24s ease, transform .38s cubic-bezier(.2, .85, .28, 1), clip-path .38s cubic-bezier(.2, .85, .28, 1), filter .3s ease;
+        will-change: opacity, transform, clip-path, filter;
+    }
+
+    .program-campaign.is-campaign-aside-visible .program-campaign-aside .program-campaign-donation--complete {
+        opacity: 1;
+        clip-path: inset(0 round 20px);
+        filter: blur(0);
+        transform: translate3d(0, 0, 0) scale(1);
     }
 
     .program-campaign-aside .program-campaign-donation__intro p {
@@ -4257,6 +4271,8 @@ select {
 
 @media (prefers-reduced-motion: reduce) {
     .program-campaign-donation__qr-glass::after { animation: none; }
+    .program-campaign-aside,
+    .program-campaign-aside .program-campaign-donation--complete { transition: none; }
 }
 
 .program-section-page .main-header {
