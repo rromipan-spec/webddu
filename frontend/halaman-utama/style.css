@@ -3778,7 +3778,7 @@ select {
     text-wrap: balance;
 }
 
-.program-campaign-summary > p { display: -webkit-box; margin: 16px 0 0; overflow: hidden; color: #52627A; font-size: .98rem; line-height: 1.65; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+.program-campaign-summary > p { display: -webkit-box; margin: 16px 0 0; overflow: hidden; color: #52627A; font-size: .98rem; line-height: 1.65; line-clamp: 3; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
 .program-campaign-summary__link { display: inline-flex; width: max-content; align-items: center; margin-top: 18px; color: #0756D6; font-weight: 700; text-decoration: none; }
 .program-campaign-owner { display: flex; align-items: center; gap: 13px; margin-top: 18px; padding-top: 16px; border-top: 1px solid #E0E9F8; }
 .program-campaign-owner > span { display: grid; width: 46px; height: 46px; flex: 0 0 46px; place-items: center; color: #fff; border-radius: 50%; background: #0756D6; font-size: .7rem; font-weight: 700; }
@@ -3788,7 +3788,7 @@ select {
 .program-campaign-owner small { margin-top: 3px; color: #657187; font-size: .76rem; }
 .program-campaign-summary--content { padding: 42px 34px 34px; border-bottom: 1px solid #E6EDF8; }
 .program-campaign-summary--content h1 { max-width: 760px; font-size: clamp(2rem, 4vw, 3.5rem); }
-.program-campaign-summary--content > p { max-width: 740px; -webkit-line-clamp: unset; }
+.program-campaign-summary--content > p { max-width: 740px; line-clamp: unset; -webkit-line-clamp: unset; }
 
 .program-campaign-layout { width: min(1180px, calc(100% - 40px)); padding-block: 30px 82px; }
 .program-campaign-main { min-width: 0; overflow: hidden; border: 1px solid var(--campaign-border); border-radius: 24px; background: #fff; box-shadow: 0 18px 52px rgba(6, 59, 158, .07); }
@@ -4052,6 +4052,7 @@ select {
         display: block;
         overflow: visible;
         font-size: .72rem;
+        line-clamp: unset;
         -webkit-line-clamp: unset;
     }
 
