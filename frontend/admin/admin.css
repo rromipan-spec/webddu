@@ -3809,11 +3809,18 @@ body.admin-page {
 }
 
 .admin-page #content-programs-admin > .card:first-child {
+    width: 100%;
+    min-width: 0;
     padding: 0;
     overflow: visible;
     border-color: rgba(191, 212, 248, .72);
     background: transparent;
     box-shadow: none;
+}
+
+.admin-page #program-form {
+    min-width: 0;
+    margin: 0;
 }
 
 .admin-page .program-editor-shell {
@@ -3990,9 +3997,9 @@ body.admin-page {
 .admin-page .program-editor-panel__heading {
     display: flex;
     align-items: flex-start;
-    gap: 13px;
-    margin: -2px -2px 20px;
-    padding-bottom: 16px;
+    gap: 11px;
+    margin: -2px -2px 14px;
+    padding-bottom: 12px;
     border-bottom: 1px solid #E5EDF9;
 }
 
@@ -4024,7 +4031,8 @@ body.admin-page {
 .admin-page .program-editor-panel__body {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 18px;
+    column-gap: 14px;
+    row-gap: 12px;
 }
 
 .admin-page .program-editor-panel__body > .program-editor-field--wide,
@@ -4037,6 +4045,34 @@ body.admin-page {
 .admin-page .program-editor-panel__body > .form-group,
 .admin-page .program-editor-panel__body > section {
     margin: 0;
+}
+
+/* Informasi dasar dibuat rapat dan berurutan agar tidak menyisakan kolom kosong. */
+.admin-page [data-program-editor-panel="1"] .program-editor-panel__body > * {
+    grid-column: 1 / -1;
+}
+
+.admin-page [data-program-editor-panel="1"] .form-group label,
+.admin-page [data-program-editor-panel="4"] .form-group label {
+    margin-bottom: 6px;
+}
+
+.admin-page [data-program-editor-panel="1"] .form-group input,
+.admin-page [data-program-editor-panel="1"] .form-group select,
+.admin-page [data-program-editor-panel="1"] .form-group textarea,
+.admin-page [data-program-editor-panel="4"] .form-group input,
+.admin-page [data-program-editor-panel="4"] .form-group select,
+.admin-page [data-program-editor-panel="4"] .form-group textarea {
+    min-height: 44px;
+}
+
+.admin-page [data-program-editor-panel="1"] .form-group textarea {
+    min-height: 82px;
+}
+
+.admin-page [data-program-editor-panel="1"] .form-group small,
+.admin-page [data-program-editor-panel="4"] .form-group small {
+    margin-top: 5px;
 }
 
 .admin-page .program-editor-panel__body .publication-settings,
@@ -4210,6 +4246,71 @@ body.admin-page {
     margin: 0;
     padding: 18px;
     box-shadow: none;
+}
+
+/* Cerita Program sudah berada di dalam panel; hindari bingkai dan padding ganda. */
+.admin-page:not(.program-canvas-studio) [data-program-editor-panel="4"] .program-section-builder-shell {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+}
+
+.admin-page [data-program-editor-panel="4"] .program-section-builder-heading {
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.admin-page [data-program-editor-panel="4"] .program-section-builder-heading h3 {
+    margin: 2px 0 4px;
+    font-size: 1.2rem;
+}
+
+.admin-page [data-program-editor-panel="4"] .program-section-builder-heading p {
+    line-height: 1.45;
+}
+
+.admin-page [data-program-editor-panel="4"] .program-builder-steps {
+    gap: 8px;
+    margin: 12px 0 10px;
+}
+
+.admin-page [data-program-editor-panel="4"] .program-builder-steps li {
+    gap: 8px;
+    padding: 10px;
+}
+
+.admin-page [data-program-editor-panel="4"] .program-campaign-quickstart {
+    gap: 14px;
+    margin: 10px 0;
+    padding: 14px;
+}
+
+.admin-page [data-program-editor-panel="4"] .program-draft-preset {
+    gap: 12px;
+    margin-bottom: 10px;
+    padding: 12px;
+}
+
+.admin-page [data-program-editor-panel="4"] .program-builder-advanced-tools {
+    margin: 10px 0 12px;
+}
+
+.admin-page [data-program-editor-panel="4"] .program-builder-advanced-tools > summary {
+    padding-block: 12px;
+}
+
+.admin-page [data-program-editor-panel="4"] .program-section-list {
+    gap: 10px;
+}
+
+.admin-page [data-program-editor-panel="4"] .program-section-card__header {
+    padding: 12px 14px;
+}
+
+.admin-page [data-program-editor-panel="4"] .program-section-card__body {
+    gap: 10px 12px;
+    padding: 14px;
 }
 
 .admin-page .program-editor-panel-footer {
@@ -4677,12 +4778,12 @@ body.admin-page {
 .admin-page.program-canvas-studio .program-editor-steps,
 .admin-page.program-canvas-studio .program-editor-preview,
 .admin-page.program-canvas-studio .program-editor-panel-footer,
-.admin-page.program-canvas-studio .program-editor-panel:not([data-program-editor-panel="3"]) {
+.admin-page.program-canvas-studio .program-editor-panel:not([data-program-editor-panel="4"]) {
     display: none !important;
 }
 
 .admin-page.program-canvas-studio .program-editor-layout,
-.admin-page.program-canvas-studio [data-program-editor-panel="3"] {
+.admin-page.program-canvas-studio [data-program-editor-panel="4"] {
     display: block !important;
 }
 
@@ -4692,14 +4793,14 @@ body.admin-page {
     background: transparent;
 }
 
-.admin-page.program-canvas-studio [data-program-editor-panel="3"] {
+.admin-page.program-canvas-studio [data-program-editor-panel="4"] {
     padding: 0;
     border: 0;
     background: transparent;
     box-shadow: none;
 }
 
-.admin-page.program-canvas-studio [data-program-editor-panel="3"] > .program-editor-panel__heading {
+.admin-page.program-canvas-studio [data-program-editor-panel="4"] > .program-editor-panel__heading {
     display: none;
 }
 
@@ -4773,7 +4874,7 @@ body.admin-page {
 
     .admin-page .program-editor-panel__body {
         grid-template-columns: minmax(0, 1fr);
-        gap: 15px;
+        gap: 12px;
     }
 
     .admin-page .program-editor-panel__body > * {
@@ -4796,8 +4897,12 @@ body.admin-page {
     }
 
     .admin-page .program-editor-panel .program-section-builder-shell {
-        margin-inline: -3px;
-        padding: 14px 10px;
+        margin-inline: 0;
+        padding: 12px 8px;
+    }
+
+    .admin-page:not(.program-canvas-studio) [data-program-editor-panel="4"] .program-section-builder-shell {
+        padding: 0;
     }
 
     .admin-page .program-editor-preview__header {
