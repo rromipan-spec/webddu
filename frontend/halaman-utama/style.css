@@ -3949,6 +3949,7 @@ select {
     max-height: 280px;
     object-fit: contain;
     border-radius: 11px;
+    transform: translateY(-7px);
 }
 
 .program-campaign-donation__qr small {
