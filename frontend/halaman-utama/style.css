@@ -3996,8 +3996,9 @@ select {
     justify-content: flex-start;
     font-size: clamp(.56rem, .65vw, .68rem);
     letter-spacing: -.01em;
+    line-height: 1.35;
     text-align: left;
-    white-space: nowrap;
+    white-space: normal;
 }
 
 .program-campaign-top-donation .program-campaign-donation__contact .program-campaign-donate > span,
@@ -4153,13 +4154,15 @@ select {
     .program-campaign-aside .program-campaign-donation__contact .program-campaign-donate {
         width: 100%;
         min-height: 42px;
+        height: auto;
         justify-content: flex-start;
         margin-top: 10px;
         padding: 9px 10px;
         font-size: .58rem;
         letter-spacing: -.015em;
+        line-height: 1.35;
         text-align: left;
-        white-space: nowrap;
+        white-space: normal;
     }
 
     .program-campaign-aside .program-campaign-donation__notice {
