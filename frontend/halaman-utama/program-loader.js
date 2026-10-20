@@ -551,12 +551,20 @@ function setupPage() {
     const campaign = document.querySelector('.program-campaign');
     const campaignHeader = campaign?.querySelector('.program-campaign-header');
     const stickyCta = campaign?.querySelector('[data-campaign-sticky-cta]');
+    const footer = document.querySelector('.footer');
     const desktopCampaign = matchMedia('(min-width: 961px)');
     let framePending = false;
     const updateFloatingUi = () => {
         framePending = false;
         top?.classList.toggle('visible', scrollY > 300);
         const showStickyCta = Boolean(desktopCampaign.matches && campaignHeader && campaignHeader.getBoundingClientRect().bottom <= 150);
+        let footerShift = 0;
+        if (showStickyCta && stickyCta && footer) {
+            const stickyTop = Number.parseFloat(getComputedStyle(stickyCta).top) || 145;
+            const stickyBottom = stickyTop + stickyCta.offsetHeight;
+            footerShift = Math.min(0, footer.getBoundingClientRect().top - 24 - stickyBottom);
+        }
+        stickyCta?.style.setProperty('--campaign-aside-footer-shift', `${Math.round(footerShift)}px`);
         campaign?.classList.toggle('is-campaign-aside-visible', showStickyCta);
         stickyCta?.setAttribute('aria-hidden', String(!showStickyCta));
     };

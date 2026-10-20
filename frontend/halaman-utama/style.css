@@ -4009,6 +4009,7 @@ select {
     }
 
     .program-campaign-aside {
+        --campaign-aside-footer-shift: 0px;
         position: fixed;
         z-index: 950;
         top: 145px;
@@ -4019,15 +4020,15 @@ select {
         opacity: 0;
         visibility: hidden;
         pointer-events: none;
-        transform: translateY(18px);
-        transition: opacity .28s ease, visibility .28s ease, transform .28s ease;
+        transform: translateY(calc(18px + var(--campaign-aside-footer-shift)));
+        transition: opacity .28s ease, visibility .28s ease;
     }
 
     .program-campaign.is-campaign-aside-visible .program-campaign-aside {
         opacity: 1;
         visibility: visible;
         pointer-events: auto;
-        transform: translateY(0);
+        transform: translateY(var(--campaign-aside-footer-shift));
     }
 
     .program-campaign-aside .program-campaign-donation--complete {
