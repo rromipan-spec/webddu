@@ -3936,7 +3936,8 @@ select {
     max-height: 280px;
     object-fit: contain;
     border-radius: 11px;
-    transform: translateY(-7px);
+    transform: translateY(-7px) scale(1.07);
+    transform-origin: center;
 }
 
 .program-campaign-donation__qr small {
