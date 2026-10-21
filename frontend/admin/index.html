@@ -29,9 +29,9 @@
         .toolbar button.active { background: #0756D6; color: #FAFAF7; border-color: #0756D6; }
         .visual-editor { background: #FAFAF7; border: 1px solid #EAF2FF; border-radius: 8px; padding: 20px; min-height: 450px; outline: none; line-height: 1.8; font-size: 1.1rem; }
         .visual-editor:focus { border-color: #0756D6; }
-        .visual-editor .content-photo-grid, .mock-content .content-photo-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 24px 0; }
-        .visual-editor .content-photo-grid figure, .mock-content .content-photo-grid figure { margin: 0; }
-        .visual-editor .content-photo-grid img, .mock-content .content-photo-grid img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 10px; }
+        .visual-editor .content-photo-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 24px 0; }
+        .visual-editor .content-photo-grid figure { margin: 0; }
+        .visual-editor .content-photo-grid img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 10px; }
         .visual-editor .content-photo-grid figure { position: relative; }
         .content-photo-remove, [data-remove-slider-image], [data-remove-hero-image], [data-clear-seo-image] { position: absolute; top: 8px; right: 8px; z-index: 3; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0; color: #FAFAF7; background: #DC2626; border: 2px solid #FAFAF7; border-radius: 50%; box-shadow: 0 3px 10px rgba(23, 32, 51, .25); cursor: pointer; font-size: 1.25rem; font-weight: 800; line-height: 1; }
         .content-photo-remove:hover, [data-remove-slider-image]:hover, [data-remove-hero-image]:hover, [data-clear-seo-image]:hover { background: #B91C1C; }
@@ -60,25 +60,6 @@
         .history-item p { margin: 0 0 4px; font-weight: 700; color: #063B9E; }
         .history-item small { color: #172033; }
         
-        /* Live Preview Miniature (Super Mini Scale to see whole page at once) */
-        .preview-group { flex-grow: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
-        .preview-pane { 
-            background: #EAF2FF; border: 2px solid #0756D6; border-radius: 8px;
-            overflow-y: auto; overflow-x: hidden; zoom: 0.2; height: 100%;
-            display: flex; flex-direction: column;
-            scrollbar-width: none; /* Menyembunyikan scrollbar agar lebih bersih */
-        }
-        .preview-pane::-webkit-scrollbar { display: none; } /* Hide scrollbar Chrome/Safari */
-        .mock-header { background: #063B9E; padding: 20px; color: #FAFAF7; display: flex; justify-content: space-between; font-weight: bold; }
-        .mock-hero { background: #063B9E; padding: 100px 40px; text-align: center; color: #FAFAF7; background-size: cover; background-position: center; position: relative; }
-        .mock-hero::before { content: ""; position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(6, 59, 158, 0.7); z-index: 1; }
-        .mock-hero * { position: relative; z-index: 2; }
-        .mock-card { background: #FAFAF7; width: 85%; margin: -60px auto 60px; padding: 60px; border-radius: 25px; box-shadow: 0 15px 40px rgba(23, 32, 51, 0.15); position: relative; z-index: 10; }
-        .mock-content { color: #172033; line-height: 1.8; font-size: 1.2rem; }
-        .mock-footer { background: #063B9E; padding: 60px; color: #FAFAF7; text-align: center; margin-top: auto; }
-
-        .preview-label { font-size: 0.75rem; font-weight: bold; color: #172033; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
-        
         /* Dashboard Stats Styles */
         .stats-grid-admin { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 30px; }
         .stat-card-admin { background: #EAF2FF; padding: 25px; border-radius: 12px; border-left: 5px solid #0756D6; text-align: center; }
@@ -88,7 +69,6 @@
         @media (max-width: 768px) {
             .admin-container { grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 22px 12px 60px; }
             .admin-sidebar { position: static; height: auto; }
-            .preview-group { display: none; }
             .card { padding: 20px 16px; }
             .admin-slider-preview { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
             .drop-zone { padding: 18px 12px; }
@@ -104,7 +84,7 @@
             .toolbar button, .toolbar select { flex: 1 1 auto; }
         }
     </style>
-    <link rel="stylesheet" href="admin.css?v=20261021-2">
+    <link rel="stylesheet" href="admin.css?v=20261021-3">
     <link rel="stylesheet" href="../halaman-utama/ddu-theme.css?v=20260917-6">
 </head>
 <body class="admin-page">
@@ -167,23 +147,6 @@
                     <button type="button" id="btn-logout">Keluar</button>
                 </div>
             </div>
-            
-            <div class="preview-group">
-                <div class="preview-label">Live Preview (Tampilan Halaman)</div>
-                <div id="content-preview" class="preview-pane">
-                    <div class="mock-header"><span>Dompet Dana Umat</span><span>Menu ☰</span></div>
-                    <div id="p-hero" class="mock-hero">
-                        <h5 id="p-label" style="letter-spacing: 3px; font-size: 1rem;">ARTIKEL</h5>
-                        <h1 id="p-title" style="color: #FAFAF7; font-size: 3rem; margin: 20px 0;">Judul</h1>
-                        <p id="p-sub" style="color: #EAF2FF; font-size: 1.2rem;">Diterbitkan pada...</p>
-                    </div>
-                    <div id="p-card" class="mock-card">
-                        <img id="p-img" src="" style="width: 100%; border-radius: 15px; margin-bottom: 30px; display: none;">
-                        <div id="p-body" class="mock-content">Mulai mengetik...</div>
-                    </div>
-                    <div class="mock-footer"><p>&copy; 2023 DDU. All Rights Reserved.</p></div>
-                </div>
-            </div>
         </aside>
 
         <main class="admin-content">
@@ -195,7 +158,6 @@
                 </div>
                 <div class="admin-workspace-meta">
                     <span id="admin-current-date">Hari ini</span>
-                    <a href="/" target="_blank" rel="noopener noreferrer">Buka website <span aria-hidden="true">↗</span></a>
                 </div>
             </header>
 
@@ -494,14 +456,8 @@
                             <input type="file" id="program-section-media-file" hidden accept="image/jpeg,image/png,image/webp,video/mp4,video/webm" multiple>
                             <p class="program-section-help">Tips: bagian yang disembunyikan tetap tersimpan, tetapi tidak terlihat oleh pengunjung website.</p>
                         </section>
-                        <div class="form-group program-legacy-field hidden">
-                            <label>Judul Hero (Di Landing Page)</label>
-                            <input type="text" id="prog-hero-title">
-                        </div>
-                        <div class="form-group program-legacy-field hidden">
-                            <label>Sub-Judul Hero</label>
-                            <input type="text" id="prog-hero-subtitle">
-                        </div>
+                        <input type="hidden" id="prog-hero-title">
+                        <input type="hidden" id="prog-hero-subtitle">
                         <section class="publication-settings donation-admin-settings" aria-labelledby="prog-donation-heading">
                             <h3 id="prog-donation-heading">Kanal Donasi Program</h3>
                             <p class="seo-settings-note">Nomor WhatsApp dan QR ini tampil di kotak donasi di samping media. Pengaturan ini hanya berlaku untuk program yang sedang diedit.</p>
@@ -540,81 +496,8 @@
                                 </div>
                             </div>
                         </section>
-                        <div class="program-legacy-editor hidden" aria-hidden="true">
-                        <label>Isi Detail Program (Landing Page)</label>
-                        <div class="toolbar">
-                            <select aria-label="Pilih template isi program" onchange="applyContentTemplate('prog', this.value); this.selectedIndex=0;">
-                                <option value="" selected disabled>Template Redaksi</option>
-                                <option value="program-wakaf">Program Wakaf</option>
-                                <option value="program-sosial">Program Sosial/Kemanusiaan</option>
-                                <option value="program-umum">Program Umum</option>
-                            </select>
-                            <button type="button" id="prog-btn-bold" onclick="formatDoc('bold')"><b>B</b> (Tebal)</button>
-                            <button type="button" id="prog-btn-italic" onclick="formatDoc('italic')"><i>I</i> (Miring)</button>
-                            <button type="button" id="prog-btn-underline" onclick="formatDoc('underline')"><u>U</u> (Garis Bawah)</button>
-                            <select onchange="formatDoc('formatBlock', this.value); this.selectedIndex=0;">
-                                <option value="" selected disabled>Ukuran Teks</option>
-                                <option value="H1">Judul Utama (H1)</option>
-                                <option value="H2">Sub Judul (H2)</option>
-                                <option value="H3">Heading Kecil (H3)</option>
-                                <option value="p">Paragraf Normal</option>
-                            </select>
-                            <button type="button" onclick="formatDoc('formatBlock', 'p')">Paragraf</button>
-                            <select aria-label="Atur jarak baris" onchange="applyBlockFormatting('spacing', this.value); this.selectedIndex=0;">
-                                <option value="" selected disabled>Jarak Baris</option>
-                                <option value="1">1,0</option>
-                                <option value="1.15">1,15</option>
-                                <option value="1.5">1,5</option>
-                                <option value="2">2,0</option>
-                                <option value="default">Standar Website</option>
-                            </select>
-                            <button type="button" onclick="applyBlockFormatting('align', 'left')" title="Rata kiri" aria-label="Rata kiri">≡ Kiri</button>
-                            <button type="button" onclick="applyBlockFormatting('align', 'center')" title="Rata tengah" aria-label="Rata tengah">≡ Tengah</button>
-                            <button type="button" onclick="applyBlockFormatting('align', 'right')" title="Rata kanan" aria-label="Rata kanan">≡ Kanan</button>
-                            <button type="button" onclick="applyBlockFormatting('align', 'justify')" title="Rata kiri dan kanan" aria-label="Rata kiri dan kanan">☰ Justify</button>
-                            <button type="button" onclick="formatDoc('insertUnorderedList')">• Daftar Poin</button>
-                            <button type="button" onclick="formatDoc('insertOrderedList')">1. Daftar Nomor</button>
-                            <button type="button" onclick="formatDoc('formatBlock', 'blockquote')">❝ Kutipan</button>
-                            <button type="button" onclick="insertEditorLink()">🔗 Tautan</button>
-                            <button type="button" onclick="formatDoc('insertHorizontalRule')">Garis Pemisah</button>
-                            <button type="button" onclick="formatDoc('removeFormat')">Hapus Format</button>
-                            <button type="button" onclick="formatDoc('undo')" aria-label="Batalkan perubahan terakhir">↶ Undo</button>
-                            <button type="button" onclick="formatDoc('redo')" aria-label="Ulangi perubahan">↷ Redo</button>
-                            <button type="button" id="prog-add-content-photos">+ Tambah Foto</button>
-                            <select id="prog-image-position" aria-label="Atur posisi gambar" onchange="applyImageFormatting('position', this.value); this.selectedIndex=0;">
-                                <option value="" selected disabled>Posisi Gambar</option>
-                                <option value="left">Kiri</option>
-                                <option value="center">Tengah</option>
-                                <option value="right">Kanan</option>
-                            </select>
-                            <select id="prog-image-wrap" aria-label="Atur wrap text gambar" onchange="applyImageFormatting('wrap', this.value); this.selectedIndex=0;">
-                                <option value="" selected disabled>Wrap Teks</option>
-                                <option value="inline">Sebaris dengan Teks</option>
-                                <option value="top-bottom">Atas &amp; Bawah</option>
-                                <option value="square-left">Kotak – Gambar di Kiri</option>
-                                <option value="square-right">Kotak – Gambar di Kanan</option>
-                            </select>
-                            <select id="prog-image-size" aria-label="Atur ukuran gambar" onchange="applyImageFormatting('size', this.value); this.selectedIndex=0;">
-                                <option value="" selected disabled>Ukuran Gambar</option>
-                                <option value="25">Kecil (25%)</option>
-                                <option value="40">Sedang (40%)</option>
-                                <option value="60">Besar (60%)</option>
-                                <option value="100">Lebar Penuh (100%)</option>
-                            </select>
-                            <select id="prog-image-gap" aria-label="Atur jarak gambar terhadap teks" onchange="applyImageFormatting('gap', this.value); this.selectedIndex=0;">
-                                <option value="" selected disabled>Jarak Teks</option>
-                                <option value="tight">Rapat</option>
-                                <option value="normal">Normal</option>
-                                <option value="wide">Lebar</option>
-                            </select>
-                            <input type="file" id="prog-content-image-files" hidden accept="image/jpeg,image/png,image/webp" multiple>
-                            <span id="prog-content-upload-status" class="content-upload-status" aria-live="polite">Letakkan kursor pada paragraf tujuan sebelum menambah foto. Setelah masuk, klik fotonya untuk mengatur posisi dan wrap teks. Maksimal 20 foto, 5 MB dan 24 MP per foto.</span>
-                        </div>
-                        <div class="editor-area">
-                            <div id="prog-content-editor" class="visual-editor" contenteditable="true"></div>
-                            <textarea id="prog-content" class="hidden-input"></textarea>
-                        </div>
-                        </div>
+                        <div id="prog-content-editor" hidden></div>
+                        <textarea id="prog-content" hidden></textarea>
                         <button type="submit" class="btn btn-primary">Simpan Program</button>
                     </form>
                 </div>
@@ -1128,6 +1011,6 @@
         </form>
     </dialog>
 
-    <script type="module" src="admin.js?v=20261021-2"></script>
+    <script type="module" src="admin.js?v=20261021-3"></script>
 </body>
 </html>

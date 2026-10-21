@@ -315,7 +315,6 @@ window.switchTab = tab => {
     document.getElementById('content-profile')?.classList.toggle('hidden', tab !== 'profile');
     document.getElementById('content-history')?.classList.toggle('hidden', tab !== 'history');
     document.getElementById('content-institution')?.classList.toggle('hidden', tab !== 'institution');
-    document.querySelector('.preview-group')?.classList.toggle('hidden', tab === 'dashboard' || tab === 'health' || tab === 'homepage' || tab === 'programs-admin' || tab === 'admins' || tab === 'profile' || tab === 'history' || tab === 'institution');
     document.getElementById('tab-dashboard')?.classList.toggle('active', tab === 'dashboard');
     document.getElementById('tab-health')?.classList.toggle('active', tab === 'health');
     document.getElementById('tab-homepage')?.classList.toggle('active', tab === 'homepage');
@@ -519,38 +518,6 @@ window.applyImageFormatting = (type, value) => {
 };
 
 const contentTemplates = {
-    'program-wakaf': `
-        <h2>Bangun Rumah Perjuangan Para Santri Penjaga Al-Qur’an</h2>
-        <p>Setiap hari, para santri yatim dan dhuafa di Pesantren Daarul Uluum Bogor belajar, beribadah, serta menghafal Al-Qur’an dengan penuh kesungguhan. Di tengah semangat itu, mereka masih membutuhkan tempat tinggal yang lebih layak, aman, dan nyaman untuk mendukung proses pendidikan serta pembinaan.</p>
-        <blockquote>Asrama bukan sekadar tempat beristirahat. Di sanalah para santri menata disiplin, memperkuat persaudaraan, menjaga hafalan, dan mempersiapkan diri menjadi generasi yang bermanfaat bagi umat.</blockquote>
-        <h2>Mengapa Program Ini Penting?</h2>
-        <ul>
-            <li>Menyediakan ruang tinggal yang aman dan layak bagi para santri.</li>
-            <li>Mendukung kegiatan belajar, ibadah, dan menghafal Al-Qur’an.</li>
-            <li>Menciptakan lingkungan pembinaan yang tertib, sehat, dan nyaman.</li>
-            <li>Menjadi sarana amal jariyah yang manfaatnya terus dirasakan.</li>
-        </ul>
-        <h2>Wakaf Anda Menjadi Manfaat Berkelanjutan</h2>
-        <p>Melalui Program Wakaf Asrama Santri, Dompet Dana Umat Daarul Uluum mengajak Ayah, Bunda, Kakak, dan seluruh Sahabat Kebaikan untuk ikut membangun serta merenovasi rumah perjuangan para santri. Setiap dukungan akan diarahkan untuk kebutuhan pembangunan sesuai tahapan program dan dilaporkan melalui kanal resmi lembaga.</p>
-        <h2>Mari Ambil Bagian</h2>
-        <p>Tidak harus menunggu mampu memberi dalam jumlah besar. Setiap wakaf yang ditunaikan dengan ikhlas akan menyempurnakan ikhtiar bersama dalam menghadirkan tempat terbaik bagi para penjaga Al-Qur’an.</p>
-        <p><strong>Klik “Wakaf Sekarang” untuk memperoleh informasi penyaluran melalui WhatsApp resmi Dompet Dana Umat.</strong></p>`,
-    'program-sosial': `
-        <h2>Latar Belakang Program</h2>
-        <p>Jelaskan kondisi penerima manfaat, masalah yang dihadapi, serta alasan program ini perlu dilaksanakan.</p>
-        <h2>Tujuan Program</h2>
-        <ul><li>Tujuan utama program.</li><li>Perubahan yang ingin diwujudkan.</li><li>Manfaat jangka panjang.</li></ul>
-        <h2>Sasaran Penerima Manfaat</h2>
-        <p>Jelaskan siapa penerima manfaat, lokasi, dan kriteria penerima secara singkat.</p>
-        <h2>Rencana Penyaluran</h2>
-        <ol><li>Pengumpulan dukungan.</li><li>Verifikasi kebutuhan.</li><li>Pelaksanaan dan dokumentasi.</li><li>Pelaporan hasil program.</li></ol>
-        <h2>Mari Berkontribusi</h2>
-        <p>Tutup dengan ajakan yang jelas, jujur, dan sesuai tujuan program.</p>`,
-    'program-umum': `
-        <h2>Tentang Program</h2><p>Jelaskan latar belakang dan kebutuhan yang ingin dijawab melalui program ini.</p>
-        <h2>Tujuan dan Manfaat</h2><ul><li>Tujuan pertama.</li><li>Manfaat bagi penerima.</li><li>Dampak yang diharapkan.</li></ul>
-        <h2>Cara Program Dilaksanakan</h2><ol><li>Tahap persiapan.</li><li>Tahap pelaksanaan.</li><li>Dokumentasi dan pelaporan.</li></ol>
-        <h2>Ambil Bagian dalam Kebaikan</h2><p>Tambahkan ajakan berkontribusi dan arahkan pengunjung ke kanal resmi.</p>`,
     'article-activity': `
         <h2>Rangkaian Kegiatan</h2><p>Ceritakan waktu, lokasi, peserta, dan jalannya kegiatan dengan urutan yang mudah diikuti.</p>
         <h2>Manfaat yang Dirasakan</h2><p>Jelaskan hasil kegiatan serta perubahan yang dirasakan penerima manfaat.</p>
@@ -599,25 +566,6 @@ function updatePreview() {
     const content = serializeEditorContent(editor);
     const hidden = document.getElementById(`${prefix}-content`);
     if (hidden) hidden.value = content;
-    const previewHero = program ? programSections.find(section => section.type === 'hero' && section.visible) : null;
-    const title = previewHero?.data.title || document.getElementById(`${prefix}-title`)?.value || 'Judul';
-    const fallbackImage = document.getElementById(`${prefix}-image-url`)?.value || '';
-    const image = program && previewHero
-        ? (previewHero.data.media_type === 'image' ? previewHero.data.media_url : (previewHero.data.poster_url || previewHero.data.mobile_media_url || fallbackImage))
-        : fallbackImage;
-    const pTitle = document.getElementById('p-title');
-    const pSub = document.getElementById('p-sub');
-    const pImage = document.getElementById('p-img');
-    const pBody = document.getElementById('p-body');
-    const pHero = document.getElementById('p-hero');
-    if (pTitle) pTitle.textContent = title;
-    if (pSub) pSub.textContent = article ? `Diterbitkan pada ${new Date().toLocaleDateString('id-ID')}` : (previewHero?.data.subtitle || document.getElementById('prog-hero-subtitle')?.value || 'Subjudul program');
-    if (pImage) { pImage.src = managedImageVariant(image, 'thumb'); pImage.style.display = image ? 'block' : 'none'; }
-    if (pHero) {
-        const heroImage = article ? (parseGalleryImages(document.getElementById('post-hero-images')?.value, 10)[0] || '') : image;
-        pHero.style.backgroundImage = heroImage ? `linear-gradient(rgba(6, 59, 158, .76), rgba(6, 59, 158, .76)), url("${heroImage.replace(/["\\]/g, '\\$&')}")` : '';
-    }
-    if (pBody) pBody.innerHTML = content || 'Mulai mengetik untuk melihat hasil...';
     if (program) updateFriendlyProgramPreview();
 }
 
@@ -3662,7 +3610,6 @@ function renderPerformanceRanking(containerId, rows) {
 async function showDashboard() {
     document.getElementById('login-section')?.classList.add('hidden');
     document.getElementById('dashboard-section')?.classList.remove('hidden');
-    document.querySelector('.preview-group')?.classList.add('hidden');
     await loadProfile();
     await Promise.all([fetchStats(), fetchSystemHealth(), loadLists()]);
     activateProgramCanvasStudio();
@@ -4361,13 +4308,9 @@ async function init() {
         document.getElementById(id)?.addEventListener('input', updateHomepagePreview);
     });
     setupContentPhotoUpload('post');
-    setupContentPhotoUpload('prog');
-    ['post', 'prog'].forEach(prefix => {
-        const editor = document.getElementById(`${prefix}-content-editor`);
-        editor?.addEventListener('click', event => {
-            const figure = event.target.closest('figure');
-            if (figure?.querySelector('img')) selectEditorImage(prefix, figure);
-        });
+    document.getElementById('post-content-editor')?.addEventListener('click', event => {
+        const figure = event.target.closest('figure');
+        if (figure?.querySelector('img')) selectEditorImage('post', figure);
     });
     try {
         const session = await api('session');
