@@ -1,4 +1,5 @@
 import { detailSliderHtml, initDetailSliders, recordSliderImages } from './detail-slider.js?v=20260721-4';
+import { initManagedVideoAudio } from './video-audio.js?v=20261021-1';
 
 const API = '../api/index.php';
 const SITE_NAME = 'Dompet Dana Umat';
@@ -86,7 +87,7 @@ function articleHeroMediaHtml(post, heroImages) {
     if (type === 'video') {
         const source = localVideoUrl(post.hero_video_url);
         return {
-            media: source ? `${fallback}<video class="post-hero-video" src="${escapeHtml(source)}" ${reducedMotion ? '' : 'autoplay'} muted loop playsinline preload="metadata" poster="${escapeHtml(fallbackUrl)}" aria-hidden="true"></video>` : fallback,
+            media: source ? `${fallback}<video class="post-hero-video" src="${escapeHtml(source)}" ${reducedMotion ? '' : 'autoplay'} muted loop playsinline preload="metadata" poster="${escapeHtml(fallbackUrl)}" data-managed-background-video></video>` : fallback,
             dots: ''
         };
     }
@@ -94,17 +95,17 @@ function articleHeroMediaHtml(post, heroImages) {
         const id = youtubeVideoId(post.hero_video_url);
         const autoplay = reducedMotion ? '0' : '1';
         const source = id
-            ? `https://www.youtube-nocookie.com/embed/${id}?autoplay=${autoplay}&mute=1&loop=1&playlist=${id}&controls=0&rel=0&playsinline=1&disablekb=1`
+            ? `https://www.youtube-nocookie.com/embed/${id}?autoplay=${autoplay}&mute=1&loop=1&playlist=${id}&controls=0&rel=0&playsinline=1&enablejsapi=1`
             : '';
         return {
-            media: source ? `${fallback}<iframe class="post-hero-video post-hero-video-embed" src="${source}" title="Video latar ${escapeHtml(post.title)}" allow="autoplay; encrypted-media; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" tabindex="-1" aria-hidden="true"></iframe>` : fallback,
+            media: source ? `${fallback}<iframe class="post-hero-video post-hero-video-embed" src="${source}" title="Video latar ${escapeHtml(post.title)}" allow="autoplay; encrypted-media; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" data-managed-background-video></iframe>` : fallback,
             dots: ''
         };
     }
     const driveId = driveVideoId(post.hero_video_url);
     const source = driveId ? `https://drive.google.com/uc?export=download&id=${encodeURIComponent(driveId)}` : '';
     return {
-        media: source ? `${fallback}<video class="post-hero-video post-hero-drive-video" src="${source}" ${reducedMotion ? '' : 'autoplay'} muted loop playsinline preload="metadata" poster="${escapeHtml(fallbackUrl)}" aria-hidden="true"></video>` : fallback,
+        media: source ? `${fallback}<video class="post-hero-video post-hero-drive-video" src="${source}" ${reducedMotion ? '' : 'autoplay'} muted loop playsinline preload="metadata" poster="${escapeHtml(fallbackUrl)}" data-managed-background-video></video>` : fallback,
         dots: ''
     };
 }
@@ -255,6 +256,7 @@ function renderPost(container, post, related) {
     initDetailSliders(container);
     initPostHeroSlider(container);
     initPostHeroVideo(container);
+    initManagedVideoAudio(container);
     setupShareButtons(container, previewUrl, post.title, canonicalUrl);
 }
 

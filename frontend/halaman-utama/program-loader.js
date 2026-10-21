@@ -1,5 +1,6 @@
 import { siteFooterHtml } from './site-footer.js?v=20260928-1';
 import { detailSliderHtml, initDetailSliders, recordSliderImages } from './detail-slider.js?v=20260721-4';
+import { initManagedVideoAudio } from './video-audio.js?v=20261021-1';
 
 const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, char => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
@@ -47,6 +48,7 @@ function renderProgram(container, program) {
     container.querySelectorAll('.mock-content').forEach(removeEmptyContentLines);
     initDetailSliders(container);
     initProgramHeroVideo(container);
+    initManagedVideoAudio(container);
 }
 
 function campaignAction(program, sections = []) {
@@ -385,15 +387,15 @@ function sectionMediaHtml(type, url, alt = '', options = {}) {
         const source = mediaType === 'drive' ? driveDirectUrl(safeUrl) : safeUrl;
         if (!source) return '';
         const shouldAutoplay = options.background && !matchMedia('(prefers-reduced-motion: reduce)').matches;
-        const backgroundAttrs = options.background ? ` ${shouldAutoplay ? 'autoplay ' : ''}muted loop playsinline tabindex="-1" aria-hidden="true"` : ' controls playsinline';
+        const backgroundAttrs = options.background ? ` ${shouldAutoplay ? 'autoplay ' : ''}muted loop playsinline data-managed-background-video` : ' controls playsinline';
         return `<video src="${escapeHtml(source)}"${options.poster ? ` poster="${escapeHtml(safeMediaHref(options.poster))}"` : ''}${backgroundAttrs} preload="metadata"></video>`;
     }
     if (mediaType === 'youtube') {
         const id = youtubeVideoId(safeUrl);
         if (!id) return '';
         const autoplay = options.background && !matchMedia('(prefers-reduced-motion: reduce)').matches ? 1 : 0;
-        const query = options.background ? `autoplay=${autoplay}&mute=1&loop=1&playlist=${id}&controls=0&rel=0&playsinline=1` : 'rel=0&playsinline=1';
-        return `<iframe src="https://www.youtube-nocookie.com/embed/${id}?${query}" title="${escapeHtml(alt || 'Video program')}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe>`;
+        const query = options.background ? `autoplay=${autoplay}&mute=1&loop=1&playlist=${id}&controls=0&rel=0&playsinline=1&enablejsapi=1` : 'rel=0&playsinline=1';
+        return `<iframe src="https://www.youtube-nocookie.com/embed/${id}?${query}" title="${escapeHtml(alt || 'Video program')}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"${options.background ? ' data-managed-background-video' : ''}></iframe>`;
     }
     const mobile = safeMediaHref(options.mobileUrl);
     return `<picture>${mobile ? `<source media="(max-width: 767px)" srcset="${escapeHtml(mobile)}">` : ''}<img src="${escapeHtml(safeUrl)}" alt="${escapeHtml(alt)}" loading="${options.background ? 'eager' : 'lazy'}"></picture>`;
@@ -475,19 +477,19 @@ function programHeroMediaHtml(program, sliderImages) {
     if (type === 'video') {
         const source = localVideoUrl(program.hero_video_url);
         if (!source) return fallback;
-        return `${fallback}<video class="program-hero-video" src="${escapeHtml(source)}" ${reducedMotion ? '' : 'autoplay'} muted loop playsinline preload="metadata" poster="${escapeHtml(fallbackUrl)}" aria-hidden="true"></video>`;
+        return `${fallback}<video class="program-hero-video" src="${escapeHtml(source)}" ${reducedMotion ? '' : 'autoplay'} muted loop playsinline preload="metadata" poster="${escapeHtml(fallbackUrl)}" data-managed-background-video></video>`;
     }
     if (type === 'youtube') {
         const id = youtubeVideoId(program.hero_video_url);
         if (!id) return fallback;
         const autoplay = reducedMotion ? '0' : '1';
-        const source = `https://www.youtube-nocookie.com/embed/${id}?autoplay=${autoplay}&mute=1&loop=1&playlist=${id}&controls=0&rel=0&playsinline=1&disablekb=1`;
-        return `${fallback}<iframe class="program-hero-video program-hero-video-embed" src="${source}" title="Video latar ${escapeHtml(program.title)}" allow="autoplay; encrypted-media; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" tabindex="-1" aria-hidden="true"></iframe>`;
+        const source = `https://www.youtube-nocookie.com/embed/${id}?autoplay=${autoplay}&mute=1&loop=1&playlist=${id}&controls=0&rel=0&playsinline=1&enablejsapi=1`;
+        return `${fallback}<iframe class="program-hero-video program-hero-video-embed" src="${source}" title="Video latar ${escapeHtml(program.title)}" allow="autoplay; encrypted-media; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" data-managed-background-video></iframe>`;
     }
     const driveId = driveVideoId(program.hero_video_url);
     if (!driveId) return fallback;
     const source = `https://drive.google.com/uc?export=download&id=${encodeURIComponent(driveId)}`;
-    return `${fallback}<video class="program-hero-video program-hero-drive-video" src="${source}" ${reducedMotion ? '' : 'autoplay'} muted loop playsinline preload="metadata" poster="${escapeHtml(fallbackUrl)}" aria-hidden="true"></video>`;
+    return `${fallback}<video class="program-hero-video program-hero-drive-video" src="${source}" ${reducedMotion ? '' : 'autoplay'} muted loop playsinline preload="metadata" poster="${escapeHtml(fallbackUrl)}" data-managed-background-video></video>`;
 }
 
 function localVideoUrl(url) {

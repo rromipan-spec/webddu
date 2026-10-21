@@ -120,7 +120,7 @@ function setHeroVideoPreview(prefix, url) {
     if (input) input.value = url || '';
     if (!preview) return;
     preview.innerHTML = url
-        ? `<video src="${escapeHtml(url)}" controls muted playsinline preload="metadata"></video><button type="button" data-clear-hero-video="${escapeHtml(prefix)}" aria-label="Hapus video">×</button>`
+        ? `<video src="${escapeHtml(url)}" controls playsinline preload="metadata"></video><button type="button" data-clear-hero-video="${escapeHtml(prefix)}" aria-label="Hapus video">×</button>`
         : '';
 }
 
@@ -2268,7 +2268,7 @@ function sectionMediaField(section, field, label, options = {}) {
     const preview = value
         ? (isExternalPlayer
             ? `<a class="program-section-media-link" href="${escapeHtml(value)}" target="_blank" rel="noopener noreferrer">Buka tautan media ↗</a>`
-            : (isVideo ? `<video class="program-section-media-preview" src="${escapeHtml(value)}" controls muted playsinline></video>` : `<img class="program-section-media-preview" src="${escapeHtml(value)}" alt="">`))
+            : (isVideo ? `<video class="program-section-media-preview" src="${escapeHtml(value)}" controls playsinline></video>` : `<img class="program-section-media-preview" src="${escapeHtml(value)}" alt="">`))
         : '';
     return `<div class="form-group is-wide"><label>${escapeHtml(label)}</label><div class="program-section-media-control"><input type="text" value="${escapeHtml(value)}" data-section-field="${field}" placeholder="${isExternalPlayer ? 'Tempel tautan HTTPS media' : 'Terisi otomatis setelah upload'}">${isExternalPlayer ? '' : `<button type="button" data-section-action="upload" data-upload-field="${field}" data-upload-kind="${options.kind || 'image'}">Pilih File</button>`}</div><small class="program-field-help">${isExternalPlayer ? 'Salin tautan YouTube atau Google Drive, lalu tempel di kolom ini.' : 'Klik Pilih File. Kolom alamat akan terisi otomatis setelah upload berhasil.'}</small>${preview}</div>`;
 }
@@ -2321,7 +2321,7 @@ function programCanvasBlockPreview(block, sectionKey) {
     if (block.type === 'quote') preview = `<blockquote class="program-canvas-quote">${content || 'Tuliskan kutipan penting di sini.'}</blockquote>`;
     if (block.type === 'list') preview = `<ul class="program-canvas-list">${String(block.content || '').split(/\r?\n/).filter(Boolean).map(item => `<li>${escapeHtml(item)}</li>`).join('') || '<li>Poin daftar</li>'}</ul>`;
     if (block.type === 'image') preview = url ? `<img src="${url}" alt="${escapeHtml(block.alt || '')}">` : '<span class="program-canvas-placeholder">Pilih gambar</span>';
-    if (block.type === 'video') preview = url ? `<video src="${url}" muted playsinline controls></video>` : '<span class="program-canvas-placeholder">Pilih video atau tempel tautan</span>';
+    if (block.type === 'video') preview = url ? `<video src="${url}" playsinline controls></video>` : '<span class="program-canvas-placeholder">Pilih video atau tempel tautan</span>';
     if (block.type === 'button') preview = `<span class="program-canvas-button">${escapeHtml(block.label || 'Tombol')}</span>`;
     if (block.type === 'columns') preview = `<span class="program-canvas-columns">${Array.from({ length: Math.max(2, Math.min(4, Number(block.content) || 2)) }, () => '<i></i>').join('')}</span>`;
     if (block.type === 'spacer') preview = '<span class="program-canvas-spacer">Jarak kosong</span>';

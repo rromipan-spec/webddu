@@ -3691,6 +3691,78 @@ select {
 .program-campaign-cover > .program-hero-video { position: absolute; inset: 0; z-index: 1; }
 .program-campaign-cover__placeholder { width: 100%; height: 100%; background: linear-gradient(135deg, #EAF2FF, #8DB4EE); }
 
+/* Kontrol suara untuk video hero/latar yang harus mulai mute agar autoplay tidak diblokir browser. */
+.media-sound-toggle {
+    position: absolute;
+    right: 18px;
+    bottom: 18px;
+    z-index: 12;
+    display: inline-flex;
+    min-height: 42px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 9px 13px;
+    color: #172033;
+    border: 1px solid rgba(255, 255, 255, .82);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .9);
+    box-shadow: 0 10px 30px rgba(6, 31, 74, .22);
+    backdrop-filter: blur(12px);
+    cursor: pointer;
+    font: inherit;
+    font-size: .76rem;
+    font-weight: 600;
+    line-height: 1;
+    transition: color .2s ease, background-color .2s ease, transform .2s ease;
+}
+
+.media-sound-toggle svg {
+    width: 19px;
+    height: 19px;
+    flex: 0 0 19px;
+    fill: currentColor;
+}
+
+.media-sound-toggle:hover,
+.media-sound-toggle:focus-visible {
+    color: #FAFAF7;
+    background: #0756D6;
+    transform: translateY(-2px);
+}
+
+.media-sound-toggle.is-unmuted {
+    color: #FAFAF7;
+    border-color: rgba(255, 255, 255, .25);
+    background: rgba(6, 59, 158, .92);
+}
+
+.program-section-hero > .media-sound-toggle,
+.program-section-content--background > .media-sound-toggle {
+    z-index: 8;
+}
+
+.post-hero > .media-sound-toggle,
+.detail-program-hero > .media-sound-toggle {
+    z-index: 5;
+}
+
+@media (max-width: 620px) {
+    .media-sound-toggle {
+        right: 12px;
+        bottom: 12px;
+        min-height: 38px;
+        padding: 8px 10px;
+        font-size: .68rem;
+    }
+
+    .media-sound-toggle svg {
+        width: 17px;
+        height: 17px;
+        flex-basis: 17px;
+    }
+}
+
 .program-campaign-cover .detail-image-slider,
 .program-campaign-cover .detail-image-slide,
 .program-campaign-cover .detail-image-slide img { width: 100%; height: 100%; }
