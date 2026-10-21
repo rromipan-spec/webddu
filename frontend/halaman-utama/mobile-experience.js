@@ -1,3 +1,5 @@
+import { initManagedVideoAudio } from './video-audio.js?v=20261021-1';
+
 const mobileQuery = window.matchMedia('(max-width: 768px)');
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -32,6 +34,7 @@ const setupDeferredVideo = () => {
         if (!source || frame.hasAttribute('src')) return;
         frame.src = source;
         frame.removeAttribute('data-src');
+        initManagedVideoAudio(document);
     };
 
     if (navigator.connection?.saveData) return;
