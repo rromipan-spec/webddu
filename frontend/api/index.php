@@ -1070,6 +1070,9 @@ function homepageSettingsDefaults(): array
         'mobile_links' => [],
         'mobile_button_labels' => [],
         'mobile_show_buttons' => [],
+        'promo_media_type' => 'youtube',
+        'promo_media_url' => 'https://youtu.be/XHhVDDbcR3M',
+        'promo_media_alt' => 'Video penyaluran Dompet Dana Umat',
     ];
 }
 
@@ -1090,6 +1093,9 @@ function homepageProfileKeys(): array
         'mobile_links' => 'homepage_hero_mobile_links',
         'mobile_button_labels' => 'homepage_hero_mobile_button_labels',
         'mobile_show_buttons' => 'homepage_hero_mobile_show_buttons',
+        'promo_media_type' => 'homepage_hero_promo_media_type',
+        'promo_media_url' => 'homepage_hero_promo_media_url',
+        'promo_media_alt' => 'homepage_hero_promo_media_alt',
     ];
 }
 
@@ -1256,6 +1262,37 @@ function validateHomepageButtonModes(mixed $input, int $imageCount, string $labe
     );
 }
 
+function validateHomepagePromoMedia(mixed $typeValue, mixed $urlValue): array
+{
+    $type = trim((string) $typeValue);
+    $url = trim((string) $urlValue);
+    if (!in_array($type, ['image', 'video', 'youtube', 'drive'], true)) {
+        Http::json(['ok' => false, 'message' => 'Jenis media video promo homepage tidak valid.'], 422);
+    }
+    if ($url === '') {
+        Http::json(['ok' => false, 'message' => 'Pilih atau masukkan media untuk video promo homepage.'], 422);
+    }
+
+    if ($type === 'image') {
+        $isLocalUpload = preg_match('#^/uploads/[a-f0-9]{32}/(?:hero|hero_mobile)\.webp$#i', $url) === 1;
+        $isRemoteImage = filter_var($url, FILTER_VALIDATE_URL)
+            && in_array(strtolower((string) parse_url($url, PHP_URL_SCHEME)), ['http', 'https'], true);
+        if (!$isLocalUpload && !$isRemoteImage) {
+            Http::json(['ok' => false, 'message' => 'Foto promo homepage tidak valid. Upload ulang melalui panel admin.'], 422);
+        }
+    } elseif ($type === 'video') {
+        if (!preg_match('#^/uploads/videos/[a-f0-9]{32}\.(?:mp4|webm)$#i', $url)) {
+            Http::json(['ok' => false, 'message' => 'Video promo belum terunggah dengan benar. Upload ulang melalui panel admin.'], 422);
+        }
+    } elseif ($type === 'youtube' && youtubeVideoId($url) === null) {
+        Http::json(['ok' => false, 'message' => 'Tautan YouTube video promo tidak valid.'], 422);
+    } elseif ($type === 'drive' && driveVideoId($url) === null) {
+        Http::json(['ok' => false, 'message' => 'Tautan Google Drive video promo tidak valid.'], 422);
+    }
+
+    return [$type, mb_substr($url, 0, 1000)];
+}
+
 function saveHomepageSettings(array $body): never
 {
     $limits = ['kicker' => 60, 'title' => 180, 'description' => 500, 'button_label' => 80];
@@ -1319,6 +1356,14 @@ function saveHomepageSettings(array $body): never
     $values['button_url'] = $allLinks[0] ?? '';
     $values['button_label'] = $values['desktop_button_labels'][0] ?? ($values['mobile_button_labels'][0] ?? '');
     $values['show_button'] = $values['desktop_show_buttons'][0] ?? ($values['mobile_show_buttons'][0] ?? true);
+    [$values['promo_media_type'], $values['promo_media_url']] = validateHomepagePromoMedia(
+        $body['promo_media_type'] ?? 'youtube',
+        $body['promo_media_url'] ?? 'https://youtu.be/XHhVDDbcR3M'
+    );
+    $values['promo_media_alt'] = trim((string) ($body['promo_media_alt'] ?? ''));
+    if (mb_strlen($values['promo_media_alt']) > 180) {
+        Http::json(['ok' => false, 'message' => 'Keterangan media promo maksimal 180 karakter.'], 422);
+    }
 
     $profileKeys = homepageProfileKeys();
     $db = Database::connection();
@@ -1340,7 +1385,7 @@ function saveHomepageSettings(array $body): never
             ]);
         }
         $db->commit();
-        Http::json(['ok' => true, 'message' => 'Hero homepage berhasil disimpan.', 'data' => $values]);
+        Http::json(['ok' => true, 'message' => 'Pengaturan homepage berhasil disimpan.', 'data' => $values]);
     } catch (Throwable $error) {
         if ($db->inTransaction()) $db->rollBack();
         throw $error;

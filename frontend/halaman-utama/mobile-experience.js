@@ -25,16 +25,112 @@ const setupProgress = () => {
     window.addEventListener('resize', requestUpdate, { passive: true });
 };
 
-const setupDeferredVideo = () => {
-    const frame = document.querySelector('.video-wrapper iframe[data-src]');
-    if (!frame) return;
+const youtubeVideoId = value => {
+    try {
+        const url = new URL(String(value || '').trim());
+        const host = url.hostname.toLowerCase().replace(/^www\./, '');
+        if (host === 'youtu.be') return url.pathname.split('/').filter(Boolean)[0] || '';
+        if (!['youtube.com', 'm.youtube.com', 'youtube-nocookie.com'].includes(host)) return '';
+        if (url.pathname === '/watch') return url.searchParams.get('v') || '';
+        return url.pathname.match(/^\/(?:embed|shorts|live)\/([A-Za-z0-9_-]{11})/)?.[1] || '';
+    } catch {
+        return '';
+    }
+};
 
-    const source = frame.dataset.src;
+const driveVideoId = value => {
+    try {
+        const url = new URL(String(value || '').trim());
+        if (!['drive.google.com', 'www.drive.google.com'].includes(url.hostname.toLowerCase())) return '';
+        return url.pathname.match(/\/file\/d\/([A-Za-z0-9_-]{10,})/)?.[1] || url.searchParams.get('id') || '';
+    } catch {
+        return '';
+    }
+};
+
+const createHomepagePromoMedia = settings => {
+    const type = String(settings?.promo_media_type || 'youtube');
+    const url = String(settings?.promo_media_url || '').trim();
+    const label = String(settings?.promo_media_alt || 'Media promo Dompet Dana Umat').trim();
+    if (!url || !['image', 'video', 'youtube', 'drive'].includes(type)) return null;
+
+    let media;
+    if (type === 'image') {
+        media = document.createElement('img');
+        media.src = url;
+        media.alt = label;
+        media.loading = 'lazy';
+        media.className = 'homepage-promo-image';
+    } else if (type === 'video') {
+        media = document.createElement('video');
+        media.dataset.src = url;
+        media.autoplay = true;
+        media.defaultMuted = true;
+        media.muted = true;
+        media.loop = true;
+        media.playsInline = true;
+        media.preload = 'metadata';
+        media.setAttribute('data-managed-background-video', '');
+        media.setAttribute('aria-label', label);
+    } else if (type === 'youtube') {
+        const id = youtubeVideoId(url);
+        if (!/^[A-Za-z0-9_-]{11}$/.test(id)) return null;
+        media = document.createElement('iframe');
+        media.dataset.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&loop=1&playlist=${id}&controls=0&rel=0&playsinline=1&enablejsapi=1`;
+        media.title = label;
+        media.loading = 'lazy';
+        media.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+        media.allowFullscreen = true;
+        media.setAttribute('data-managed-background-video', '');
+    } else {
+        const id = driveVideoId(url);
+        if (!id) return null;
+        media = document.createElement('iframe');
+        media.dataset.src = `https://drive.google.com/file/d/${id}/preview`;
+        media.title = label;
+        media.loading = 'lazy';
+        media.allow = 'autoplay';
+        media.className = 'homepage-promo-drive';
+    }
+    media.setAttribute('data-homepage-promo-media', '');
+    return media;
+};
+
+const setupDeferredVideo = async () => {
+    const wrapper = document.querySelector('.video-wrapper');
+    if (!wrapper) return;
+    let media = wrapper.querySelector('[data-homepage-promo-media]');
+    if (!media) return;
+
+    try {
+        const response = await fetch('../api/index.php?resource=homepage', {
+            credentials: 'same-origin',
+            headers: { Accept: 'application/json' }
+        });
+        const result = await response.json();
+        if (response.ok && result?.ok) {
+            const replacement = createHomepagePromoMedia(result.data);
+            if (replacement) {
+                wrapper.querySelector(':scope > [data-media-sound-toggle]')?.remove();
+                media.replaceWith(replacement);
+                media = replacement;
+            }
+        }
+    } catch (error) {
+        console.warn('Media promo homepage memakai video bawaan.', error);
+    }
+
+    if (media instanceof HTMLImageElement) return;
+    const source = media.dataset.src;
     const load = () => {
-        if (!source || frame.hasAttribute('src')) return;
-        frame.src = source;
-        frame.removeAttribute('data-src');
-        initManagedVideoAudio(document);
+        if (!source || media.hasAttribute('src')) return;
+        media.src = source;
+        media.removeAttribute('data-src');
+        if (media instanceof HTMLVideoElement) {
+            media.load();
+            media.play().catch(() => {});
+        }
+        if (media.hasAttribute('data-managed-background-video')) initManagedVideoAudio(document);
     };
 
     if (navigator.connection?.saveData) return;
@@ -49,7 +145,7 @@ const setupDeferredVideo = () => {
         observer.disconnect();
     }, { rootMargin: '350px 0px' });
 
-    observer.observe(frame);
+    observer.observe(media);
 };
 
 const setupNavigationState = () => {

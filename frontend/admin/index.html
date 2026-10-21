@@ -104,7 +104,7 @@
             .toolbar button, .toolbar select { flex: 1 1 auto; }
         }
     </style>
-    <link rel="stylesheet" href="admin.css?v=20261020-1">
+    <link rel="stylesheet" href="admin.css?v=20261021-2">
     <link rel="stylesheet" href="../halaman-utama/ddu-theme.css?v=20260917-6">
 </head>
 <body class="admin-page">
@@ -924,7 +924,7 @@
                         <div>
                             <p class="admin-workspace-kicker">Tampilan pertama pengunjung</p>
                             <h2>Hero Homepage</h2>
-                            <p>Kelola tulisan dan foto utama. Foto khusus mobile dipisahkan agar wajah atau objek penting tidak terpotong di layar ponsel.</p>
+                            <p>Kelola tulisan dan foto hero, sekaligus media video promo di halaman utama. Media dapat berupa foto, video upload, YouTube, atau Google Drive.</p>
                         </div>
                         <span class="homepage-mobile-priority">Mobile priority</span>
                     </div>
@@ -1024,12 +1024,78 @@
                             <div id="homepage-mobile-preview" class="homepage-image-list homepage-image-list--mobile"></div>
                         </section>
 
+                        <section class="homepage-media-section homepage-promo-media-section" aria-labelledby="homepage-promo-title">
+                            <div class="homepage-media-heading">
+                                <div>
+                                    <h3 id="homepage-promo-title">Media Video Promo</h3>
+                                    <p>Media ini tampil pada bagian video di halaman utama. Pilih satu sumber dan lihat hasilnya sebelum menyimpan.</p>
+                                </div>
+                                <span>16:9</span>
+                            </div>
+                            <div class="homepage-promo-editor">
+                                <div class="homepage-promo-fields">
+                                    <div class="form-group">
+                                        <label for="homepage-promo-media-type">Sumber media</label>
+                                        <select id="homepage-promo-media-type">
+                                            <option value="image">Foto JPG, PNG, atau WebP</option>
+                                            <option value="video">Video MP4 atau WebM</option>
+                                            <option value="youtube">Tautan YouTube</option>
+                                            <option value="drive">Tautan Google Drive</option>
+                                        </select>
+                                    </div>
+                                    <input type="hidden" id="homepage-promo-media-url">
+
+                                    <div id="homepage-promo-image-fields" class="homepage-promo-source-fields hidden">
+                                        <div id="homepage-promo-image-drop-zone" class="drop-zone homepage-promo-drop-zone" role="button" tabindex="0" aria-label="Unggah foto promo homepage">
+                                            <input type="file" id="homepage-promo-image-file" accept="image/jpeg,image/png,image/webp" hidden>
+                                            <strong>+ Pilih Foto Promo</strong>
+                                            <p>JPG, PNG, atau WebP · maksimal 5 MB</p>
+                                        </div>
+                                    </div>
+
+                                    <div id="homepage-promo-video-fields" class="homepage-promo-source-fields hidden">
+                                        <div id="homepage-promo-video-drop-zone" class="drop-zone homepage-promo-drop-zone" role="button" tabindex="0" aria-label="Unggah video promo homepage">
+                                            <input type="file" id="homepage-promo-video-file" accept="video/mp4,video/webm" hidden>
+                                            <strong>+ Pilih Video Promo</strong>
+                                            <p>MP4 atau WebM · maksimal 50 MB</p>
+                                        </div>
+                                    </div>
+
+                                    <div id="homepage-promo-external-fields" class="homepage-promo-source-fields hidden">
+                                        <div class="form-group">
+                                            <label for="homepage-promo-media-link">Tautan video</label>
+                                            <input type="url" id="homepage-promo-media-link" inputmode="url" placeholder="https://www.youtube.com/watch?v=...">
+                                            <small id="homepage-promo-link-help" class="field-help">Tempel tautan YouTube yang dapat dibuka publik.</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="homepage-promo-media-alt">Keterangan media</label>
+                                        <input type="text" id="homepage-promo-media-alt" maxlength="180" placeholder="Contoh: Dokumentasi penyaluran Dompet Dana Umat">
+                                        <small class="field-help">Dipakai sebagai judul video atau teks alternatif foto agar aksesibel.</small>
+                                    </div>
+                                    <p id="homepage-promo-upload-status" class="homepage-upload-status" aria-live="polite"></p>
+                                    <button type="button" id="homepage-promo-clear" class="btn-secondary homepage-promo-clear">Hapus media terpilih</button>
+                                </div>
+
+                                <div class="homepage-promo-preview-card">
+                                    <div class="homepage-promo-preview-heading">
+                                        <strong>Preview media</strong>
+                                        <span id="homepage-promo-preview-type">Belum dipilih</span>
+                                    </div>
+                                    <div id="homepage-promo-preview" class="homepage-promo-preview" aria-live="polite">
+                                        <p>Pilih atau masukkan media untuk melihat preview.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
                         <div class="homepage-save-bar">
                             <div>
                                 <strong>Siap diterapkan ke homepage?</strong>
                                 <p>Perubahan akan langsung terlihat setelah halaman website dimuat ulang.</p>
                             </div>
-                            <button type="submit" class="btn btn-primary">Simpan Hero Homepage</button>
+                            <button type="submit" class="btn btn-primary">Simpan Pengaturan Homepage</button>
                         </div>
                     </form>
                 </div>
@@ -1062,6 +1128,6 @@
         </form>
     </dialog>
 
-    <script type="module" src="admin.js?v=20261021-1"></script>
+    <script type="module" src="admin.js?v=20261021-2"></script>
 </body>
 </html>

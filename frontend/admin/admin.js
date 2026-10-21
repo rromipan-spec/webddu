@@ -5,6 +5,7 @@ let currentAdminId = 0;
 let homepageOfficialWhatsapp = '';
 let homepageOfficialWhatsappLabel = '';
 let homepagePrograms = [];
+const homepagePromoUrls = { image: '', video: '', youtube: '', drive: '' };
 let programSections = [];
 let pendingProgramSectionUpload = null;
 const collapsedProgramSections = new Set();
@@ -276,7 +277,7 @@ async function api(resource, options = {}) {
 const adminPageHeadings = {
     dashboard: ['Ringkasan Website', 'Pantau aktivitas utama dan kondisi pengelolaan website.'],
     health: ['Kesehatan Website', 'Pantau server, backup, error, kapasitas, dan ketepatan aliran data.'],
-    homepage: ['Hero Homepage', 'Atur tulisan serta foto desktop dan mobile pada tampilan pertama website.'],
+    homepage: ['Hero Homepage', 'Atur tulisan, foto hero, dan media video promo pada halaman utama website.'],
     articles: ['Kelola Artikel', 'Tulis, jadwalkan, dan publikasikan informasi untuk pembaca.'],
     'programs-admin': ['Kelola Program', 'Susun program unggulan, media, dan kanal kontribusi resmi.'],
     institution: ['Kredibilitas Lembaga', 'Kelola informasi legalitas, transparansi, dan kanal resmi DDU.'],
@@ -1519,7 +1520,7 @@ function setupHomepageImageUpload(kind, variant) {
                 uploaded.push(await uploadImageFileWithRetry(file, 3, variant));
             }
             setHomepageImages(kind, [...existing, ...uploaded]);
-            if (status) status.textContent = `${uploaded.length} foto siap. Klik Simpan Hero Homepage untuk menerapkan.`;
+            if (status) status.textContent = `${uploaded.length} foto siap. Klik Simpan Pengaturan Homepage untuk menerapkan.`;
         } catch (error) {
             if (status) status.textContent = '';
             alert(error.message);
@@ -1629,6 +1630,200 @@ function setupHomepageImageUpload(kind, variant) {
     });
 }
 
+function homepagePromoYoutubeId(value) {
+    try {
+        const url = new URL(String(value || '').trim());
+        const host = url.hostname.toLowerCase().replace(/^www\./, '');
+        if (host === 'youtu.be') return url.pathname.split('/').filter(Boolean)[0] || '';
+        if (!['youtube.com', 'm.youtube.com', 'youtube-nocookie.com'].includes(host)) return '';
+        if (url.pathname === '/watch') return url.searchParams.get('v') || '';
+        const match = url.pathname.match(/^\/(?:embed|shorts|live)\/([A-Za-z0-9_-]{11})/);
+        return match?.[1] || '';
+    } catch {
+        return '';
+    }
+}
+
+function homepagePromoDriveId(value) {
+    try {
+        const url = new URL(String(value || '').trim());
+        if (!['drive.google.com', 'www.drive.google.com'].includes(url.hostname.toLowerCase())) return '';
+        return url.pathname.match(/\/file\/d\/([A-Za-z0-9_-]{10,})/)?.[1] || url.searchParams.get('id') || '';
+    } catch {
+        return '';
+    }
+}
+
+function renderHomepagePromoPreview() {
+    const type = document.getElementById('homepage-promo-media-type')?.value || 'youtube';
+    const url = document.getElementById('homepage-promo-media-url')?.value.trim() || '';
+    const alt = document.getElementById('homepage-promo-media-alt')?.value.trim() || 'Media promo Dompet Dana Umat';
+    const preview = document.getElementById('homepage-promo-preview');
+    const typeLabel = document.getElementById('homepage-promo-preview-type');
+    if (!preview) return;
+    const labels = { image: 'Foto', video: 'Video upload', youtube: 'YouTube', drive: 'Google Drive' };
+    if (typeLabel) typeLabel.textContent = labels[type] || 'Media';
+    if (!url) {
+        preview.innerHTML = '<p>Pilih atau masukkan media untuk melihat preview.</p>';
+        return;
+    }
+    if (type === 'image') {
+        preview.innerHTML = `<img src="${escapeHtml(url)}" alt="${escapeHtml(alt)}">`;
+        return;
+    }
+    if (type === 'video') {
+        preview.innerHTML = `<video src="${escapeHtml(url)}" controls playsinline preload="metadata"></video>`;
+        return;
+    }
+    if (type === 'youtube') {
+        const id = homepagePromoYoutubeId(url);
+        preview.innerHTML = id
+            ? `<iframe src="https://www.youtube-nocookie.com/embed/${escapeHtml(id)}?rel=0" title="${escapeHtml(alt)}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`
+            : '<p>Tautan YouTube belum valid.</p>';
+        return;
+    }
+    const id = homepagePromoDriveId(url);
+    preview.innerHTML = id
+        ? `<iframe src="https://drive.google.com/file/d/${escapeHtml(id)}/preview" title="${escapeHtml(alt)}" loading="lazy" allow="autoplay"></iframe>`
+        : '<p>Tautan Google Drive belum valid.</p>';
+}
+
+function updateHomepagePromoFields({ clearOnChange = false } = {}) {
+    const type = document.getElementById('homepage-promo-media-type')?.value || 'youtube';
+    const hidden = document.getElementById('homepage-promo-media-url');
+    const external = document.getElementById('homepage-promo-media-link');
+    if (clearOnChange && hidden) {
+        const previousType = hidden.dataset.mediaType;
+        if (previousType && homepagePromoUrls[previousType] !== undefined) homepagePromoUrls[previousType] = hidden.value.trim();
+        hidden.value = homepagePromoUrls[type] || '';
+    }
+    if (hidden) hidden.dataset.mediaType = type;
+    document.getElementById('homepage-promo-image-fields')?.classList.toggle('hidden', type !== 'image');
+    document.getElementById('homepage-promo-video-fields')?.classList.toggle('hidden', type !== 'video');
+    document.getElementById('homepage-promo-external-fields')?.classList.toggle('hidden', !['youtube', 'drive'].includes(type));
+    if (external) {
+        external.value = ['youtube', 'drive'].includes(type) ? (hidden?.value || '') : '';
+        external.placeholder = type === 'drive'
+            ? 'https://drive.google.com/file/d/.../view'
+            : 'https://www.youtube.com/watch?v=...';
+    }
+    const help = document.getElementById('homepage-promo-link-help');
+    if (help) {
+        help.textContent = type === 'drive'
+            ? 'Atur akses file menjadi “Siapa saja yang memiliki link” agar dapat diputar pengunjung.'
+            : 'Tempel tautan video YouTube, YouTube Shorts, atau youtu.be.';
+    }
+    renderHomepagePromoPreview();
+}
+
+function setHomepagePromoMedia(type, url, alt = '') {
+    const safeType = ['image', 'video', 'youtube', 'drive'].includes(type) ? type : 'youtube';
+    const typeInput = document.getElementById('homepage-promo-media-type');
+    const urlInput = document.getElementById('homepage-promo-media-url');
+    const altInput = document.getElementById('homepage-promo-media-alt');
+    if (typeInput) typeInput.value = safeType;
+    if (urlInput) {
+        urlInput.value = url || '';
+        urlInput.dataset.mediaType = safeType;
+    }
+    homepagePromoUrls[safeType] = url || '';
+    if (altInput) altInput.value = alt || '';
+    updateHomepagePromoFields();
+}
+
+function setupHomepagePromoDropZone(kind) {
+    const zone = document.getElementById(`homepage-promo-${kind}-drop-zone`);
+    const input = document.getElementById(`homepage-promo-${kind}-file`);
+    const status = document.getElementById('homepage-promo-upload-status');
+    if (!zone || !input) return;
+
+    const upload = async file => {
+        if (!file) return;
+        if (kind === 'image') {
+            try { validateImageFile(file); } catch (error) { alert(error.message); return; }
+        } else {
+            if (!['video/mp4', 'video/webm'].includes(file.type) && !/\.(mp4|webm)$/i.test(file.name)) {
+                alert('Pilih video MP4 atau WebM.');
+                return;
+            }
+            if (file.size > 50 * 1024 * 1024) {
+                alert('Ukuran video maksimal 50 MB.');
+                return;
+            }
+        }
+        zone.classList.add('is-uploading');
+        input.disabled = true;
+        if (status) status.textContent = kind === 'image' ? 'Mengoptimalkan dan mengunggah foto...' : 'Mengunggah video, jangan tutup halaman...';
+        try {
+            let url = '';
+            if (kind === 'image') {
+                url = await uploadImageFileWithRetry(file, 3, 'hero');
+            } else {
+                const form = new FormData();
+                form.append('video', file);
+                const result = await api('video_upload', { method: 'POST', body: form });
+                url = result.url;
+            }
+            homepagePromoUrls[kind] = url;
+            const hidden = document.getElementById('homepage-promo-media-url');
+            if (hidden) hidden.value = url;
+            if (status) status.textContent = `${kind === 'image' ? 'Foto' : 'Video'} siap. Klik Simpan Pengaturan Homepage untuk menerapkan.`;
+            renderHomepagePromoPreview();
+        } catch (error) {
+            if (status) status.textContent = '';
+            alert(error.message);
+        } finally {
+            zone.classList.remove('is-uploading');
+            input.disabled = false;
+            input.value = '';
+        }
+    };
+
+    zone.addEventListener('click', () => input.click());
+    zone.addEventListener('keydown', event => {
+        if (!['Enter', ' '].includes(event.key)) return;
+        event.preventDefault();
+        input.click();
+    });
+    zone.addEventListener('dragover', event => { event.preventDefault(); zone.classList.add('dragover'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+    zone.addEventListener('drop', event => {
+        event.preventDefault();
+        zone.classList.remove('dragover');
+        upload(event.dataTransfer?.files?.[0]);
+    });
+    input.addEventListener('change', () => upload(input.files?.[0]));
+}
+
+function setupHomepagePromoMedia() {
+    const type = document.getElementById('homepage-promo-media-type');
+    const link = document.getElementById('homepage-promo-media-link');
+    const alt = document.getElementById('homepage-promo-media-alt');
+    type?.addEventListener('change', () => updateHomepagePromoFields({ clearOnChange: true }));
+    link?.addEventListener('input', () => {
+        const activeType = type?.value || 'youtube';
+        const url = link.value.trim();
+        homepagePromoUrls[activeType] = url;
+        const hidden = document.getElementById('homepage-promo-media-url');
+        if (hidden) hidden.value = url;
+        renderHomepagePromoPreview();
+    });
+    alt?.addEventListener('input', renderHomepagePromoPreview);
+    document.getElementById('homepage-promo-clear')?.addEventListener('click', () => {
+        const activeType = type?.value || 'youtube';
+        homepagePromoUrls[activeType] = '';
+        const hidden = document.getElementById('homepage-promo-media-url');
+        if (hidden) hidden.value = '';
+        if (link) link.value = '';
+        const status = document.getElementById('homepage-promo-upload-status');
+        if (status) status.textContent = 'Media dikosongkan. Pilih media pengganti sebelum menyimpan.';
+        renderHomepagePromoPreview();
+    });
+    setupHomepagePromoDropZone('image');
+    setupHomepagePromoDropZone('video');
+    updateHomepagePromoFields();
+}
+
 async function loadHomepageSettings() {
     try {
         const [result, programsResult, institutionResult] = await Promise.all([
@@ -1667,6 +1862,11 @@ async function loadHomepageSettings() {
             : Array(mobileImages.length).fill(data.show_button !== false && data.show_button !== '0');
         setHomepageImages('desktop', desktopImages, desktopLinks, desktopButtonLabels, desktopShowButtons);
         setHomepageImages('mobile', mobileImages, mobileLinks, mobileButtonLabels, mobileShowButtons);
+        setHomepagePromoMedia(
+            data.promo_media_type || 'youtube',
+            data.promo_media_url || 'https://youtu.be/XHhVDDbcR3M',
+            data.promo_media_alt || 'Video penyaluran Dompet Dana Umat'
+        );
         updateHomepagePreview();
     } catch (error) {
         alert(error.message);
@@ -1714,22 +1914,30 @@ async function saveHomepageSettings(event) {
         mobile_images: mobileImages,
         mobile_links: mobileLinks,
         mobile_button_labels: mobileButtonLabels,
-        mobile_show_buttons: mobileShowButtons
+        mobile_show_buttons: mobileShowButtons,
+        promo_media_type: document.getElementById('homepage-promo-media-type')?.value || 'youtube',
+        promo_media_url: document.getElementById('homepage-promo-media-url')?.value.trim() || '',
+        promo_media_alt: document.getElementById('homepage-promo-media-alt')?.value.trim() || ''
     };
     if (!payload.desktop_images.length) {
         alert('Tambahkan minimal satu foto hero desktop.');
+        return;
+    }
+    if (!payload.promo_media_url) {
+        alert('Pilih atau masukkan media untuk bagian video promo homepage.');
+        document.getElementById('homepage-promo-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         return;
     }
     button.disabled = true;
     button.textContent = 'Menyimpan...';
     try {
         await api('homepage', { method: 'POST', body: JSON.stringify(payload) });
-        alert('Hero homepage berhasil diperbarui. Muat ulang homepage untuk melihat hasilnya.');
+        alert('Pengaturan homepage berhasil diperbarui. Muat ulang homepage untuk melihat hasilnya.');
     } catch (error) {
         alert(error.message);
     } finally {
         button.disabled = false;
-        button.textContent = 'Simpan Hero Homepage';
+        button.textContent = 'Simpan Pengaturan Homepage';
     }
 }
 
@@ -4148,6 +4356,7 @@ async function init() {
     setupHomepagePreviewModes();
     setupHomepageImageUpload('desktop', 'hero');
     setupHomepageImageUpload('mobile', 'hero_mobile');
+    setupHomepagePromoMedia();
     ['homepage-kicker', 'homepage-title', 'homepage-description'].forEach(id => {
         document.getElementById(id)?.addEventListener('input', updateHomepagePreview);
     });
