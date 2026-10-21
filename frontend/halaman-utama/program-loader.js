@@ -274,7 +274,19 @@ function renderSectionImpact(data) {
     const items = Array.isArray(data.items) ? data.items : [];
     if (!items.length && !data.title && !data.subtitle && !data.body && !data.eyebrow) return '';
     const columns = Math.max(2, Math.min(4, Number(data.columns) || 3));
-    return `<div class="program-section-inner">${renderSectionHeading(data)}${items.length ? `<div class="program-impact-grid" style="--impact-columns:${columns}">${items.map(item => `<article class="program-impact-card">${item.value ? `<strong>${escapeHtml(item.value)}</strong>` : ''}${item.label ? `<h3>${escapeHtml(item.label)}</h3>` : ''}${item.note ? `<p>${escapeHtml(item.note)}</p>` : ''}</article>`).join('')}</div>` : ''}</div>`;
+    const cards = items.map(item => {
+        const value = String(item.value || '');
+        const valueLength = Array.from(value).length;
+        const valueSizeClass = valueLength >= 14
+            ? ' program-impact-card__value--extra-long'
+            : valueLength >= 10
+                ? ' program-impact-card__value--long'
+                : valueLength >= 7
+                    ? ' program-impact-card__value--medium'
+                    : '';
+        return `<article class="program-impact-card">${value ? `<strong class="program-impact-card__value${valueSizeClass}">${escapeHtml(value)}</strong>` : ''}${item.label ? `<h3>${escapeHtml(item.label)}</h3>` : ''}${item.note ? `<p>${escapeHtml(item.note)}</p>` : ''}</article>`;
+    }).join('');
+    return `<div class="program-section-inner">${renderSectionHeading(data)}${items.length ? `<div class="program-impact-grid" style="--impact-columns:${columns}">${cards}</div>` : ''}</div>`;
 }
 
 function renderSectionCta(data, program) {
