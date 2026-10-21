@@ -4574,8 +4574,8 @@ select {
 .program-impact-grid { display: grid; grid-template-columns: repeat(var(--impact-columns), minmax(0, 1fr)); gap: 18px; }
 .program-impact-card { min-width: 0; overflow: hidden; padding: 30px; border: 1px solid rgba(7, 86, 214, .12); border-radius: 22px; background: rgba(255, 255, 255, .7); box-shadow: 0 18px 45px rgba(6, 59, 158, .07); }
 .program-impact-card strong { display: block; max-width: 100%; margin-bottom: 12px; color: #0756D6; font-size: clamp(2rem, 4vw, 3.35rem); line-height: 1; letter-spacing: -.035em; }
-.program-impact-card__value--medium { font-size: clamp(1.85rem, 3vw, 2.65rem) !important; }
-.program-impact-card__value--long { font-size: clamp(1.55rem, 2.15vw, 1.95rem) !important; }
+.program-impact-card__value--medium { font-size: clamp(1.8rem, 2.7vw, 2.45rem) !important; }
+.program-impact-card__value--long { width: 100%; white-space: nowrap; font-size: clamp(1.45rem, 1.8vw, 1.65rem) !important; }
 .program-impact-card__value--extra-long { overflow-wrap: anywhere; font-size: clamp(1.35rem, 1.75vw, 1.6rem) !important; line-height: 1.12 !important; }
 .program-impact-card h3 { margin: 0; color: inherit; font-size: 1.08rem; }
 .program-impact-card p { margin: 10px 0 0; color: #657187; line-height: 1.6; }
