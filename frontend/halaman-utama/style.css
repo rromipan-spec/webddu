@@ -4316,6 +4316,34 @@ select {
     .program-campaign-aside .program-campaign-donation--complete { transition: none; }
 }
 
+/* Foto utama di samping CTA mempertahankan rasio asli dan tidak dipotong. */
+.program-campaign-cover--natural-image {
+    min-height: 0;
+    align-self: center;
+    aspect-ratio: auto;
+    background: #FFFFFF;
+}
+
+.program-campaign-cover--natural-image > picture,
+.program-campaign-cover--natural-image > picture img {
+    width: 100%;
+    height: auto;
+}
+
+.program-campaign-cover--natural-image > picture img {
+    object-fit: contain;
+}
+
+.program-campaign-cover--natural-image .detail-image-slider {
+    position: relative;
+    inset: auto;
+    aspect-ratio: 16 / 9;
+}
+
+.program-campaign-cover--natural-image .detail-image-slide img {
+    object-fit: contain;
+}
+
 .program-section-page .main-header {
     background: rgba(7, 86, 214, .96);
     box-shadow: 0 8px 28px rgba(6, 59, 158, .15);

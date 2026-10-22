@@ -4659,7 +4659,9 @@ body.admin-page {
     position: relative;
     display: grid;
     min-height: 174px;
+    align-self: center;
     place-items: center;
+    overflow: hidden;
     color: #52627A;
     background: linear-gradient(135deg, #EAF2FF, #BFD4F8);
     background-position: center;
@@ -4669,6 +4671,14 @@ body.admin-page {
 }
 
 .admin-page .friendly-program-landing__media.has-image > span { display: none; }
+.admin-page .friendly-program-landing__media.has-image { min-height: 0; background: #FFFFFF; }
+.admin-page .friendly-program-landing__media > img {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+.admin-page .friendly-program-landing__media > img[hidden] { display: none; }
 
 .admin-page .friendly-program-landing__donation {
     display: flex;
@@ -4836,6 +4846,10 @@ body.admin-page {
 
 .admin-page .program-editor-preview.is-mobile-preview .friendly-program-landing__media {
     min-height: 170px;
+}
+
+.admin-page .program-editor-preview.is-mobile-preview .friendly-program-landing__media.has-image {
+    min-height: 0;
 }
 
 .admin-page .program-editor-preview.is-mobile-preview .friendly-program-landing__donation {

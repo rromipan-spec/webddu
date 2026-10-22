@@ -70,8 +70,19 @@ function campaignCoverHtml(program, heroData = {}, sliderImages = []) {
             background: true
         });
     }
-    if (sliderImages.length) return detailSliderHtml(sliderImages, program.title, 'program-campaign-slider', program.image_alt || program.title);
+    if (sliderImages.length === 1) {
+        return sectionMediaHtml('image', sliderImages[0], program.image_alt || program.title, { background: true });
+    }
+    if (sliderImages.length > 1) return detailSliderHtml(sliderImages, program.title, 'program-campaign-slider', program.image_alt || program.title);
     return '<div class="program-campaign-cover__placeholder" aria-hidden="true"></div>';
+}
+
+function campaignCoverClass(heroData = {}, sliderImages = []) {
+    const mediaType = safeChoice(heroData.media_type, ['image', 'video', 'youtube', 'drive'], 'image');
+    const showingUploadedImage = heroData.media_url
+        ? mediaType === 'image'
+        : sliderImages.length > 0;
+    return showingUploadedImage ? ' program-campaign-cover--natural-image' : '';
 }
 
 function campaignSideDonationHtml(program, ctaData = {}, progressData = {}, action) {
@@ -130,7 +141,7 @@ function renderCampaignProgram(program, sections, sliderImages) {
 
     return `<article class="program-campaign">
         <header class="program-campaign-header"><div class="program-campaign-header__inner">
-            <div class="program-campaign-cover">${campaignCoverHtml(program, heroData, sliderImages)}</div>
+            <div class="program-campaign-cover${campaignCoverClass(heroData, sliderImages)}">${campaignCoverHtml(program, heroData, sliderImages)}</div>
             <div class="program-campaign-overview program-campaign-overview--donation">${sideOwner}<div id="dukungan-program" class="program-campaign-top-donation">${donationCard}</div></div>
         </div></header>
         ${tabs}
@@ -155,8 +166,12 @@ function renderLegacyProgram(program, sliderImages) {
     const contentHeading = `<div class="program-campaign-summary program-campaign-summary--content"><span class="program-campaign-category">${escapeHtml(category)}</span><h1>${escapeHtml(title)}</h1>${subtitle ? `<p>${escapeHtml(subtitle)}</p>` : ''}</div>`;
     const sideOwner = '<div class="program-campaign-side-owner"><img src="/asset/logo-dompet-dana-umat-256.png" alt="Logo Dompet Dana Umat" width="256" height="258"><div><strong>Dompet Dana Umat</strong><small>Program resmi dan terverifikasi</small></div></div>';
     const donationCard = campaignSideDonationHtml(program, { qr_image: qrImage, whatsapp_number: wa, button_label: action.label }, {}, action);
+    const legacyMediaType = ['images', 'video', 'youtube', 'drive'].includes(program.hero_media_type) ? program.hero_media_type : 'images';
+    const coverClass = (legacyMediaType === 'images' || !program.hero_video_url) && sliderImages.length
+        ? ' program-campaign-cover--natural-image'
+        : '';
     return `<article class="program-campaign program-campaign--legacy">
-        <header class="program-campaign-header"><div class="program-campaign-header__inner"><div class="program-campaign-cover">${heroMedia || '<div class="program-campaign-cover__placeholder" aria-hidden="true"></div>'}</div><div class="program-campaign-overview program-campaign-overview--donation">${sideOwner}<div id="dukungan-program" class="program-campaign-top-donation">${donationCard}</div></div></div></header>
+        <header class="program-campaign-header"><div class="program-campaign-header__inner"><div class="program-campaign-cover${coverClass}">${heroMedia || '<div class="program-campaign-cover__placeholder" aria-hidden="true"></div>'}</div><div class="program-campaign-overview program-campaign-overview--donation">${sideOwner}<div id="dukungan-program" class="program-campaign-top-donation">${donationCard}</div></div></div></header>
         <nav class="program-campaign-tabs program-campaign-tabs--primary" aria-label="Menu informasi program"><a href="#detail-program">Detail</a><a href="#dukungan-program">Donatur</a></nav>
         <div class="program-campaign-layout"><div id="detail-program" class="program-campaign-main">${contentHeading}<div class="program-campaign-legacy-content mock-content">${program.content || '<h2>Tentang Program</h2><p>Konten belum tersedia.</p>'}</div></div><aside class="program-campaign-aside" data-campaign-sticky-cta aria-label="Donasi program" aria-hidden="true">${donationCard}</aside></div>
         <a class="program-campaign-mobile-donate" href="${escapeHtml(action.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(action.label)}</a>
@@ -478,6 +493,9 @@ function programHeroMediaHtml(program, sliderImages) {
         ? program.hero_media_type
         : 'images';
     if (type === 'images' || !program.hero_video_url) {
+        if (sliderImages.length === 1) {
+            return sectionMediaHtml('image', sliderImages[0], program.image_alt || program.title, { background: true });
+        }
         return detailSliderHtml(sliderImages, program.title, 'detail-hero-slider', program.image_alt || program.title);
     }
 
