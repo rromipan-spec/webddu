@@ -2299,3 +2299,64 @@ body .main-header .nav-links > a.nav-donation-cta::after { display: none; }
         font-size: clamp(.9rem, 4.6vw, 1.08rem);
     }
 }
+
+/* Ukuran kartu artikel dibuat lebih ringkas tanpa memotong foto unggahan. */
+.home-page .blog-grid,
+.home-page .blog-grid:not(.blog-grid--has-sidebar) {
+    width: min(100%, 1040px);
+    margin-right: auto;
+    margin-left: auto;
+    gap: 14px;
+}
+
+.home-page .blog-card {
+    border-radius: 18px;
+}
+
+.home-page .blog-card--featured .blog-content {
+    padding: clamp(20px, 2.5vw, 28px);
+}
+
+.home-page .blog-card--featured .blog-content h3 {
+    font-size: clamp(1.15rem, 1.55vw, 1.45rem);
+}
+
+.home-page .blog-card--secondary .blog-content {
+    padding: 18px 20px;
+}
+
+.home-page .blog-card--secondary .blog-content h3 {
+    font-size: clamp(.92rem, 1.15vw, 1.08rem);
+}
+
+.home-page .blog-card--list .blog-card-link {
+    min-height: 96px;
+    grid-template-columns: minmax(116px, 40%) minmax(0, 1fr);
+    gap: 14px;
+}
+
+@media (max-width: 620px) {
+    .home-page .blog-grid,
+    .home-page .blog-grid:not(.blog-grid--has-sidebar) {
+        width: 100%;
+        gap: 12px;
+    }
+
+    .home-page .blog-card--featured .blog-content {
+        padding: 18px;
+    }
+
+    .home-page .blog-card--featured .blog-content h3 {
+        font-size: clamp(1.12rem, 5.3vw, 1.4rem);
+    }
+
+    .home-page .blog-card--secondary .blog-content {
+        padding: 15px;
+    }
+
+    .home-page .blog-card--list .blog-card-link {
+        min-height: 92px;
+        grid-template-columns: 104px minmax(0, 1fr);
+        gap: 11px;
+    }
+}
