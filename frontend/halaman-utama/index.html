@@ -90,7 +90,7 @@
     <link rel="preload" href="asset/fonts/metropolis/Metropolis-Regular.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="asset/fonts/metropolis/Metropolis-ExtraBold.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="metropolis.css?v=20260917-1">
-    <link rel="stylesheet" href="style.css?v=20261021-2">
+    <link rel="stylesheet" href="style.css?v=20261023-1">
     <link rel="stylesheet" href="navbar-mobile.css?v=20260930-1">
     <link rel="stylesheet" href="footer-shared.css?v=20260923-7">
     <link rel="stylesheet" href="mobile-experience.css?v=20260921-1">
@@ -164,6 +164,14 @@
     <!-- Hero Section -->
     <section class="hero is-settings-pending" id="home" aria-busy="true">
         <div class="hero-slider" id="homepage-hero-slider"></div>
+        <div class="hero-navigation" id="homepage-hero-navigation" aria-label="Navigasi gambar hero" hidden>
+            <button class="hero-navigation__button hero-navigation__button--previous" id="homepage-hero-previous" type="button" aria-label="Tampilkan gambar hero sebelumnya">
+                <span aria-hidden="true">&#8592;</span>
+            </button>
+            <button class="hero-navigation__button hero-navigation__button--next" id="homepage-hero-next" type="button" aria-label="Tampilkan gambar hero berikutnya">
+                <span aria-hidden="true">&#8594;</span>
+            </button>
+        </div>
         <div class="container hero-container">
             <div class="hero-content" hidden>
                 <span class="section-kicker" id="homepage-hero-kicker" hidden></span>
@@ -468,7 +476,7 @@
     <script type="module" src="navbar.js?v=20260930-1"></script>
     <script type="module" src="programs-home.js?v=20261023-1"></script>
     <script type="module" src="site-footer.js?v=20260928-1"></script>
-    <script src="homepage-hero.js?v=20260922-1"></script>
+    <script src="homepage-hero.js?v=20261023-1"></script>
     <script type="module" src="mobile-experience.js?v=20261021-2"></script>
 </body>
 

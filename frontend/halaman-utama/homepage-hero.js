@@ -3,6 +3,9 @@
 
     const hero = document.getElementById('home');
     const slider = document.getElementById('homepage-hero-slider');
+    const navigation = document.getElementById('homepage-hero-navigation');
+    const previousButton = document.getElementById('homepage-hero-previous');
+    const nextButton = document.getElementById('homepage-hero-next');
     const mobileQuery = window.matchMedia('(max-width: 768px)');
     if (!hero || !slider) return;
 
@@ -13,6 +16,7 @@
     let activeShowButtons = [];
     let hasTextContent = false;
     let readyTimer = 0;
+    let activeIndex = 0;
 
     function normalizeImages(value) {
         return Array.isArray(value)
@@ -121,21 +125,42 @@
         hero.classList.toggle('has-photo-link', !showButton && Boolean(destination));
     }
 
-    function startRotation() {
+    function showSlide(index, slides = Array.from(slider.querySelectorAll('.slide'))) {
+        if (!slides.length) return;
+        activeIndex = ((index % slides.length) + slides.length) % slides.length;
+        slides.forEach((slide, slideIndex) => {
+            const isActive = slideIndex === activeIndex;
+            slide.classList.toggle('is-active', isActive);
+            slide.setAttribute('aria-hidden', isActive ? 'false' : 'true');
+            if (slide.matches('a')) slide.tabIndex = isActive ? 0 : -1;
+        });
+        updateActiveAction(activeIndex);
+    }
+
+    function startRotation(resetToFirst = false) {
         stopRotation();
         const slides = Array.from(slider.querySelectorAll('.slide'));
-        slides.forEach((slide, index) => slide.classList.toggle('is-active', index === 0));
-        updateActiveAction(0);
+        if (navigation) navigation.hidden = slides.length < 2;
+        if (!slides.length) {
+            activeIndex = 0;
+            updateActiveAction(0);
+            return;
+        }
+
+        if (resetToFirst || activeIndex >= slides.length) activeIndex = 0;
+        showSlide(activeIndex, slides);
         if (slides.length < 2 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-        let activeIndex = 0;
         rotationTimer = window.setInterval(() => {
-            const nextIndex = (activeIndex + 1) % slides.length;
-            slides[nextIndex].classList.add('is-active');
-            slides[activeIndex].classList.remove('is-active');
-            activeIndex = nextIndex;
-            updateActiveAction(activeIndex);
+            showSlide(activeIndex + 1, slides);
         }, 6000);
+    }
+
+    function moveSlide(direction) {
+        const slides = Array.from(slider.querySelectorAll('.slide'));
+        if (slides.length < 2) return;
+        showSlide(activeIndex + direction, slides);
+        startRotation(false);
     }
 
     function setOptionalContent(id, value) {
@@ -172,7 +197,8 @@
             String(activeButtonLabels[index] || settings.title || 'Buka halaman tujuan').trim(),
             !activeShowButtons[index]
         )));
-        startRotation();
+        activeIndex = 0;
+        startRotation(true);
         return slider.querySelector('.slide.is-active img');
     }
 
@@ -213,9 +239,12 @@
         markHeroReady(renderSlides(currentSettings));
     });
 
+    previousButton?.addEventListener('click', () => moveSlide(-1));
+    nextButton?.addEventListener('click', () => moveSlide(1));
+
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) stopRotation();
-        else if (currentSettings) startRotation();
+        else if (currentSettings) startRotation(false);
     });
 
     fetch('../api/index.php?resource=homepage', { credentials: 'same-origin', cache: 'no-store' })

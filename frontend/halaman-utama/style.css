@@ -348,6 +348,88 @@ p {
     display: block;
 }
 
+.hero-navigation {
+    position: absolute;
+    top: 50%;
+    right: clamp(14px, 3vw, 48px);
+    left: clamp(14px, 3vw, 48px);
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    pointer-events: none;
+    transform: translateY(-50%);
+    transition: opacity .3s ease, visibility .3s ease;
+}
+
+.hero-navigation[hidden] {
+    display: none;
+}
+
+.hero.is-settings-pending .hero-navigation {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.hero-navigation__button {
+    display: inline-grid;
+    width: 52px;
+    height: 52px;
+    padding: 0;
+    place-items: center;
+    color: #FAFAF7;
+    border: 1px solid rgba(250, 250, 247, .42);
+    border-radius: 50%;
+    background: rgba(6, 59, 158, .58);
+    box-shadow: 0 12px 30px rgba(23, 32, 51, .2);
+    cursor: pointer;
+    pointer-events: auto;
+    -webkit-backdrop-filter: blur(9px);
+    backdrop-filter: blur(9px);
+    transition: background-color .22s ease, border-color .22s ease, transform .22s ease;
+}
+
+.hero-navigation__button span {
+    font-size: 1.45rem;
+    line-height: 1;
+    transform: translateY(-1px);
+}
+
+.hero-navigation__button:hover {
+    border-color: rgba(250, 250, 247, .8);
+    background: rgba(7, 86, 214, .92);
+    transform: scale(1.08);
+}
+
+.hero-navigation__button:focus-visible {
+    outline: 3px solid #D4A84F;
+    outline-offset: 4px;
+}
+
+@media (max-width: 768px) {
+    .hero-navigation {
+        right: 11px;
+        left: 11px;
+    }
+
+    .hero-navigation__button {
+        width: 43px;
+        height: 43px;
+        background: rgba(6, 59, 158, .7);
+    }
+
+    .hero-navigation__button span {
+        font-size: 1.18rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hero-navigation,
+    .hero-navigation__button {
+        transition: none;
+    }
+}
+
 .hero-content {
     max-width: 700px;
 }
