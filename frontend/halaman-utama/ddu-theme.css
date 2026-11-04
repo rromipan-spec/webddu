@@ -2362,6 +2362,10 @@ body .main-header .nav-links > a.nav-donation-cta::after { display: none; }
 }
 
 /* Program beranda: 3 kartu per baris, 6 kartu per halaman. */
+.home-page .calculator-section-description--mobile {
+    display: none;
+}
+
 .home-page #programs .gallery-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -2597,5 +2601,26 @@ body .main-header .nav-links > a.nav-donation-cta::after { display: none; }
 
     .home-page #blog .blog-card--list .blog-card-author::before {
         content: '';
+    }
+
+    /* Mobile: penghitungan lebih dahulu, penjelasan dan panduan di bawahnya. */
+    .home-page #calculator .calculator-card {
+        order: 1;
+    }
+
+    .home-page #calculator .calculator-info {
+        order: 2;
+    }
+
+    .home-page #calculator .calculator-section-description--desktop {
+        display: none;
+    }
+
+    .home-page #calculator .calculator-section-description--mobile {
+        display: block;
+        margin: 0 0 20px;
+        color: #4E5C73;
+        font-size: .95rem;
+        line-height: 1.65;
     }
 }
