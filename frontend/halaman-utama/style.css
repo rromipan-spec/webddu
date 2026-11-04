@@ -4328,10 +4328,12 @@ select {
     .program-campaign-top-donation .program-campaign-donation__facts > strong { font-size: .7rem; }
     .program-campaign-top-donation .program-campaign-donation__methods { margin-top: 8px; }
     .program-campaign-top-donation .program-campaign-donation__methods.has-qr { gap: 6px; }
-    .program-campaign-top-donation .program-campaign-donation__qr-glass { width: min(100%, 148px); padding: 3px; border-radius: 13px; }
+    .program-campaign-top-donation .program-campaign-donation__qr-glass { width: min(100%, 170px); padding: 3px; border-radius: 13px; }
     .program-campaign-top-donation .program-campaign-donation__qr img { border-radius: 9px; }
     .program-campaign-top-donation .program-campaign-donation__qr small { margin-top: 4px; font-size: .55rem; }
-    .program-campaign-top-donation .program-campaign-donation__contact .program-campaign-donate { width: min(100%, 210px); min-height: 39px; padding: 8px 11px; font-size: .62rem; }
+    /* Di mobile cukup gunakan CTA WhatsApp mengambang; tombol duplikat di bawah barcode dihilangkan. */
+    .program-campaign-top-donation .program-campaign-donation__contact { display: none; }
+    .program-campaign-top-donation .program-campaign-donation__methods:not(.has-qr) { display: none; }
     .program-campaign-top-donation .program-campaign-donation__notice { margin-top: 6px; padding-top: 6px; font-size: .55rem; line-height: 1.35; }
     .program-campaign-donation__methods.has-qr { grid-template-columns: 1fr; }
     .program-campaign-donation__qr-glass { width: min(100%, 260px); }
@@ -4377,7 +4379,7 @@ select {
 
 @media (max-width: 430px) {
     .program-campaign-donation__qr-glass { width: min(100%, 210px); }
-    .program-campaign-top-donation .program-campaign-donation__qr-glass { width: min(100%, 140px); }
+    .program-campaign-top-donation .program-campaign-donation__qr-glass { width: min(100%, 165px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -4907,12 +4909,21 @@ select {
     .program-section-media iframe { border-radius: 18px; }
     .program-gallery--grid-2,
     .program-gallery--grid-3,
-    .program-gallery--featured,
-    .program-gallery--mosaic { grid-template-columns: 1fr; }
+    .program-gallery--featured { grid-template-columns: 1fr; }
     .program-gallery--featured > :first-child,
-    .program-gallery--mosaic > :nth-child(5n + 1) { grid-column: auto; grid-row: auto; }
+    .program-gallery--mosaic > :nth-child(5n + 1) { grid-column: span 2; grid-row: span 2; }
+    .program-gallery--mosaic {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-auto-rows: clamp(92px, 27vw, 124px);
+        grid-auto-flow: dense;
+        gap: 8px;
+    }
+    .program-gallery--mosaic > a { height: 100%; }
     .program-gallery-item :is(img, video, iframe),
     .program-gallery--grid-3 .program-gallery-item :is(img, video, iframe) { min-height: 230px; }
+    .program-gallery--mosaic .program-gallery-item :is(img, video, iframe) { height: 100%; min-height: 0; }
+    .program-gallery--mosaic .program-gallery-item { border-radius: 13px; }
+    .program-gallery--mosaic .program-gallery-item figcaption { right: 7px; bottom: 7px; left: 7px; padding: 7px 8px; border-radius: 8px; font-size: .62rem; }
     .program-impact-grid { grid-template-columns: 1fr; }
     .program-impact-grid { gap: 12px; }
     .program-impact-card { padding: 18px; border-radius: 16px; }
