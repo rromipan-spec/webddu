@@ -441,7 +441,7 @@ function validateProgramSections(mixed $input): array
         Http::json(['ok' => false, 'message' => 'Maksimal 50 bagian dalam satu program.'], 422);
     }
 
-    $allowedTypes = ['hero', 'content', 'progress', 'gallery', 'impact', 'cta', 'faq', 'canvas'];
+    $allowedTypes = ['hero', 'content', 'progress', 'gallery', 'donors', 'impact', 'cta', 'faq', 'canvas'];
     $sections = [];
     $keys = [];
     foreach ($input as $index => $rawSection) {
@@ -521,6 +521,9 @@ function validateProgramSectionData(string $type, array $data): array
     } elseif ($type === 'impact') {
         $result['columns'] = max(2, min(4, (int) ($data['columns'] ?? 3)));
         $result['items'] = validateProgramSectionItems($data['items'] ?? [], 'impact');
+    } elseif ($type === 'donors') {
+        $result['show_amounts'] = sectionBool($data['show_amounts'] ?? true);
+        $result['items'] = validateProgramSectionItems($data['items'] ?? [], 'donors');
     } elseif ($type === 'cta') {
         $wa = preg_replace('/\D+/', '', (string) ($data['whatsapp_number'] ?? ''));
         if ($wa !== '' && (strlen($wa) < 8 || strlen($wa) > 16)) {
@@ -612,7 +615,7 @@ function sectionColor(mixed $value, string $fallback, bool $allowTransparent = f
 function validateProgramSectionItems(mixed $items, string $type): array
 {
     if (!is_array($items)) return [];
-    $limit = $type === 'gallery' ? 24 : 20;
+    $limit = $type === 'gallery' ? 24 : ($type === 'donors' ? 100 : 20);
     $result = [];
     foreach (array_slice($items, 0, $limit) as $item) {
         if (!is_array($item)) continue;
@@ -631,6 +634,18 @@ function validateProgramSectionItems(mixed $items, string $type): array
             $label = sectionText($item['label'] ?? '', 180);
             if ($value === '' && $label === '') continue;
             $result[] = ['value' => $value, 'label' => $label, 'note' => sectionText($item['note'] ?? '', 300)];
+        } elseif ($type === 'donors') {
+            $name = sectionText($item['name'] ?? '', 120);
+            $amount = sectionMoney($item['amount'] ?? 0);
+            $date = preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) ($item['date'] ?? '')) ? (string) $item['date'] : '';
+            $message = sectionText($item['message'] ?? '', 500, true);
+            if ($name === '' && $amount <= 0 && $date === '' && $message === '') continue;
+            $result[] = [
+                'name' => $name !== '' ? $name : 'Hamba Allah',
+                'amount' => $amount,
+                'date' => $date,
+                'message' => $message,
+            ];
         } else {
             $question = sectionText($item['question'] ?? '', 300);
             $answer = sectionText($item['answer'] ?? '', 3000, true);

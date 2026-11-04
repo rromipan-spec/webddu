@@ -2948,6 +2948,42 @@ body.admin-page {
 .admin-page .program-draft-preset__visual i:nth-child(3) { left: 33px; height: 28px; }
 .admin-page .program-draft-preset__visual i:nth-child(4) { left: 52px; }
 
+.admin-page .program-manual-content {
+    display: grid;
+    gap: 14px;
+    margin: 16px 0;
+    padding: 18px;
+    border: 1px solid #CFE0FF;
+    border-radius: 16px;
+    background: linear-gradient(145deg, #F8FBFF, #EEF5FF);
+}
+.admin-page .program-manual-content__heading strong,
+.admin-page .program-manual-content__heading small { display: block; }
+.admin-page .program-manual-content__heading strong { margin-top: 4px; color: #063B9E; font-size: 1rem; }
+.admin-page .program-manual-content__heading small { margin-top: 5px; color: #5B687D; line-height: 1.5; }
+.admin-page .program-manual-content__actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.admin-page .program-manual-content__actions button {
+    display: grid;
+    min-width: 0;
+    padding: 14px;
+    grid-template-columns: 34px minmax(0, 1fr);
+    gap: 2px 10px;
+    color: #172033;
+    border: 1px solid #D5E3FA;
+    border-radius: 13px;
+    background: #FAFAF7;
+    cursor: pointer;
+    text-align: left;
+    transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+.admin-page .program-manual-content__actions button:hover,
+.admin-page .program-manual-content__actions button:focus-visible { border-color: #1769F5; box-shadow: 0 9px 22px rgba(7, 86, 214, .12); transform: translateY(-2px); }
+.admin-page .program-manual-content__actions button > span { display: grid; width: 34px; height: 34px; grid-row: 1 / span 2; place-items: center; color: #FAFAF7; background: #0756D6; border-radius: 10px; font-weight: 800; }
+.admin-page .program-manual-content__actions b,
+.admin-page .program-manual-content__actions small { min-width: 0; }
+.admin-page .program-manual-content__actions b { color: #063B9E; font-size: .82rem; }
+.admin-page .program-manual-content__actions small { color: #657187; font-size: .69rem; line-height: 1.35; }
+
 .admin-page .program-builder-advanced-tools {
     margin: 16px 0 22px;
     overflow: hidden;
@@ -2981,6 +3017,7 @@ body.admin-page {
     .admin-page .program-draft-preset { grid-template-columns: 64px minmax(0, 1fr); }
     .admin-page .program-draft-preset__visual { width: 64px; }
     .admin-page .program-draft-preset > button { grid-column: 1 / -1; width: 100%; }
+    .admin-page .program-manual-content__actions { grid-template-columns: minmax(0, 1fr); }
 }
 
 .admin-page .program-template-picker {
@@ -3187,6 +3224,13 @@ body.admin-page {
 .admin-page .program-section-visual--gallery i:nth-child(2) { top: 11%; right: 9%; }
 .admin-page .program-section-visual--gallery i:nth-child(3) { bottom: 11%; left: 9%; }
 .admin-page .program-section-visual--gallery i:nth-child(4) { right: 9%; bottom: 11%; }
+
+.admin-page .program-section-visual--donors i { left: 10%; width: 80%; height: 17%; border-radius: 999px; background: #DCE8FA; }
+.admin-page .program-section-visual--donors i::before { position: absolute; top: 50%; left: 5%; width: 10px; height: 10px; border-radius: 50%; background: #1769F5; content: ''; transform: translateY(-50%); }
+.admin-page .program-section-visual--donors i:nth-child(1) { top: 8%; }
+.admin-page .program-section-visual--donors i:nth-child(2) { top: 30%; }
+.admin-page .program-section-visual--donors i:nth-child(3) { top: 52%; }
+.admin-page .program-section-visual--donors i:nth-child(4) { top: 74%; }
 
 .admin-page .program-section-visual--impact i:nth-child(1) { top: 13%; left: 12%; width: 48%; height: 9%; background: #063B9E; }
 .admin-page .program-section-visual--impact i:nth-child(n+2) { bottom: 14%; width: 24%; height: 48%; background: #EAF2FF; border: 1px solid #8DB4EE; }

@@ -84,7 +84,7 @@
             .toolbar button, .toolbar select { flex: 1 1 auto; }
         }
     </style>
-    <link rel="stylesheet" href="admin.css?v=20261104-3">
+    <link rel="stylesheet" href="admin.css?v=20261104-4">
     <link rel="stylesheet" href="../halaman-utama/ddu-theme.css?v=20260917-6">
 </head>
 <body class="admin-page">
@@ -432,6 +432,18 @@
                                 <div><span class="admin-eyebrow">Draf Siap Pakai</span><strong>Sembako untuk Janda Dhuafa</strong><small>Mengisi otomatis judul, narasi kampanye, estimasi target, isi paket, alur penyaluran, FAQ, SEO, dan ajakan sedekah. Foto sampul tetap Anda unggah sendiri.</small></div>
                                 <button type="button" class="btn-secondary" data-program-template="staples-widows">Isi Draf Otomatis</button>
                             </div>
+                            <section class="program-manual-content" aria-labelledby="program-manual-content-heading">
+                                <div class="program-manual-content__heading">
+                                    <span class="admin-eyebrow">Isi Manual</span>
+                                    <strong id="program-manual-content-heading">Donatur, Dampak, dan FAQ</strong>
+                                    <small>Pilih bagian yang ingin dikelola. Tambah, ubah, atau hapus setiap entri sebelum menyimpan program.</small>
+                                </div>
+                                <div class="program-manual-content__actions">
+                                    <button type="button" data-program-section-quick="donors"><span aria-hidden="true">&#9829;</span><b>Kelola Donatur</b><small>Nama, nominal, tanggal, dan pesan.</small></button>
+                                    <button type="button" data-program-section-quick="impact"><span aria-hidden="true">&#8599;</span><b>Kelola Dampak</b><small>Angka, capaian, dan manfaat program.</small></button>
+                                    <button type="button" data-program-section-quick="faq"><span aria-hidden="true">?</span><b>Kelola FAQ</b><small>Pertanyaan dan jawaban pengunjung.</small></button>
+                                </div>
+                            </section>
                             <details class="program-builder-advanced-tools">
                                 <summary>Peralatan dan susunan lanjutan <span>Opsional</span></summary>
                                 <div class="program-builder-advanced-tools__body">
@@ -484,6 +496,7 @@
                                     <button type="button" data-program-section-choice="content" aria-pressed="false"><span class="program-section-visual program-section-visual--content" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span><b>Teks + Media</b><small>Cerita dengan foto atau video.</small></span></button>
                                     <button type="button" data-program-section-choice="progress" aria-pressed="false"><span class="program-section-visual program-section-visual--progress" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span><b>Progres Dana</b><small>Target, terkumpul, dan persentase.</small></span></button>
                                     <button type="button" data-program-section-choice="gallery" aria-pressed="false"><span class="program-section-visual program-section-visual--gallery" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span><b>Galeri</b><small>Beberapa foto dokumentasi.</small></span></button>
+                                    <button type="button" data-program-section-choice="donors" aria-pressed="false"><span class="program-section-visual program-section-visual--donors" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span><b>Donatur</b><small>Daftar dukungan yang dicatat manual.</small></span></button>
                                     <button type="button" data-program-section-choice="impact" aria-pressed="false"><span class="program-section-visual program-section-visual--impact" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span><b>Dampak</b><small>Angka dan hasil yang telah dicapai.</small></span></button>
                                     <button type="button" data-program-section-choice="cta" aria-pressed="false"><span class="program-section-visual program-section-visual--cta" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span><b>Ajakan Donasi</b><small>QR/barcode dan tombol WhatsApp.</small></span></button>
                                     <button type="button" data-program-section-choice="faq" aria-pressed="false"><span class="program-section-visual program-section-visual--faq" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span><b>Pertanyaan Umum</b><small>Daftar pertanyaan dan jawaban.</small></span></button>
@@ -1052,6 +1065,6 @@
         </form>
     </dialog>
 
-    <script type="module" src="admin.js?v=20261104-5"></script>
+    <script type="module" src="admin.js?v=20261104-6"></script>
 </body>
 </html>

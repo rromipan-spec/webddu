@@ -4676,6 +4676,32 @@ select {
 .program-gallery > :is(a, figure):hover .program-gallery-item img,
 .program-gallery-item:hover img { transform: scale(1.035); }
 .program-gallery-item figcaption { position: absolute; right: 12px; bottom: 12px; left: 12px; padding: 12px 14px; border-radius: 12px; color: #fff; background: rgba(23, 32, 51, .72); backdrop-filter: blur(10px); font-size: .86rem; }
+.program-donor-list { display: grid; gap: 12px; }
+.program-donor-card {
+    display: grid;
+    min-width: 0;
+    padding: 17px 18px;
+    grid-template-columns: 42px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 13px;
+    border: 1px solid rgba(7, 86, 214, .12);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, .76);
+    box-shadow: 0 10px 26px rgba(6, 59, 158, .06);
+}
+.program-donor-card__avatar { display: grid; width: 42px; height: 42px; place-items: center; color: #fff; background: #0756D6; border-radius: 50%; font-size: 1rem; }
+.program-donor-card__body { min-width: 0; }
+.program-donor-card__body h3 { margin: 0; color: #172033; font-size: .98rem; line-height: 1.35; overflow-wrap: anywhere; }
+.program-donor-card__message p { margin: 5px 0 0; color: #657187; font-size: .84rem; line-height: 1.55; overflow-wrap: anywhere; }
+.program-donor-card__body time { display: block; margin-top: 5px; color: #7A8598; font-size: .72rem; }
+.program-donor-card__amount { color: #0756D6; font-size: .94rem; white-space: nowrap; }
+.program-donor-empty { margin: 0; padding: 18px; color: #657187; border: 1px dashed #BFD2F1; border-radius: 14px; background: rgba(234, 242, 255, .5); text-align: center; }
+.program-builder-section--theme-blue .program-donor-card,
+.program-builder-section--theme-deep .program-donor-card { border-color: rgba(255, 255, 255, .16); background: rgba(255, 255, 255, .09); }
+.program-builder-section--theme-blue .program-donor-card :is(h3, p, time, strong),
+.program-builder-section--theme-deep .program-donor-card :is(h3, p, time, strong) { color: #FAFAF7; }
+.program-builder-section--theme-blue .program-donor-empty,
+.program-builder-section--theme-deep .program-donor-empty { color: rgba(250, 250, 247, .84); border-color: rgba(255, 255, 255, .2); background: rgba(255, 255, 255, .08); }
 .program-impact-grid {
     display: grid;
     grid-template-columns: repeat(var(--impact-columns), minmax(180px, 1fr));
@@ -4931,6 +4957,9 @@ select {
     .program-impact-grid { grid-template-columns: 1fr; }
     .program-impact-grid { gap: 12px; }
     .program-impact-card { padding: 18px; border-radius: 16px; }
+    .program-donor-card { padding: 14px; grid-template-columns: 38px minmax(0, 1fr); gap: 10px; }
+    .program-donor-card__avatar { width: 38px; height: 38px; }
+    .program-donor-card__amount { grid-column: 2; justify-self: start; white-space: normal; }
     .program-progress-card,
     .program-cta-card { padding: 26px 20px; border-radius: 22px; }
     .program-progress-metrics { grid-template-columns: 1fr; }

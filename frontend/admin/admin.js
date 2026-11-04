@@ -2099,6 +2099,7 @@ const programSectionMeta = {
     content: ['Teks dan Media', 'Cerita program dengan foto atau video di atas maupun di samping.'],
     progress: ['Target dan Progres Dana', 'Target, dana terkumpul, kekurangan, dan persentase dihitung otomatis.'],
     gallery: ['Galeri Dokumentasi', 'Kumpulan foto atau video kegiatan dalam beberapa pilihan susunan.'],
+    donors: ['Donatur Program', 'Daftar dukungan yang dicatat manual oleh admin.'],
     impact: ['Dampak dan Capaian', 'Tampilkan jumlah penerima manfaat atau hasil penting program.'],
     cta: ['Ajakan Donasi', 'Tampilkan QR/barcode dan tombol WhatsApp untuk berdonasi.'],
     faq: ['Pertanyaan Umum', 'Jawaban untuk pertanyaan yang sering disampaikan calon donatur.'],
@@ -2124,6 +2125,7 @@ function createProgramSection(type = 'content') {
     if (safeType === 'content') Object.assign(data, { media_type: 'none', media_url: '', media_alt: '', caption: '', media_position: 'top', media_ratio: 'landscape', media_link: '' });
     if (safeType === 'progress') Object.assign(data, { target: 0, collected: 0, donors: 0, deadline: '', show_amounts: true, show_percentage: true, button_label: '', button_url: '' });
     if (safeType === 'gallery') Object.assign(data, { layout: 'grid-2', items: [] });
+    if (safeType === 'donors') Object.assign(data, { title: 'Donatur Program', show_amounts: true, items: [] });
     if (safeType === 'impact') Object.assign(data, { columns: 3, items: [] });
     if (safeType === 'cta') Object.assign(data, { whatsapp_number: '', whatsapp_message: '', qr_image: '', button_label: 'Hubungi via WhatsApp', button_url: '', show_qr: true, show_whatsapp: true });
     if (safeType === 'faq') Object.assign(data, { items: [] });
@@ -2356,13 +2358,14 @@ function createProgramTemplate(template = 'simple') {
         const gallery = createProgramSection('gallery');
         gallery.data.layout = 'grid-2';
 
+        const donors = createProgramSection('donors');
         const faq = createProgramSection('faq');
 
         cta.data.button_label = 'Donasi Sekarang';
         cta.data.whatsapp_number = document.getElementById('prog-wa')?.value.trim() || '';
         cta.data.whatsapp_message = document.getElementById('prog-wa-message')?.value.trim() || '';
         cta.data.qr_image = document.getElementById('prog-donation-qr-image')?.value || '';
-        return [hero, progress, content, gallery, faq, cta];
+        return [hero, progress, content, gallery, donors, faq, cta];
     }
 
     if (template === 'canvas') {
@@ -2784,6 +2787,9 @@ function renderProgramSectionTypeFields(section) {
     if (section.type === 'gallery') return `${programSectionCommonFields(section)}
         ${sectionSelectField(section, 'layout', 'Susunan galeri', { single: 'Satu foto besar', 'grid-2': 'Dua foto per baris', 'grid-3': 'Tiga foto per baris', featured: 'Satu besar dan beberapa kecil', mosaic: 'Susunan mozaik', carousel: 'Bisa digeser ke samping' }, true)}
         ${renderProgramSectionItems(section)}`;
+    if (section.type === 'donors') return `${programSectionCommonFields(section)}
+        <div class="program-section-settings">${sectionCheckField(section, 'show_amounts', 'Tampilkan nominal donasi')}</div>
+        ${renderProgramSectionItems(section)}`;
     if (section.type === 'impact') return `${programSectionCommonFields(section)}
         ${sectionSelectField(section, 'columns', 'Jumlah kolom', { 2: '2 kolom', 3: '3 kolom', 4: '4 kolom' }, true)}
         ${renderProgramSectionItems(section)}`;
@@ -2813,13 +2819,19 @@ function renderProgramSectionItems(section) {
             <label>Arti angka tersebut<input type="text" value="${escapeHtml(item.label || '')}" data-item-field="label" data-item-index="${index}" placeholder="Contoh: Penerima manfaat"></label>
             <label>Catatan tambahan (opsional)<input type="text" value="${escapeHtml(item.note || '')}" data-item-field="note" data-item-index="${index}"></label>
         </div></div>`;
+        if (section.type === 'donors') return `<div class="program-section-item"><div class="program-section-item__header"><strong>Donatur ${index + 1}</strong><button type="button" data-section-action="remove-item" data-item-index="${index}">Hapus</button></div><div class="program-section-item__grid">
+            <label>Nama yang ditampilkan<input type="text" maxlength="120" value="${escapeHtml(item.name || '')}" data-item-field="name" data-item-index="${index}" placeholder="Contoh: Hamba Allah"></label>
+            <label>Nominal donasi (Rp)<input type="number" min="0" step="1000" value="${escapeHtml(item.amount || '')}" data-item-field="amount" data-item-index="${index}" placeholder="Contoh: 100000"></label>
+            <label>Tanggal donasi<input type="date" value="${escapeHtml(item.date || '')}" data-item-field="date" data-item-index="${index}"></label>
+            <label>Pesan atau doa (opsional)<textarea rows="2" maxlength="500" data-item-field="message" data-item-index="${index}" placeholder="Pesan singkat dari donatur">${escapeHtml(item.message || '')}</textarea></label>
+        </div></div>`;
         return `<div class="program-section-item"><div class="program-section-item__header"><strong>Pertanyaan ${index + 1}</strong><button type="button" data-section-action="remove-item" data-item-index="${index}">Hapus</button></div><div class="program-section-item__grid">
             <label>Pertanyaan<input type="text" value="${escapeHtml(item.question || '')}" data-item-field="question" data-item-index="${index}"></label>
             <label>Jawaban<textarea rows="3" data-item-field="answer" data-item-index="${index}">${escapeHtml(item.answer || '')}</textarea></label>
         </div></div>`;
     }).join('');
-    const label = section.type === 'gallery' ? '+ Tambah satu media' : section.type === 'impact' ? '+ Tambah capaian' : '+ Tambah pertanyaan';
-    const emptyText = section.type === 'gallery' ? 'Belum ada foto atau video.' : section.type === 'impact' ? 'Belum ada data capaian.' : 'Belum ada pertanyaan.';
+    const label = section.type === 'gallery' ? '+ Tambah satu media' : section.type === 'donors' ? '+ Tambah donatur' : section.type === 'impact' ? '+ Tambah capaian' : '+ Tambah pertanyaan';
+    const emptyText = section.type === 'gallery' ? 'Belum ada foto atau video.' : section.type === 'donors' ? 'Belum ada donatur yang dicatat.' : section.type === 'impact' ? 'Belum ada data capaian.' : 'Belum ada pertanyaan.';
     return `<div class="program-section-items">${itemHtml || `<p class="program-section-help">${emptyText}</p>`}<button type="button" class="program-section-add-item" data-section-action="add-item">${label}</button>${section.type === 'gallery' ? '<button type="button" class="program-section-add-item" data-section-action="upload-gallery">Pilih beberapa foto sekaligus</button>' : ''}</div>`;
 }
 
@@ -2861,6 +2873,7 @@ function convertProgramSectionToCanvas(section) {
     if (data.media_url) blocks.push({ ...createProgramCanvasBlock(data.media_type === 'video' ? 'video' : 'image'), url: data.media_url, alt: data.media_alt || '', width: ['left', 'right'].includes(data.media_position) ? 6 : 12, radius: 22 });
     if (section.type === 'progress') blocks.push({ ...createProgramCanvasBlock('progress'), target: data.target || 0, collected: data.collected || 0 });
     if (section.type === 'gallery') (data.items || []).forEach(item => blocks.push({ ...createProgramCanvasBlock(item.type === 'image' ? 'image' : 'video'), url: item.url || '', alt: item.alt || '', link: item.link || '', width: data.layout === 'grid-3' ? 4 : 6, radius: 18 }));
+    if (section.type === 'donors') (data.items || []).forEach(item => blocks.push({ ...createProgramCanvasBlock('paragraph'), content: `${item.name || 'Hamba Allah'}${item.amount ? `\nRp ${Number(item.amount).toLocaleString('id-ID')}` : ''}${item.date ? `\n${item.date}` : ''}${item.message ? `\n${item.message}` : ''}`, width: 6, background: '#EAF2FF', padding: 18, radius: 16 }));
     if (section.type === 'impact') (data.items || []).forEach(item => blocks.push({ ...createProgramCanvasBlock('paragraph'), content: `${item.value || ''}\n${item.label || ''}${item.note ? `\n${item.note}` : ''}`, width: Math.max(3, Math.floor(12 / Math.max(2, Number(data.columns) || 3))), background: '#EAF2FF', padding: 20, radius: 18 }));
     if (section.type === 'cta' && data.qr_image) blocks.push({ ...createProgramCanvasBlock('qr'), url: data.qr_image, width: 5, radius: 22 });
     if (section.type === 'cta' && data.show_whatsapp !== false) blocks.push({ ...createProgramCanvasBlock('whatsapp'), label: data.button_label || 'Hubungi WhatsApp', link: data.button_url || '', whatsapp_number: data.whatsapp_number || '', whatsapp_message: data.whatsapp_message || '', width: data.qr_image ? 7 : 6 });
@@ -2912,7 +2925,7 @@ function sectionBodyToHtml(section) {
 
 function syncProgramLegacyFieldsFromSections() {
     const hero = programSections.find(section => section.type === 'hero' && section.visible) || programSections.find(section => section.type === 'hero');
-    const content = programSections.filter(section => ['content', 'progress', 'impact', 'faq', 'canvas'].includes(section.type));
+    const content = programSections.filter(section => ['content', 'progress', 'donors', 'impact', 'faq', 'canvas'].includes(section.type));
     const cta = programSections.find(section => section.type === 'cta' && section.visible) || programSections.find(section => section.type === 'cta');
     if (hero) {
         document.getElementById('prog-hero-title').value = hero.data.title || '';
@@ -3282,6 +3295,29 @@ function setupProgramSectionBuilder() {
             });
         });
     });
+    document.querySelectorAll('[data-program-section-quick]').forEach(button => {
+        button.addEventListener('click', () => {
+            const type = button.dataset.programSectionQuick;
+            if (!['donors', 'impact', 'faq'].includes(type)) return;
+            recordProgramBuilderHistory();
+            let section = programSections.find(item => item.type === type);
+            if (!section) {
+                section = createProgramSection(type);
+                if (type === 'impact' && !section.data.title) section.data.title = 'Dampak Program';
+                if (type === 'faq' && !section.data.title) section.data.title = 'Pertanyaan yang Sering Ditanyakan';
+                const ctaIndex = programSections.findIndex(item => item.type === 'cta');
+                if (ctaIndex >= 0) programSections.splice(ctaIndex, 0, section);
+                else programSections.push(section);
+            }
+            section.visible = true;
+            collapsedProgramSections.delete(section.key);
+            renderProgramSectionBuilder();
+            syncProgramLegacyFieldsFromSections();
+            updatePreview();
+            scheduleProgramBuilderAutosave();
+            requestAnimationFrame(() => document.querySelector(`[data-section-key="${section.key}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+        });
+    });
     addButton.addEventListener('click', () => {
         const type = typeInput.value;
         recordProgramBuilderHistory();
@@ -3397,7 +3433,15 @@ function setupProgramSectionBuilder() {
         }
         if (action === 'add-item') {
             section.data.items ||= [];
-            section.data.items.push(section.type === 'impact' ? { value: '', label: '', note: '' } : section.type === 'faq' ? { question: '', answer: '' } : { type: 'image', url: '', alt: '', caption: '', link: '' });
+            section.data.items.push(
+                section.type === 'donors'
+                    ? { name: 'Hamba Allah', amount: '', date: '', message: '' }
+                    : section.type === 'impact'
+                        ? { value: '', label: '', note: '' }
+                        : section.type === 'faq'
+                            ? { question: '', answer: '' }
+                            : { type: 'image', url: '', alt: '', caption: '', link: '' }
+            );
         }
         if (action === 'remove-item') section.data.items?.splice(Number(button.dataset.itemIndex), 1);
         if (action === 'add-block') {

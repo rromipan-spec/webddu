@@ -119,14 +119,16 @@ function renderCampaignProgram(program, sections, sliderImages) {
     const heroBody = multilineHtml(heroData.body || '');
     const action = campaignAction(program, sections);
     const firstGallery = storySections.findIndex(section => section.type === 'gallery');
+    const firstDonors = storySections.findIndex(section => section.type === 'donors');
     const firstImpact = storySections.findIndex(section => section.type === 'impact');
     const firstFaq = storySections.findIndex(section => section.type === 'faq');
     const sectionStory = storySections.length
         ? storySections.map((section, index) => {
             const anchor = index === firstGallery ? 'kabar-program'
-                : index === firstImpact ? 'dampak-program'
-                    : index === firstFaq ? 'faq-program'
-                        : '';
+                : index === firstDonors ? 'donatur-program'
+                    : index === firstImpact ? 'dampak-program'
+                        : index === firstFaq ? 'faq-program'
+                            : '';
             return renderProgramSection(section, program, index, anchor);
         }).join('')
         : `<section class="program-campaign-empty"><h2>Tentang Program</h2><p>${escapeHtml(program.excerpt || 'Informasi lengkap program akan segera diperbarui.')}</p></section>`;
@@ -135,8 +137,10 @@ function renderCampaignProgram(program, sections, sliderImages) {
     const subtitle = heroData.subtitle || program.hero_subtitle || program.excerpt || '';
     const category = heroData.eyebrow || program.category || 'Program Kebaikan';
     const heroButtonUrl = safeSectionHref(heroData.button_url);
-    const donors = Math.max(0, Number(progress?.data?.donors) || 0);
-    const tabs = `<nav class="program-campaign-tabs program-campaign-tabs--primary" aria-label="Menu informasi program"><a href="#detail-program">Detail</a>${firstGallery >= 0 ? '<a href="#kabar-program">Kabar Terbaru</a>' : ''}<a href="#dukungan-program">Donatur${donors > 0 ? ` ${formatNumber(donors)}` : ''}</a>${firstImpact >= 0 ? '<a href="#dampak-program">Dampak</a>' : ''}${firstFaq >= 0 ? '<a href="#faq-program">FAQ</a>' : ''}</nav>`;
+    const donorSection = firstDonors >= 0 ? storySections[firstDonors] : null;
+    const recordedDonors = Array.isArray(donorSection?.data?.items) ? donorSection.data.items.length : 0;
+    const donorCount = recordedDonors || Math.max(0, Number(progress?.data?.donors) || 0);
+    const tabs = `<nav class="program-campaign-tabs program-campaign-tabs--primary" aria-label="Menu informasi program"><a href="#detail-program">Detail</a>${firstGallery >= 0 ? '<a href="#kabar-program">Kabar Terbaru</a>' : ''}${firstDonors >= 0 ? `<a href="#donatur-program">Donatur${donorCount > 0 ? ` ${formatNumber(donorCount)}` : ''}</a>` : ''}${firstImpact >= 0 ? '<a href="#dampak-program">Dampak</a>' : ''}${firstFaq >= 0 ? '<a href="#faq-program">FAQ</a>' : ''}</nav>`;
     const contentHeading = `<div class="program-campaign-summary program-campaign-summary--content"><span class="program-campaign-category">${escapeHtml(category)}</span><h1>${escapeHtml(title)}</h1>${subtitle ? `<p>${escapeHtml(subtitle)}</p>` : ''}${heroData.button_label && heroButtonUrl ? `<a class="program-campaign-summary__link" href="${escapeHtml(heroButtonUrl)}"${externalLinkAttrs(heroButtonUrl)}>${escapeHtml(heroData.button_label)} →</a>` : ''}</div>`;
     const donationCard = campaignSideDonationHtml(program, cta?.data || {}, progress?.data || {}, action);
 
@@ -195,6 +199,7 @@ function renderProgramSection(section, program, index, anchorId = '') {
         content: renderSectionContent,
         progress: renderSectionProgress,
         gallery: renderSectionGallery,
+        donors: renderSectionDonors,
         impact: renderSectionImpact,
         cta: renderSectionCta,
         faq: renderSectionFaq,
@@ -302,6 +307,18 @@ function renderSectionImpact(data) {
         return `<article class="program-impact-card">${value ? `<strong class="program-impact-card__value${valueSizeClass}">${escapeHtml(value)}</strong>` : ''}${item.label ? `<h3>${escapeHtml(item.label)}</h3>` : ''}${item.note ? `<p>${escapeHtml(item.note)}</p>` : ''}</article>`;
     }).join('');
     return `<div class="program-section-inner">${renderSectionHeading(data)}${items.length ? `<div class="program-impact-grid" style="--impact-columns:${columns}">${cards}</div>` : ''}</div>`;
+}
+
+function renderSectionDonors(data) {
+    const items = Array.isArray(data.items) ? data.items : [];
+    const showAmounts = data.show_amounts !== false;
+    const cards = items.map(item => {
+        const name = String(item.name || 'Hamba Allah').trim() || 'Hamba Allah';
+        const amount = Math.max(0, Number(item.amount) || 0);
+        const date = /^\d{4}-\d{2}-\d{2}$/.test(String(item.date || '')) ? formatDate(item.date) : '';
+        return `<article class="program-donor-card"><span class="program-donor-card__avatar" aria-hidden="true">&#9829;</span><div class="program-donor-card__body"><h3>${escapeHtml(name)}</h3>${item.message ? `<div class="program-donor-card__message">${multilineHtml(item.message)}</div>` : ''}${date ? `<time datetime="${escapeHtml(item.date)}">${escapeHtml(date)}</time>` : ''}</div>${showAmounts && amount > 0 ? `<strong class="program-donor-card__amount">${formatCurrency(amount)}</strong>` : ''}</article>`;
+    }).join('');
+    return `<div class="program-section-inner program-donors">${renderSectionHeading(data, 'Donatur Program')}${items.length ? `<div class="program-donor-list">${cards}</div>` : '<p class="program-donor-empty">Belum ada donatur yang dicatat untuk ditampilkan.</p>'}</div>`;
 }
 
 function renderSectionCta(data, program) {
