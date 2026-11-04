@@ -14,6 +14,13 @@ let selectedProgramCanvasBlock = null;
 let programBuilderDevice = 'desktop';
 let programBuilderUndoStack = [];
 let programBuilderRedoStack = [];
+const programPermanentDirtyFields = new Set();
+const programPermanentProtectedFields = new Set([
+    'prog-campaign-target', 'prog-campaign-collected', 'prog-campaign-donors', 'prog-campaign-deadline',
+    'prog-campaign-cta-eyebrow', 'prog-campaign-cta-title', 'prog-campaign-cta-description',
+    'prog-campaign-button-label', 'prog-wa', 'prog-wa-message', 'prog-donation-qr-image',
+    'prog-campaign-show-qr', 'prog-campaign-show-whatsapp'
+]);
 let programBuilderAutosaveTimer = null;
 let draggedProgramSectionKey = '';
 let draggedProgramBlockId = '';
@@ -811,25 +818,29 @@ function syncPermanentProgramFormToSections() {
         hero.data.mobile_media_url = document.getElementById('prog-hero-mobile-video-link')?.value.trim() || '';
     }
 
+    const editingExistingProgram = Boolean(document.getElementById('prog-id')?.value);
+    const mayWrite = id => !editingExistingProgram || programPermanentDirtyFields.has(id);
     progress.visible = true;
-    progress.data.target = Math.max(0, Number(document.getElementById('prog-campaign-target')?.value) || 0);
-    progress.data.collected = Math.max(0, Number(document.getElementById('prog-campaign-collected')?.value) || 0);
-    progress.data.donors = Math.max(0, Number(document.getElementById('prog-campaign-donors')?.value) || 0);
-    progress.data.deadline = document.getElementById('prog-campaign-deadline')?.value || '';
-    progress.data.button_label = '';
-    progress.data.button_url = '';
+    if (mayWrite('prog-campaign-target')) progress.data.target = Math.max(0, Number(document.getElementById('prog-campaign-target')?.value) || 0);
+    if (mayWrite('prog-campaign-collected')) progress.data.collected = Math.max(0, Number(document.getElementById('prog-campaign-collected')?.value) || 0);
+    if (mayWrite('prog-campaign-donors')) progress.data.donors = Math.max(0, Number(document.getElementById('prog-campaign-donors')?.value) || 0);
+    if (mayWrite('prog-campaign-deadline')) progress.data.deadline = document.getElementById('prog-campaign-deadline')?.value || '';
+    if (!editingExistingProgram) {
+        progress.data.button_label = '';
+        progress.data.button_url = '';
+    }
 
     cta.visible = true;
-    cta.data.eyebrow = document.getElementById('prog-campaign-cta-eyebrow')?.value.trim() || '';
-    cta.data.title = document.getElementById('prog-campaign-cta-title')?.value.trim() || '';
-    cta.data.subtitle = document.getElementById('prog-campaign-cta-description')?.value.trim() || '';
-    cta.data.button_label = document.getElementById('prog-campaign-button-label')?.value.trim() || 'Donasi Sekarang';
-    cta.data.button_url = '';
-    cta.data.whatsapp_number = document.getElementById('prog-wa')?.value.trim() || '';
-    cta.data.whatsapp_message = document.getElementById('prog-wa-message')?.value.trim() || '';
-    cta.data.qr_image = document.getElementById('prog-donation-qr-image')?.value || '';
-    cta.data.show_qr = document.getElementById('prog-campaign-show-qr')?.checked !== false;
-    cta.data.show_whatsapp = document.getElementById('prog-campaign-show-whatsapp')?.checked !== false;
+    if (mayWrite('prog-campaign-cta-eyebrow')) cta.data.eyebrow = document.getElementById('prog-campaign-cta-eyebrow')?.value.trim() || '';
+    if (mayWrite('prog-campaign-cta-title')) cta.data.title = document.getElementById('prog-campaign-cta-title')?.value.trim() || '';
+    if (mayWrite('prog-campaign-cta-description')) cta.data.subtitle = document.getElementById('prog-campaign-cta-description')?.value.trim() || '';
+    if (mayWrite('prog-campaign-button-label')) cta.data.button_label = document.getElementById('prog-campaign-button-label')?.value.trim() || 'Donasi Sekarang';
+    if (!editingExistingProgram) cta.data.button_url = '';
+    if (mayWrite('prog-wa')) cta.data.whatsapp_number = document.getElementById('prog-wa')?.value.trim() || '';
+    if (mayWrite('prog-wa-message')) cta.data.whatsapp_message = document.getElementById('prog-wa-message')?.value.trim() || '';
+    if (mayWrite('prog-donation-qr-image')) cta.data.qr_image = document.getElementById('prog-donation-qr-image')?.value || '';
+    if (mayWrite('prog-campaign-show-qr')) cta.data.show_qr = document.getElementById('prog-campaign-show-qr')?.checked !== false;
+    if (mayWrite('prog-campaign-show-whatsapp')) cta.data.show_whatsapp = document.getElementById('prog-campaign-show-whatsapp')?.checked !== false;
 }
 
 function hydratePermanentProgramControls() {
@@ -1088,6 +1099,12 @@ function setupFriendlyProgramEditor() {
         });
         updateFriendlyProgramPreview();
     }));
+    const markPermanentFieldDirty = event => {
+        const id = event.target?.id || '';
+        if (programPermanentProtectedFields.has(id)) programPermanentDirtyFields.add(id);
+    };
+    form.addEventListener('input', markPermanentFieldDirty, true);
+    form.addEventListener('change', markPermanentFieldDirty, true);
     panels[0].addEventListener('input', () => {
         syncPermanentProgramFormToSections();
         scheduleProgramBuilderAutosave();
@@ -3147,7 +3164,9 @@ function loadProgramBuilderRevisions() {
 function saveProgramBuilderRevision(label = 'Revisi manual') {
     let revisions = [];
     try { revisions = JSON.parse(localStorage.getItem(programBuilderStorageKey('revisions')) || '[]'); } catch { revisions = []; }
-    revisions.unshift({ saved_at: new Date().toISOString(), label, sections: JSON.parse(programBuilderSnapshot()) });
+    const sections = JSON.parse(programBuilderSnapshot());
+    if (revisions[0] && JSON.stringify(revisions[0].sections) === JSON.stringify(sections)) return;
+    revisions.unshift({ saved_at: new Date().toISOString(), label, sections });
     revisions = revisions.slice(0, 15);
     localStorage.setItem(programBuilderStorageKey('revisions'), JSON.stringify(revisions));
     loadProgramBuilderRevisions();
@@ -4424,6 +4443,7 @@ async function editItem(resource, id) {
         document.getElementById(`${prefix}-wa-message`).value = data.whatsapp_message || '';
         setDonationQrImage(prefix, data.donation_qr_image || '');
         if (resource === 'programs') {
+            programPermanentDirtyFields.clear();
             document.getElementById('prog-hero-title').value = data.hero_title || '';
             document.getElementById('prog-hero-subtitle').value = data.hero_subtitle || '';
             const mediaType = ['images', 'video', 'youtube', 'drive'].includes(data.hero_media_type)
@@ -4439,6 +4459,7 @@ async function editItem(resource, id) {
             collapsedProgramSections.clear();
             programSections = normalizeProgramSections(data.sections);
             if (!programSections.length) programSections = programSectionFromLegacy(data);
+            saveProgramBuilderRevision('Versi server sebelum diedit');
             programBuilderUndoStack = [];
             programBuilderRedoStack = [];
             renderProgramSectionBuilder();
