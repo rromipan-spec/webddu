@@ -4136,6 +4136,10 @@ select {
 .program-campaign-mobile-donate { display: none; }
 
 @media (min-width: 961px) {
+    .program-campaign-overview--donation {
+        justify-content: center;
+    }
+
     .program-campaign-layout {
         display: grid;
         grid-template-columns: minmax(0, 1fr) 400px;
