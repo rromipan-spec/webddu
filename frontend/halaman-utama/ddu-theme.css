@@ -2408,12 +2408,62 @@ body .main-header .nav-links > a.nav-donation-cta::after { display: none; }
     .home-page #programs .gallery-grid {
         margin: 0;
         padding: 0;
-        grid-template-columns: minmax(0, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         grid-auto-flow: row;
         grid-auto-columns: auto;
-        gap: 18px;
+        gap: 12px;
         overflow: visible;
         scroll-snap-type: none;
+    }
+
+    .home-page #programs .program-card {
+        min-width: 0;
+        border-radius: 15px;
+    }
+
+    .home-page #programs .program-card-media {
+        aspect-ratio: 4 / 3;
+    }
+
+    .home-page #programs .program-card-body {
+        padding: 13px 12px 14px;
+    }
+
+    .home-page #programs .program-card .content-category {
+        min-height: 0;
+        max-width: 100%;
+        margin-bottom: 9px;
+        padding: 5px 8px;
+        font-size: .56rem;
+        line-height: 1.25;
+        text-align: center;
+    }
+
+    .home-page #programs .program-card-body h3 {
+        margin-bottom: 8px;
+        max-height: calc(1.35em * 3);
+        font-size: clamp(.88rem, 4vw, 1rem);
+        line-height: 1.35;
+    }
+
+    .home-page #programs .program-card-body p {
+        margin-bottom: 12px;
+        max-height: calc(1.45em * 3);
+        font-size: .72rem;
+        line-height: 1.45;
+    }
+
+    .home-page #programs .program-card-action {
+        gap: 5px;
+        padding-top: 10px;
+        font-size: .7rem;
+    }
+
+    .home-page #programs .program-card-action span {
+        width: 25px;
+        height: 25px;
+        flex: 0 0 25px;
+        font-size: .78rem;
     }
 
     .home-page #programs .program-pagination {
