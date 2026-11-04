@@ -1129,7 +1129,7 @@ function serveHomepageSettings(): never
             'mobile_show_buttons',
         ], true)) {
             $decoded = json_decode($stored[$profileKey], true);
-            if (is_array($decoded)) $settings[$name] = array_values(array_slice($decoded, 0, 3));
+            if (is_array($decoded)) $settings[$name] = array_values(array_slice($decoded, 0, 5));
             continue;
         }
         if ($name === 'show_button') {
@@ -1191,7 +1191,7 @@ function validateHomepageImages(mixed $input, string $label): array
         Http::json(['ok' => false, 'message' => "Daftar foto {$label} tidak valid."], 422);
     }
     $images = [];
-    foreach (array_slice($input, 0, 3) as $item) {
+    foreach (array_slice($input, 0, 5) as $item) {
         $url = trim((string) $item);
         if ($url === '') continue;
         $isLocalUpload = preg_match('#^/uploads/[a-f0-9]{32}/(?:hero|hero_mobile)\.webp$#i', $url) === 1;

@@ -20,7 +20,7 @@
 
     function normalizeImages(value) {
         return Array.isArray(value)
-            ? [...new Set(value.filter(item => typeof item === 'string' && item.trim()).map(item => item.trim()))].slice(0, 3)
+            ? [...new Set(value.filter(item => typeof item === 'string' && item.trim()).map(item => item.trim()))].slice(0, 5)
             : [];
     }
 

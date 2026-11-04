@@ -6,6 +6,7 @@ let homepageOfficialWhatsapp = '';
 let homepageOfficialWhatsappLabel = '';
 let homepagePrograms = [];
 const homepagePromoUrls = { image: '', video: '', youtube: '', drive: '' };
+const HOMEPAGE_HERO_IMAGE_LIMIT = 5;
 let programSections = [];
 let pendingProgramSectionUpload = null;
 const collapsedProgramSections = new Set();
@@ -1218,7 +1219,10 @@ async function saveInstitutionProfile(event) {
 }
 
 function homepageImages(kind) {
-    return parseGalleryImages(document.getElementById(`homepage-${kind}-images`)?.value, 3);
+    return parseGalleryImages(
+        document.getElementById(`homepage-${kind}-images`)?.value,
+        HOMEPAGE_HERO_IMAGE_LIMIT
+    );
 }
 
 function homepageLinks(kind, imageCount = homepageImages(kind).length) {
@@ -1341,7 +1345,7 @@ function setHomepageImages(
     const normalizedButtonLabels = [];
     const normalizedShowButtons = [];
     (images || []).forEach((url, index) => {
-        if (!url || normalizedImages.includes(url) || normalizedImages.length >= 3) return;
+        if (!url || normalizedImages.includes(url) || normalizedImages.length >= HOMEPAGE_HERO_IMAGE_LIMIT) return;
         normalizedImages.push(url);
         normalizedLinks.push(String(links[index] || '').trim());
         normalizedButtonLabels.push(String(buttonLabels[index] || '').trim());
@@ -1455,10 +1459,10 @@ function setupHomepageImageUpload(kind, variant) {
 
     const uploadFiles = async selectedFiles => {
         const existing = homepageImages(kind);
-        const remaining = Math.max(0, 3 - existing.length);
+        const remaining = Math.max(0, HOMEPAGE_HERO_IMAGE_LIMIT - existing.length);
         const files = Array.from(selectedFiles || []).slice(0, remaining);
         if (!remaining) {
-            alert('Maksimal tiga foto. Hapus salah satu foto sebelum mengunggah foto baru.');
+            alert('Maksimal lima foto. Hapus salah satu foto sebelum mengunggah foto baru.');
             return;
         }
         if (!files.length) return;
