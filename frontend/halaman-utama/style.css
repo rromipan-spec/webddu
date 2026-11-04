@@ -3763,7 +3763,8 @@ select {
 
 .program-campaign-cover {
     position: relative;
-    min-height: 680px;
+    height: clamp(540px, calc(100svh - 190px), 760px);
+    min-height: 0;
     overflow: hidden;
     background: #EAF2FF;
 }
@@ -4313,7 +4314,7 @@ select {
 @media (max-width: 960px) {
     .program-campaign { padding-top: 138px; }
     .program-campaign-header__inner { grid-template-columns: 1fr; }
-    .program-campaign-cover { min-height: auto; aspect-ratio: 16 / 9; }
+    .program-campaign-cover { height: min(720px, calc(100svh - 154px)); min-height: 500px; aspect-ratio: auto; }
     .program-campaign-layout { width: min(760px, calc(100% - 40px)); }
     .program-campaign-tabs--primary { width: min(760px, calc(100% - 40px)); }
 }
@@ -4324,7 +4325,7 @@ select {
     .program-campaign-layout,
     .program-campaign-tabs--primary { width: min(100% - 24px, 680px); }
     .program-campaign-header__inner { border-radius: 20px; }
-    .program-campaign-cover { aspect-ratio: 4 / 3; }
+    .program-campaign-cover { height: calc(100svh - 128px); min-height: 520px; max-height: 760px; aspect-ratio: auto; }
     .program-campaign-summary { padding: 26px 22px 30px; }
     .program-campaign-overview--donation { padding: 22px; }
     .program-campaign-summary--content { padding: 30px 22px 26px; }
@@ -4398,10 +4399,10 @@ select {
     .program-campaign-aside .program-campaign-donation--complete { transition: none; }
 }
 
-/* Foto utama di samping CTA mempertahankan rasio asli dan tidak dipotong. */
+/* Media utama dibatasi maksimal satu viewport agar cerita program segera tercapai saat menggulir. */
 .program-campaign-cover--natural-image {
     min-height: 0;
-    align-self: center;
+    align-self: stretch;
     aspect-ratio: auto;
     background: #FFFFFF;
 }
@@ -4409,17 +4410,18 @@ select {
 .program-campaign-cover--natural-image > picture,
 .program-campaign-cover--natural-image > picture img {
     width: 100%;
-    height: auto;
+    height: 100%;
 }
 
 .program-campaign-cover--natural-image > picture img {
-    object-fit: contain;
+    object-fit: cover;
 }
 
 .program-campaign-cover--natural-image .detail-image-slider {
     position: relative;
     inset: auto;
-    aspect-ratio: 16 / 9;
+    height: 100%;
+    aspect-ratio: auto;
 }
 
 .program-campaign-cover--natural-image .detail-image-slide img {

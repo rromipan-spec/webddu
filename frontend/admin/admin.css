@@ -462,7 +462,56 @@ body.admin-page {
     background: #063B9E;
 }
 
-.admin-page [data-clear-hero-video] {
+.admin-page .hero-video-preview img {
+    display: block;
+    width: 100%;
+    max-height: 300px;
+    object-fit: contain;
+    border-radius: 12px;
+    background: #F7FAFF;
+}
+
+.admin-page .program-main-media-guide,
+.admin-page .program-main-media-pair {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.admin-page .program-main-media-guide {
+    margin: 18px 0;
+}
+
+.admin-page .program-main-media-guide article {
+    display: grid;
+    gap: 5px;
+    padding: 14px;
+    color: #52627A;
+    border: 1px solid #CFE0FF;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, .78);
+    line-height: 1.5;
+}
+
+.admin-page .program-main-media-guide strong,
+.admin-page .program-main-media-upload > strong {
+    color: #063B9E;
+}
+
+.admin-page .program-main-media-guide span { font-size: .82rem; }
+.admin-page .program-main-media-guide small { color: #657187; font-size: .72rem; }
+.admin-page .program-main-media-upload > strong { display: block; margin: 0 0 8px; font-size: .82rem; }
+.admin-page .program-main-media-pair > small { grid-column: 1 / -1; }
+.admin-page .program-main-media-pair > label { display: grid; gap: 7px; color: #172033; font-size: .82rem; font-weight: 700; }
+.admin-page .program-main-media-pair > label input { width: 100%; }
+
+@media (max-width: 760px) {
+    .admin-page .program-main-media-guide,
+    .admin-page .program-main-media-pair { grid-template-columns: 1fr; }
+}
+
+.admin-page [data-clear-hero-video],
+.admin-page .admin-media-clear {
     position: absolute;
     top: 9px;
     right: 9px;

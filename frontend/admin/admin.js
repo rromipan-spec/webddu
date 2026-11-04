@@ -40,7 +40,7 @@ const institutionFields = [
 
 function managedImageVariant(url, variant) {
     return String(url || '').replace(
-        /(\/uploads\/[a-f0-9]{32})\/(?:thumb|card|content|hero|hero_mobile|social)\.(?:webp|jpg)$/i,
+        /(\/uploads\/[a-f0-9]{32})\/(?:thumb|card|content|hero|hero_mobile|program_desktop|program_mobile|social)\.(?:webp|jpg)$/i,
         `$1/${variant}.${variant === 'social' ? 'jpg' : 'webp'}`
     );
 }
@@ -126,17 +126,122 @@ function setHeroVideoPreview(prefix, url) {
         : '';
 }
 
+function setProgramMainImagePreview(kind, url) {
+    const input = document.getElementById(`prog-hero-${kind}-image-url`);
+    const preview = document.getElementById(`prog-main-${kind}-image-preview`);
+    if (input) input.value = url || '';
+    if (!preview) return;
+    preview.innerHTML = url
+        ? `<img src="${escapeHtml(url)}" alt="Preview foto utama ${escapeHtml(kind)}"><button type="button" class="admin-media-clear" data-clear-program-main-image="${escapeHtml(kind)}" aria-label="Hapus foto">×</button>`
+        : '';
+}
+
+function setProgramMobileVideoPreview(url) {
+    const input = document.getElementById('prog-hero-mobile-video-url');
+    const preview = document.getElementById('prog-mobile-video-preview');
+    if (input) input.value = url || '';
+    if (!preview) return;
+    preview.innerHTML = url
+        ? `<video src="${escapeHtml(url)}" controls playsinline preload="metadata"></video><button type="button" class="admin-media-clear" data-clear-program-mobile-video aria-label="Hapus video mobile">×</button>`
+        : '';
+}
+
+function setupProgramMainImageUpload(kind, variant) {
+    const zone = document.getElementById(`prog-main-${kind}-image-drop-zone`);
+    const fileInput = document.getElementById(`prog-main-${kind}-image-file`);
+    const status = document.getElementById(`prog-main-${kind}-image-status`);
+    if (!zone || !fileInput) return;
+    const upload = async file => {
+        if (!file) return;
+        try { validateImageFile(file); } catch (error) { alert(error.message); return; }
+        zone.classList.add('is-uploading');
+        fileInput.disabled = true;
+        if (status) status.textContent = 'Mengoptimalkan dan mengunggah foto...';
+        try {
+            const url = await uploadImageFileWithRetry(file, 3, variant);
+            setProgramMainImagePreview(kind, url);
+            syncPermanentProgramFormToSections();
+            updateFriendlyProgramPreview();
+            scheduleProgramBuilderAutosave();
+            if (status) status.textContent = 'Foto siap. Simpan program untuk menerapkan.';
+        } catch (error) {
+            if (status) status.textContent = '';
+            alert(error.message);
+        } finally {
+            zone.classList.remove('is-uploading');
+            fileInput.disabled = false;
+            fileInput.value = '';
+        }
+    };
+    zone.addEventListener('click', event => {
+        if (event.target.closest('img, video, button')) return;
+        fileInput.click();
+    });
+    zone.addEventListener('dragover', event => { event.preventDefault(); zone.classList.add('dragover'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+    zone.addEventListener('drop', event => {
+        event.preventDefault();
+        zone.classList.remove('dragover');
+        upload(event.dataTransfer?.files?.[0]);
+    });
+    fileInput.addEventListener('change', () => upload(fileInput.files?.[0]));
+}
+
+function setupProgramMobileVideoUpload() {
+    const zone = document.getElementById('prog-mobile-video-drop-zone');
+    const fileInput = document.getElementById('prog-mobile-video-file');
+    const status = document.getElementById('prog-mobile-video-upload-status');
+    if (!zone || !fileInput) return;
+    const upload = async file => {
+        if (!file) return;
+        zone.classList.add('is-uploading');
+        fileInput.disabled = true;
+        try {
+            const result = await uploadVideoFile(file, progress => {
+                if (status) status.textContent = `Mengunggah video mobile ${progress}% · jangan tutup halaman...`;
+            });
+            setProgramMobileVideoPreview(result.url);
+            syncPermanentProgramFormToSections();
+            updateFriendlyProgramPreview();
+            scheduleProgramBuilderAutosave();
+            if (status) status.textContent = `Video mobile siap (${formatFileSize(result.size)}). Simpan program untuk menerapkan.`;
+        } catch (error) {
+            if (status) status.textContent = '';
+            alert(error.message);
+        } finally {
+            zone.classList.remove('is-uploading');
+            fileInput.disabled = false;
+            fileInput.value = '';
+        }
+    };
+    zone.addEventListener('click', event => {
+        if (event.target.closest('video, button')) return;
+        fileInput.click();
+    });
+    zone.addEventListener('dragover', event => { event.preventDefault(); zone.classList.add('dragover'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+    zone.addEventListener('drop', event => {
+        event.preventDefault();
+        zone.classList.remove('dragover');
+        upload(event.dataTransfer?.files?.[0]);
+    });
+    fileInput.addEventListener('change', () => upload(fileInput.files?.[0]));
+}
+
 function updateHeroMediaFields(prefix) {
     const type = document.getElementById(`${prefix}-hero-media-type`)?.value || 'images';
+    if (prefix === 'prog') document.getElementById('prog-image-media-fields')?.classList.toggle('hidden', type !== 'images');
     document.getElementById(`${prefix}-local-video-fields`)?.classList.toggle('hidden', type !== 'video');
     document.getElementById(`${prefix}-external-video-fields`)?.classList.toggle('hidden', !['youtube', 'drive'].includes(type));
     const link = document.getElementById(`${prefix}-hero-video-link`);
+    const mobileLink = prefix === 'prog' ? document.getElementById('prog-hero-mobile-video-link') : null;
     const help = document.getElementById(`${prefix}-video-link-help`);
     if (link) {
         link.placeholder = type === 'drive'
             ? 'https://drive.google.com/file/d/.../view'
             : 'https://www.youtube.com/watch?v=...';
     }
+    if (mobileLink) mobileLink.placeholder = link?.placeholder || 'Tautan media mobile (opsional)';
     if (help) {
         help.textContent = type === 'drive'
             ? 'Atur akses file Drive menjadi “Siapa saja yang memiliki link · Viewer”.'
@@ -181,6 +286,11 @@ async function uploadHeroVideo(prefix, file) {
             if (status) status.textContent = `Mengunggah video ${progress}% · jangan tutup halaman...`;
         });
         setHeroVideoPreview(prefix, result.url);
+        if (prefix === 'prog') {
+            syncPermanentProgramFormToSections();
+            updateFriendlyProgramPreview();
+            scheduleProgramBuilderAutosave();
+        }
         const contentLabel = prefix === 'post' ? 'Artikel' : 'Program';
         if (status) status.textContent = `Video tersimpan (${formatFileSize(result.size)}). Klik Simpan ${contentLabel} untuk menerapkannya.`;
     } catch (error) {
@@ -684,19 +794,21 @@ function syncPermanentProgramFormToSections() {
     hero.data.eyebrow = document.getElementById('prog-category')?.value.trim() || 'Program Kebaikan';
     hero.data.media_alt = document.getElementById('prog-image-alt')?.value.trim() || hero.data.title;
     hero.data.poster_url = cover;
-    hero.data.mobile_media_url = '';
     hero.data.button_label = '';
     hero.data.button_url = '';
     hero.data.whole_link = '';
     if (mediaType === 'images') {
         hero.data.media_type = 'image';
-        hero.data.media_url = '';
+        hero.data.media_url = document.getElementById('prog-hero-desktop-image-url')?.value || '';
+        hero.data.mobile_media_url = document.getElementById('prog-hero-mobile-image-url')?.value || '';
     } else if (mediaType === 'video') {
         hero.data.media_type = 'video';
         hero.data.media_url = document.getElementById('prog-hero-video-url')?.value || '';
+        hero.data.mobile_media_url = document.getElementById('prog-hero-mobile-video-url')?.value || '';
     } else {
         hero.data.media_type = mediaType;
         hero.data.media_url = document.getElementById('prog-hero-video-link')?.value.trim() || '';
+        hero.data.mobile_media_url = document.getElementById('prog-hero-mobile-video-link')?.value.trim() || '';
     }
 
     progress.visible = true;
@@ -760,7 +872,11 @@ function updateFriendlyProgramPreview() {
     const heroMediaType = ['image', 'video', 'youtube', 'drive'].includes(hero?.data.media_type)
         ? hero.data.media_type
         : 'image';
-    const heroMediaUrl = heroMediaType === 'image' ? heroImage : (hero?.data.media_url || '');
+    const mobilePreview = shell.querySelector('.program-editor-preview')?.classList.contains('is-mobile-preview');
+    const desktopMediaUrl = heroMediaType === 'image' ? heroImage : (hero?.data.media_url || '');
+    const heroMediaUrl = mobilePreview && hero?.data.mobile_media_url
+        ? hero.data.mobile_media_url
+        : desktopMediaUrl;
     const previewTitle = hero?.data.title?.trim() || title;
     const previewExcerpt = hero?.data.subtitle?.trim() || excerpt;
     const target = Math.max(0, Number(progress?.data.target) || 0);
@@ -970,6 +1086,7 @@ function setupFriendlyProgramEditor() {
             item.classList.toggle('is-active', active);
             item.setAttribute('aria-pressed', String(active));
         });
+        updateFriendlyProgramPreview();
     }));
     panels[0].addEventListener('input', () => {
         syncPermanentProgramFormToSections();
@@ -2491,7 +2608,7 @@ function sectionCheckField(section, field, label) {
 function sectionMediaField(section, field, label, options = {}) {
     const value = section.data[field] || '';
     const isVideo = /\.(mp4|webm)(?:\?|$)/i.test(value);
-    const isExternalPlayer = field === 'media_url' && ['youtube', 'drive'].includes(section.data.media_type);
+    const isExternalPlayer = ['media_url', 'mobile_media_url'].includes(field) && ['youtube', 'drive'].includes(section.data.media_type);
     const youtubeId = section.data.media_type === 'youtube' ? homepagePromoYoutubeId(value) : '';
     const driveId = section.data.media_type === 'drive' ? homepagePromoDriveId(value) : '';
     const preview = value
@@ -2625,7 +2742,7 @@ function renderProgramSectionTypeFields(section) {
         ${sectionSelectField(section, 'media_type', 'Media sampul', { image: 'Foto', video: 'Video dari komputer', youtube: 'Tautan YouTube', drive: 'Tautan Google Drive' })}
         ${sectionSelectField(section, 'height', 'Tinggi sampul', { compact: 'Ringkas', medium: 'Sedang', screen: 'Memenuhi layar' })}
         ${sectionMediaField(section, 'media_url', 'Foto/video untuk desktop', { kind: section.data.media_type === 'video' ? 'video' : 'image' })}
-        ${sectionMediaField(section, 'mobile_media_url', 'Foto khusus layar HP (opsional)', { kind: 'image' })}
+        ${sectionMediaField(section, 'mobile_media_url', 'Media khusus layar HP (opsional)', { kind: section.data.media_type === 'video' ? 'video' : 'image' })}
         ${sectionTextField(section, 'media_alt', 'Keterangan foto untuk aksesibilitas (opsional)', { wide: false, max: 180 })}
         ${sectionTextField(section, 'overlay', 'Tingkat gelap foto, 0–80', { wide: false, type: 'number', min: 0 })}
         ${sectionTextField(section, 'button_label', 'Tulisan tombol (opsional)', { wide: false, max: 80, placeholder: 'Contoh: Donasi Sekarang' })}
@@ -2785,14 +2902,24 @@ function syncProgramLegacyFieldsFromSections() {
         document.getElementById('prog-hero-subtitle').value = hero.data.subtitle || '';
         const legacyType = hero.data.media_type === 'image' ? 'images' : hero.data.media_type;
         document.getElementById('prog-hero-media-type').value = ['images', 'video', 'youtube', 'drive'].includes(legacyType) ? legacyType : 'images';
-        document.getElementById('prog-hero-video-url').value = legacyType === 'video' ? (hero.data.media_url || '') : '';
+        setProgramMainImagePreview('desktop', legacyType === 'images' ? (hero.data.media_url || '') : '');
+        setProgramMainImagePreview('mobile', legacyType === 'images' ? (hero.data.mobile_media_url || '') : '');
+        setHeroVideoPreview('prog', legacyType === 'video' ? (hero.data.media_url || '') : '');
+        setProgramMobileVideoPreview(legacyType === 'video' ? (hero.data.mobile_media_url || '') : '');
         document.getElementById('prog-hero-video-link').value = ['youtube', 'drive'].includes(legacyType) ? (hero.data.media_url || '') : '';
+        document.getElementById('prog-hero-mobile-video-link').value = ['youtube', 'drive'].includes(legacyType) ? (hero.data.mobile_media_url || '') : '';
+        updateHeroMediaFields('prog');
     } else {
         document.getElementById('prog-hero-title').value = '';
         document.getElementById('prog-hero-subtitle').value = '';
         document.getElementById('prog-hero-media-type').value = 'images';
-        document.getElementById('prog-hero-video-url').value = '';
+        setProgramMainImagePreview('desktop', '');
+        setProgramMainImagePreview('mobile', '');
+        setHeroVideoPreview('prog', '');
+        setProgramMobileVideoPreview('');
         document.getElementById('prog-hero-video-link').value = '';
+        document.getElementById('prog-hero-mobile-video-link').value = '';
+        updateHeroMediaFields('prog');
     }
     const legacyHtml = content.map(sectionBodyToHtml).join('');
     document.getElementById('prog-content').value = legacyHtml;
@@ -4070,6 +4197,8 @@ document.addEventListener('click', event => {
     const removeContentPhoto = event.target.closest('.content-photo-remove');
     const clearSeoImage = event.target.closest('[data-clear-seo-image]');
     const clearHeroVideo = event.target.closest('[data-clear-hero-video]');
+    const clearProgramMainImage = event.target.closest('[data-clear-program-main-image]');
+    const clearProgramMobileVideo = event.target.closest('[data-clear-program-mobile-video]');
     const clearDonationQr = event.target.closest('[data-clear-donation-qr]');
     const previewButton = event.target.closest('[data-preview-url]');
     const edit = event.target.closest('[data-edit]');
@@ -4110,6 +4239,30 @@ document.addEventListener('click', event => {
         const status = document.getElementById(`${prefix}-video-upload-status`);
         const contentLabel = prefix === 'post' ? 'artikel' : 'program';
         if (status) status.textContent = `Video dihapus dari rancangan. Simpan ${contentLabel} untuk menerapkan perubahan.`;
+        if (prefix === 'prog') {
+            syncPermanentProgramFormToSections();
+            updateFriendlyProgramPreview();
+            scheduleProgramBuilderAutosave();
+        }
+    }
+    if (clearProgramMainImage) {
+        event.stopPropagation();
+        const kind = clearProgramMainImage.dataset.clearProgramMainImage;
+        setProgramMainImagePreview(kind, '');
+        syncPermanentProgramFormToSections();
+        updateFriendlyProgramPreview();
+        scheduleProgramBuilderAutosave();
+        const status = document.getElementById(`prog-main-${kind}-image-status`);
+        if (status) status.textContent = 'Foto dihapus dari rancangan. Simpan program untuk menerapkan.';
+    }
+    if (clearProgramMobileVideo) {
+        event.stopPropagation();
+        setProgramMobileVideoPreview('');
+        syncPermanentProgramFormToSections();
+        updateFriendlyProgramPreview();
+        scheduleProgramBuilderAutosave();
+        const status = document.getElementById('prog-mobile-video-upload-status');
+        if (status) status.textContent = 'Video mobile dihapus dari rancangan. Simpan program untuk menerapkan.';
     }
     if (clearDonationQr) {
         event.stopPropagation();
@@ -4380,6 +4533,9 @@ async function init() {
     setupHeroImageDropZone('post-hero-drop-zone', 'post-hero-image-file');
     setupHeroMedia('post');
     setupHeroMedia('prog');
+    setupProgramMainImageUpload('desktop', 'program_desktop');
+    setupProgramMainImageUpload('mobile', 'program_mobile');
+    setupProgramMobileVideoUpload();
     setupDonationQrUpload('post');
     setupDonationQrUpload('prog');
     setupSeoImageUpload('post');

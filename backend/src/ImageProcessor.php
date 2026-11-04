@@ -14,6 +14,9 @@ final class ImageProcessor
         'hero' => ['width' => 1920, 'height' => 1080, 'crop' => true, 'format' => 'webp', 'quality' => 84],
         // Versi mobile memakai contain agar foto tidak dipotong oleh server.
         'hero_mobile' => ['width' => 1080, 'height' => 1440, 'crop' => false, 'format' => 'webp', 'quality' => 84],
+        // Media utama program memakai rasio berbeda agar proporsional di desktop dan ponsel.
+        'program_desktop' => ['width' => 1440, 'height' => 1800, 'crop' => true, 'format' => 'webp', 'quality' => 84],
+        'program_mobile' => ['width' => 1080, 'height' => 1920, 'crop' => true, 'format' => 'webp', 'quality' => 84],
         // JPEG dipakai untuk kompatibilitas thumbnail WhatsApp, Facebook, dan crawler lain.
         'social' => ['width' => 1200, 'height' => 630, 'crop' => true, 'format' => 'jpg', 'quality' => 86],
     ];

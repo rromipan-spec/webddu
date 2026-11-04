@@ -84,7 +84,7 @@
             .toolbar button, .toolbar select { flex: 1 1 auto; }
         }
     </style>
-    <link rel="stylesheet" href="admin.css?v=20261104-2">
+    <link rel="stylesheet" href="admin.css?v=20261104-3">
     <link rel="stylesheet" href="../halaman-utama/ddu-theme.css?v=20260917-6">
 </head>
 <body class="admin-page">
@@ -338,7 +338,11 @@
                         </div>
                         <section class="publication-settings hero-media-settings" aria-labelledby="prog-hero-media-heading">
                             <h3 id="prog-hero-media-heading">Media Utama Program</h3>
-                            <p class="seo-settings-note">Pilih slider gambar, video lokal, YouTube, atau Google Drive. Video lokal diunggah bertahap tanpa batas ukuran dari aplikasi.</p>
+                            <p class="seo-settings-note">Siapkan media desktop dan mobile secara terpisah agar memenuhi satu layar dengan rapi sebelum pengunjung masuk ke cerita program.</p>
+                            <div class="program-main-media-guide" aria-label="Panduan ukuran media utama">
+                                <article><strong>Desktop · rasio 4:5</strong><span>Rekomendasi foto 1440 × 1800 px atau video 1080 × 1350 px.</span><small>JPG/PNG/WebP maksimal 5 MB (ideal 300 KB–2 MB). Video MP4/WebM mengikuti kapasitas hosting.</small></article>
+                                <article><strong>Mobile · rasio 9:16</strong><span>Rekomendasi foto atau video 1080 × 1920 px.</span><small>Foto maksimal 5 MB. Letakkan objek dan tulisan penting di tengah agar aman pada berbagai layar.</small></article>
+                            </div>
                             <div class="form-group">
                                 <label for="prog-hero-media-type">Jenis media</label>
                                 <select id="prog-hero-media-type">
@@ -348,18 +352,55 @@
                                     <option value="drive">Tautan Google Drive</option>
                                 </select>
                             </div>
-                            <div id="prog-local-video-fields" class="hidden">
-                                <div class="drop-zone hero-video-drop-zone" id="prog-video-drop-zone">
-                                    <p>Klik atau jatuhkan video MP4/WebM · ukuran mengikuti kapasitas penyimpanan hosting</p>
-                                    <input type="file" id="prog-video-file" hidden accept="video/mp4,video/webm">
-                                    <input type="hidden" id="prog-hero-video-url">
-                                    <div id="prog-video-preview" class="hero-video-preview"></div>
+                            <div id="prog-image-media-fields" class="program-main-media-pair">
+                                <div class="program-main-media-upload">
+                                    <strong>Foto Desktop</strong>
+                                    <div class="drop-zone hero-video-drop-zone" id="prog-main-desktop-image-drop-zone" role="button" tabindex="0">
+                                        <p>Pilih foto 4:5 · rekomendasi 1440 × 1800 px</p>
+                                        <input type="file" id="prog-main-desktop-image-file" hidden accept="image/jpeg,image/png,image/webp">
+                                        <input type="hidden" id="prog-hero-desktop-image-url">
+                                        <div id="prog-main-desktop-image-preview" class="hero-video-preview"></div>
+                                    </div>
+                                    <p id="prog-main-desktop-image-status" class="content-upload-status" aria-live="polite"></p>
                                 </div>
-                                <p id="prog-video-upload-status" class="content-upload-status" aria-live="polite"></p>
+                                <div class="program-main-media-upload">
+                                    <strong>Foto Mobile</strong>
+                                    <div class="drop-zone hero-video-drop-zone" id="prog-main-mobile-image-drop-zone" role="button" tabindex="0">
+                                        <p>Pilih foto 9:16 · rekomendasi 1080 × 1920 px</p>
+                                        <input type="file" id="prog-main-mobile-image-file" hidden accept="image/jpeg,image/png,image/webp">
+                                        <input type="hidden" id="prog-hero-mobile-image-url">
+                                        <div id="prog-main-mobile-image-preview" class="hero-video-preview"></div>
+                                    </div>
+                                    <p id="prog-main-mobile-image-status" class="content-upload-status" aria-live="polite"></p>
+                                </div>
                             </div>
-                            <div id="prog-external-video-fields" class="form-group hidden">
-                                <label for="prog-hero-video-link">Tautan video</label>
-                                <input type="url" id="prog-hero-video-link" maxlength="1000" placeholder="Tempel tautan YouTube atau Google Drive">
+                            <div id="prog-local-video-fields" class="hidden">
+                                <div class="program-main-media-pair">
+                                    <div class="program-main-media-upload">
+                                        <strong>Video Desktop</strong>
+                                        <div class="drop-zone hero-video-drop-zone" id="prog-video-drop-zone">
+                                            <p>MP4/WebM 4:5 · rekomendasi 1080 × 1350 px</p>
+                                            <input type="file" id="prog-video-file" hidden accept="video/mp4,video/webm">
+                                            <input type="hidden" id="prog-hero-video-url">
+                                            <div id="prog-video-preview" class="hero-video-preview"></div>
+                                        </div>
+                                        <p id="prog-video-upload-status" class="content-upload-status" aria-live="polite"></p>
+                                    </div>
+                                    <div class="program-main-media-upload">
+                                        <strong>Video Mobile</strong>
+                                        <div class="drop-zone hero-video-drop-zone" id="prog-mobile-video-drop-zone">
+                                            <p>MP4/WebM 9:16 · rekomendasi 1080 × 1920 px</p>
+                                            <input type="file" id="prog-mobile-video-file" hidden accept="video/mp4,video/webm">
+                                            <input type="hidden" id="prog-hero-mobile-video-url">
+                                            <div id="prog-mobile-video-preview" class="hero-video-preview"></div>
+                                        </div>
+                                        <p id="prog-mobile-video-upload-status" class="content-upload-status" aria-live="polite"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="prog-external-video-fields" class="program-main-media-pair hidden">
+                                <label>Tautan Desktop<input type="url" id="prog-hero-video-link" maxlength="1000" placeholder="Tempel tautan YouTube atau Google Drive"></label>
+                                <label>Tautan Mobile (opsional)<input type="url" id="prog-hero-mobile-video-link" maxlength="1000" placeholder="Kosongkan untuk memakai tautan desktop"></label>
                                 <small id="prog-video-link-help">Gunakan tautan lengkap HTTPS.</small>
                             </div>
                         </section>
@@ -1011,6 +1052,6 @@
         </form>
     </dialog>
 
-    <script type="module" src="admin.js?v=20261104-2"></script>
+    <script type="module" src="admin.js?v=20261104-3"></script>
 </body>
 </html>

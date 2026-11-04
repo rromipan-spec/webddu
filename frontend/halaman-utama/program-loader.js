@@ -63,8 +63,9 @@ function campaignAction(program, sections = []) {
 }
 
 function campaignCoverHtml(program, heroData = {}, sliderImages = []) {
-    if (heroData.media_url) {
-        return sectionMediaHtml(heroData.media_type, heroData.media_url, heroData.media_alt || program.title, {
+    if (heroData.media_url || heroData.mobile_media_url) {
+        const desktopUrl = heroData.media_url || heroData.mobile_media_url || sliderImages[0] || program.image || '';
+        return sectionMediaHtml(heroData.media_type, desktopUrl, heroData.media_alt || program.title, {
             mobileUrl: heroData.mobile_media_url,
             poster: heroData.poster_url,
             background: true,
@@ -80,7 +81,7 @@ function campaignCoverHtml(program, heroData = {}, sliderImages = []) {
 
 function campaignCoverClass(heroData = {}, sliderImages = []) {
     const mediaType = safeChoice(heroData.media_type, ['image', 'video', 'youtube', 'drive'], 'image');
-    const showingUploadedImage = heroData.media_url
+    const showingUploadedImage = heroData.media_url || heroData.mobile_media_url
         ? mediaType === 'image'
         : sliderImages.length > 0;
     return showingUploadedImage ? ' program-campaign-cover--natural-image' : '';
@@ -412,9 +413,11 @@ function safeColor(value, fallback, allowTransparent = false) {
 function sectionMediaHtml(type, url, alt = '', options = {}) {
     const safeUrl = safeMediaHref(url);
     if (!safeUrl) return '';
+    const mobile = safeMediaHref(options.mobileUrl);
+    const activeUrl = matchMedia('(max-width: 767px)').matches && mobile ? mobile : safeUrl;
     const mediaType = safeChoice(type, ['image', 'video', 'youtube', 'drive'], 'image');
     if (mediaType === 'drive') {
-        const source = drivePreviewUrl(safeUrl);
+        const source = drivePreviewUrl(activeUrl);
         return source
             ? `<iframe src="${escapeHtml(source)}" title="${escapeHtml(alt || 'Video program dari Google Drive')}" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>`
             : '';
@@ -424,16 +427,15 @@ function sectionMediaHtml(type, url, alt = '', options = {}) {
         const backgroundAttrs = options.background
             ? ` ${shouldAutoplay ? 'autoplay ' : ''}muted loop playsinline${options.controls ? ' controls' : ''} data-managed-background-video`
             : ' controls playsinline';
-        return `<video src="${escapeHtml(safeUrl)}"${options.poster ? ` poster="${escapeHtml(safeMediaHref(options.poster))}"` : ''}${backgroundAttrs} preload="metadata"></video>`;
+        return `<video src="${escapeHtml(activeUrl)}"${options.poster ? ` poster="${escapeHtml(safeMediaHref(options.poster))}"` : ''}${backgroundAttrs} preload="metadata"></video>`;
     }
     if (mediaType === 'youtube') {
-        const id = youtubeVideoId(safeUrl);
+        const id = youtubeVideoId(activeUrl);
         if (!id) return '';
         const autoplay = options.background && !matchMedia('(prefers-reduced-motion: reduce)').matches ? 1 : 0;
         const query = options.background ? `autoplay=${autoplay}&mute=1&loop=1&playlist=${id}&controls=${options.controls ? 1 : 0}&rel=0&playsinline=1&enablejsapi=1` : 'rel=0&playsinline=1';
         return `<iframe src="https://www.youtube-nocookie.com/embed/${id}?${query}" title="${escapeHtml(alt || 'Video program')}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"${options.background ? ' data-managed-background-video' : ''}></iframe>`;
     }
-    const mobile = safeMediaHref(options.mobileUrl);
     return `<picture>${mobile ? `<source media="(max-width: 767px)" srcset="${escapeHtml(mobile)}">` : ''}<img src="${escapeHtml(safeUrl)}" alt="${escapeHtml(alt)}" loading="${options.background ? 'eager' : 'lazy'}"></picture>`;
 }
 
