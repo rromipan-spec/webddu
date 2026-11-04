@@ -138,13 +138,12 @@ function renderCampaignProgram(program, sections, sliderImages) {
     const donors = Math.max(0, Number(progress?.data?.donors) || 0);
     const tabs = `<nav class="program-campaign-tabs program-campaign-tabs--primary" aria-label="Menu informasi program"><a href="#detail-program">Detail</a>${firstGallery >= 0 ? '<a href="#kabar-program">Kabar Terbaru</a>' : ''}<a href="#dukungan-program">Donatur${donors > 0 ? ` ${formatNumber(donors)}` : ''}</a>${firstImpact >= 0 ? '<a href="#dampak-program">Dampak</a>' : ''}${firstFaq >= 0 ? '<a href="#faq-program">FAQ</a>' : ''}</nav>`;
     const contentHeading = `<div class="program-campaign-summary program-campaign-summary--content"><span class="program-campaign-category">${escapeHtml(category)}</span><h1>${escapeHtml(title)}</h1>${subtitle ? `<p>${escapeHtml(subtitle)}</p>` : ''}${heroData.button_label && heroButtonUrl ? `<a class="program-campaign-summary__link" href="${escapeHtml(heroButtonUrl)}"${externalLinkAttrs(heroButtonUrl)}>${escapeHtml(heroData.button_label)} →</a>` : ''}</div>`;
-    const sideOwner = '<div class="program-campaign-side-owner"><img src="/asset/logo-dompet-dana-umat-256.png" alt="Logo Dompet Dana Umat" width="256" height="258"><div><strong>Dompet Dana Umat</strong><small>Program resmi dan terverifikasi</small></div></div>';
     const donationCard = campaignSideDonationHtml(program, cta?.data || {}, progress?.data || {}, action);
 
     return `<article class="program-campaign">
         <header class="program-campaign-header"><div class="program-campaign-header__inner">
             <div class="program-campaign-cover${campaignCoverClass(heroData, sliderImages)}">${campaignCoverHtml(program, heroData, sliderImages)}</div>
-            <div class="program-campaign-overview program-campaign-overview--donation">${sideOwner}<div id="dukungan-program" class="program-campaign-top-donation">${donationCard}</div></div>
+            <div class="program-campaign-overview program-campaign-overview--donation"><div id="dukungan-program" class="program-campaign-top-donation">${donationCard}</div></div>
         </div></header>
         ${tabs}
         <div class="program-campaign-layout">
@@ -166,14 +165,13 @@ function renderLegacyProgram(program, sliderImages) {
     const title = program.hero_title || program.title;
     const subtitle = program.hero_subtitle || program.excerpt || '';
     const contentHeading = `<div class="program-campaign-summary program-campaign-summary--content"><span class="program-campaign-category">${escapeHtml(category)}</span><h1>${escapeHtml(title)}</h1>${subtitle ? `<p>${escapeHtml(subtitle)}</p>` : ''}</div>`;
-    const sideOwner = '<div class="program-campaign-side-owner"><img src="/asset/logo-dompet-dana-umat-256.png" alt="Logo Dompet Dana Umat" width="256" height="258"><div><strong>Dompet Dana Umat</strong><small>Program resmi dan terverifikasi</small></div></div>';
     const donationCard = campaignSideDonationHtml(program, { qr_image: qrImage, whatsapp_number: wa, button_label: action.label }, {}, action);
     const legacyMediaType = ['images', 'video', 'youtube', 'drive'].includes(program.hero_media_type) ? program.hero_media_type : 'images';
     const coverClass = (legacyMediaType === 'images' || !program.hero_video_url) && sliderImages.length
         ? ' program-campaign-cover--natural-image'
         : '';
     return `<article class="program-campaign program-campaign--legacy">
-        <header class="program-campaign-header"><div class="program-campaign-header__inner"><div class="program-campaign-cover${coverClass}">${heroMedia || '<div class="program-campaign-cover__placeholder" aria-hidden="true"></div>'}</div><div class="program-campaign-overview program-campaign-overview--donation">${sideOwner}<div id="dukungan-program" class="program-campaign-top-donation">${donationCard}</div></div></div></header>
+        <header class="program-campaign-header"><div class="program-campaign-header__inner"><div class="program-campaign-cover${coverClass}">${heroMedia || '<div class="program-campaign-cover__placeholder" aria-hidden="true"></div>'}</div><div class="program-campaign-overview program-campaign-overview--donation"><div id="dukungan-program" class="program-campaign-top-donation">${donationCard}</div></div></div></header>
         <nav class="program-campaign-tabs program-campaign-tabs--primary" aria-label="Menu informasi program"><a href="#detail-program">Detail</a><a href="#dukungan-program">Donatur</a></nav>
         <div class="program-campaign-layout"><div id="detail-program" class="program-campaign-main">${contentHeading}<div class="program-campaign-legacy-content mock-content">${program.content || '<h2>Tentang Program</h2><p>Konten belum tersedia.</p>'}</div></div><aside class="program-campaign-aside" data-campaign-sticky-cta aria-label="Donasi program" aria-hidden="true">${donationCard}</aside></div>
         <a class="program-campaign-mobile-donate" href="${escapeHtml(action.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(action.label)}</a>
