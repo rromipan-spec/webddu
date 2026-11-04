@@ -944,11 +944,11 @@ function driveVideoId(string $url): ?string
     if (!filter_var($url, FILTER_VALIDATE_URL) || strtolower((string) parse_url($url, PHP_URL_SCHEME)) !== 'https') {
         return null;
     }
-    $host = strtolower((string) parse_url($url, PHP_URL_HOST));
-    if (!in_array($host, ['drive.google.com', 'www.drive.google.com'], true)) return null;
+    $host = preg_replace('/^www\./', '', strtolower((string) parse_url($url, PHP_URL_HOST)));
+    if (!in_array($host, ['drive.google.com', 'drive.usercontent.google.com'], true)) return null;
     $path = (string) parse_url($url, PHP_URL_PATH);
     $candidate = '';
-    if (preg_match('#/file/d/([A-Za-z0-9_-]{10,})#', $path, $match)) {
+    if (preg_match('#/file/(?:u/\d+/)?d/([A-Za-z0-9_-]{10,})#', $path, $match)) {
         $candidate = $match[1];
     } else {
         parse_str((string) parse_url($url, PHP_URL_QUERY), $query);
@@ -1467,6 +1467,9 @@ function handleQrUpload(): never
 
 function handleVideoUpload(): never
 {
+    if (isset($_FILES['video_chunk'])) {
+        handleChunkedVideoUpload();
+    }
     if (!isset($_FILES['video'])) {
         Http::json(['ok' => false, 'message' => 'File video tidak ditemukan.'], 422);
     }
@@ -1482,9 +1485,7 @@ function handleVideoUpload(): never
         Http::json(['ok' => false, 'message' => 'Upload video tidak sah.'], 422);
     }
     $size = (int) ($file['size'] ?? 0);
-    if ($size < 1 || $size > 50 * 1024 * 1024) {
-        Http::json(['ok' => false, 'message' => 'Ukuran video maksimal 50 MB.'], 422);
-    }
+    if ($size < 1) Http::json(['ok' => false, 'message' => 'File video kosong.'], 422);
 
     $format = detectUploadedVideoFormat((string) $file['tmp_name'], (string) ($file['name'] ?? ''));
     if ($format === null) {
@@ -1503,10 +1504,151 @@ function handleVideoUpload(): never
     @chmod($destination, 0644);
     Http::json([
         'ok' => true,
+        'complete' => true,
         'url' => '/uploads/videos/' . $filename,
         'mime' => $format['mime'],
         'size' => $size,
     ], 201);
+}
+
+function handleChunkedVideoUpload(): never
+{
+    $file = $_FILES['video_chunk'] ?? null;
+    if (!is_array($file)) Http::json(['ok' => false, 'message' => 'Potongan video tidak ditemukan.'], 422);
+
+    $uploadId = strtolower(trim((string) ($_POST['upload_id'] ?? '')));
+    $chunkIndex = filter_var($_POST['chunk_index'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]);
+    $totalChunks = filter_var($_POST['total_chunks'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+    $declaredSize = filter_var($_POST['file_size'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+    $originalName = basename(trim((string) ($_POST['file_name'] ?? 'video.mp4')));
+    if (!preg_match('/^[a-f0-9]{32}$/', $uploadId)
+        || $chunkIndex === false
+        || $totalChunks === false
+        || $declaredSize === false
+        || $chunkIndex >= $totalChunks
+        || !preg_match('/\.(?:mp4|webm)$/i', $originalName)) {
+        Http::json(['ok' => false, 'message' => 'Informasi upload video tidak valid.'], 422);
+    }
+
+    $uploadError = (int) ($file['error'] ?? UPLOAD_ERR_NO_FILE);
+    if ($uploadError !== UPLOAD_ERR_OK) {
+        $message = in_array($uploadError, [UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE], true)
+            ? 'Potongan video melewati batas satu permintaan server. Muat ulang panel lalu coba kembali.'
+            : 'Salah satu potongan video gagal diunggah.';
+        Http::json(['ok' => false, 'message' => $message], 422);
+    }
+    if (!is_uploaded_file((string) ($file['tmp_name'] ?? ''))) {
+        Http::json(['ok' => false, 'message' => 'Potongan video tidak sah.'], 422);
+    }
+    $chunkSize = (int) ($file['size'] ?? 0);
+    if ($chunkSize < 1 || $chunkSize > 8 * 1024 * 1024) {
+        Http::json(['ok' => false, 'message' => 'Ukuran potongan video tidak valid.'], 422);
+    }
+
+    $temporaryRoot = dirname(__DIR__, 2) . '/backend/storage/video-upload-chunks';
+    if (!is_dir($temporaryRoot) && !mkdir($temporaryRoot, 0750, true) && !is_dir($temporaryRoot)) {
+        Http::json(['ok' => false, 'message' => 'Folder upload sementara tidak dapat dibuat.'], 500);
+    }
+    cleanupStaleVideoChunks($temporaryRoot);
+
+    $sessionDirectory = $temporaryRoot . '/' . $uploadId;
+    if (!is_dir($sessionDirectory) && !mkdir($sessionDirectory, 0750, true) && !is_dir($sessionDirectory)) {
+        Http::json(['ok' => false, 'message' => 'Sesi upload video tidak dapat dibuat.'], 500);
+    }
+    $metadataPath = $sessionDirectory . '/metadata.json';
+    $metadata = ['name' => $originalName, 'total' => $totalChunks, 'size' => $declaredSize];
+    if (is_file($metadataPath)) {
+        $storedMetadata = json_decode((string) file_get_contents($metadataPath), true);
+        if (!is_array($storedMetadata)
+            || (string) ($storedMetadata['name'] ?? '') !== $originalName
+            || (int) ($storedMetadata['total'] ?? 0) !== $totalChunks
+            || (int) ($storedMetadata['size'] ?? 0) !== $declaredSize) {
+            Http::json(['ok' => false, 'message' => 'Sesi upload video tidak cocok. Mulai ulang upload.'], 409);
+        }
+    } elseif (file_put_contents($metadataPath, json_encode($metadata, JSON_UNESCAPED_SLASHES), LOCK_EX) === false) {
+        Http::json(['ok' => false, 'message' => 'Informasi upload video tidak dapat disimpan.'], 500);
+    }
+
+    $chunkPath = $sessionDirectory . '/' . sprintf('%08d.part', $chunkIndex);
+    if (!move_uploaded_file((string) $file['tmp_name'], $chunkPath)) {
+        Http::json(['ok' => false, 'message' => 'Potongan video gagal disimpan.'], 500);
+    }
+    @chmod($chunkPath, 0640);
+
+    if ($chunkIndex < $totalChunks - 1) {
+        Http::json([
+            'ok' => true,
+            'complete' => false,
+            'chunk' => $chunkIndex + 1,
+            'total_chunks' => $totalChunks,
+        ], 202);
+    }
+
+    $assembledPath = $sessionDirectory . '/assembled.upload';
+    $output = @fopen($assembledPath, 'wb');
+    if ($output === false) Http::json(['ok' => false, 'message' => 'Video tidak dapat dirangkai di server.'], 500);
+    for ($index = 0; $index < $totalChunks; $index++) {
+        $partPath = $sessionDirectory . '/' . sprintf('%08d.part', $index);
+        $input = @fopen($partPath, 'rb');
+        if ($input === false) {
+            fclose($output);
+            @unlink($assembledPath);
+            Http::json(['ok' => false, 'message' => 'Upload video belum lengkap. Silakan ulangi proses upload.'], 409);
+        }
+        stream_copy_to_stream($input, $output);
+        fclose($input);
+    }
+    fclose($output);
+
+    $actualSize = (int) (@filesize($assembledPath) ?: 0);
+    if ($actualSize !== $declaredSize) {
+        removeVideoChunkDirectory($sessionDirectory);
+        Http::json(['ok' => false, 'message' => 'Ukuran video hasil upload tidak sesuai. Silakan unggah kembali.'], 422);
+    }
+    $format = detectUploadedVideoFormat($assembledPath, $originalName);
+    if ($format === null) {
+        removeVideoChunkDirectory($sessionDirectory);
+        Http::json(['ok' => false, 'message' => 'Hanya video MP4 atau WebM yang valid yang diperbolehkan.'], 422);
+    }
+
+    $targetDirectory = dirname(__DIR__) . '/uploads/videos';
+    if (!is_dir($targetDirectory) && !mkdir($targetDirectory, 0755, true) && !is_dir($targetDirectory)) {
+        removeVideoChunkDirectory($sessionDirectory);
+        Http::json(['ok' => false, 'message' => 'Folder penyimpanan video tidak dapat dibuat.'], 500);
+    }
+    $filename = bin2hex(random_bytes(16)) . '.' . $format['extension'];
+    $destination = $targetDirectory . '/' . $filename;
+    if (!rename($assembledPath, $destination)) {
+        removeVideoChunkDirectory($sessionDirectory);
+        Http::json(['ok' => false, 'message' => 'Video lengkap gagal dipindahkan ke penyimpanan publik.'], 500);
+    }
+    @chmod($destination, 0644);
+    removeVideoChunkDirectory($sessionDirectory);
+
+    Http::json([
+        'ok' => true,
+        'complete' => true,
+        'url' => '/uploads/videos/' . $filename,
+        'mime' => $format['mime'],
+        'size' => $actualSize,
+    ], 201);
+}
+
+function cleanupStaleVideoChunks(string $root): void
+{
+    foreach (glob($root . '/*', GLOB_ONLYDIR) ?: [] as $directory) {
+        if (preg_match('/^[a-f0-9]{32}$/', basename($directory)) && filemtime($directory) < time() - 86400) {
+            removeVideoChunkDirectory($directory);
+        }
+    }
+}
+
+function removeVideoChunkDirectory(string $directory): void
+{
+    foreach (glob($directory . '/*') ?: [] as $path) {
+        if (is_file($path)) @unlink($path);
+    }
+    @rmdir($directory);
 }
 
 function detectUploadedVideoFormat(string $path, string $originalName): ?array

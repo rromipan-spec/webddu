@@ -151,7 +151,8 @@ function setupHeroMedia(prefix) {
     const input = document.getElementById(`${prefix}-video-file`);
     type?.addEventListener('change', () => updateHeroMediaFields(prefix));
     zone?.addEventListener('click', event => {
-        if (!event.target.closest('[data-clear-hero-video]')) input?.click();
+        if (event.target.closest('video, iframe, a, button, [data-clear-hero-video]')) return;
+        input?.click();
     });
     zone?.addEventListener('dragover', event => {
         event.preventDefault();
@@ -174,20 +175,11 @@ function setupHeroMedia(prefix) {
 async function uploadHeroVideo(prefix, file) {
     const status = document.getElementById(`${prefix}-video-upload-status`);
     const input = document.getElementById(`${prefix}-video-file`);
-    const allowedTypes = ['video/mp4', 'video/webm'];
-    if (!allowedTypes.includes(file.type) && !/\.(mp4|webm)$/i.test(file.name)) {
-        alert('Pilih video MP4 atau WebM.');
-        return;
-    }
-    if (file.size > 50 * 1024 * 1024) {
-        alert('Ukuran video maksimal 50 MB.');
-        return;
-    }
     if (status) status.textContent = 'Mengunggah video, jangan tutup halaman...';
-    const form = new FormData();
-    form.append('video', file);
     try {
-        const result = await api('video_upload', { method: 'POST', body: form });
+        const result = await uploadVideoFile(file, progress => {
+            if (status) status.textContent = `Mengunggah video ${progress}% · jangan tutup halaman...`;
+        });
         setHeroVideoPreview(prefix, result.url);
         const contentLabel = prefix === 'post' ? 'Artikel' : 'Program';
         if (status) status.textContent = `Video tersimpan (${formatFileSize(result.size)}). Klik Simpan ${contentLabel} untuk menerapkannya.`;
@@ -199,9 +191,57 @@ async function uploadHeroVideo(prefix, file) {
     }
 }
 
+async function uploadVideoFile(file, onProgress = () => {}) {
+    const allowedTypes = ['video/mp4', 'video/webm'];
+    if (!file || (!allowedTypes.includes(file.type) && !/\.(mp4|webm)$/i.test(file.name))) {
+        throw new Error('Pilih video MP4 atau WebM.');
+    }
+    if (file.size < 1) throw new Error('File video kosong atau tidak dapat dibaca.');
+
+    // Video dikirim bertahap agar tidak terhalang batas ukuran satu permintaan PHP/hosting.
+    const chunkSize = 4 * 1024 * 1024;
+    const totalChunks = Math.max(1, Math.ceil(file.size / chunkSize));
+    const randomBytes = new Uint8Array(16);
+    crypto.getRandomValues(randomBytes);
+    const uploadId = [...randomBytes].map(value => value.toString(16).padStart(2, '0')).join('');
+    let finalResult = null;
+
+    for (let index = 0; index < totalChunks; index += 1) {
+        const start = index * chunkSize;
+        const chunk = file.slice(start, Math.min(file.size, start + chunkSize), file.type);
+        const form = new FormData();
+        form.append('video_chunk', chunk, file.name);
+        form.append('upload_id', uploadId);
+        form.append('chunk_index', String(index));
+        form.append('total_chunks', String(totalChunks));
+        form.append('file_size', String(file.size));
+        form.append('file_name', file.name);
+
+        let lastError = null;
+        for (let attempt = 1; attempt <= 3; attempt += 1) {
+            try {
+                finalResult = await api('video_upload', { method: 'POST', body: form });
+                lastError = null;
+                break;
+            } catch (error) {
+                lastError = error;
+                if (attempt < 3) await new Promise(resolve => setTimeout(resolve, attempt * 700));
+            }
+        }
+        if (lastError) throw lastError;
+        onProgress(Math.min(100, Math.round(((index + 1) / totalChunks) * 100)));
+    }
+
+    if (!finalResult?.complete || !finalResult?.url) {
+        throw new Error('Upload video belum selesai. Silakan coba kembali.');
+    }
+    return finalResult;
+}
+
 function formatFileSize(bytes) {
     const size = Number(bytes || 0);
     if (size < 1024 * 1024) return `${Math.max(1, Math.round(size / 1024))} KB`;
+    if (size >= 1024 * 1024 * 1024) return `${(size / (1024 * 1024 * 1024)).toFixed(2)} GB`;
     return `${(size / (1024 * 1024)).toFixed(1)} MB`;
 }
 
@@ -717,6 +757,10 @@ function updateFriendlyProgramPreview() {
     const heroImage = hero?.data.media_type === 'image'
         ? (hero.data.media_url || hero.data.mobile_media_url || fallbackImage)
         : (hero?.data.poster_url || fallbackImage);
+    const heroMediaType = ['image', 'video', 'youtube', 'drive'].includes(hero?.data.media_type)
+        ? hero.data.media_type
+        : 'image';
+    const heroMediaUrl = heroMediaType === 'image' ? heroImage : (hero?.data.media_url || '');
     const previewTitle = hero?.data.title?.trim() || title;
     const previewExcerpt = hero?.data.subtitle?.trim() || excerpt;
     const target = Math.max(0, Number(progress?.data.target) || 0);
@@ -738,12 +782,11 @@ function updateFriendlyProgramPreview() {
         node.classList.toggle('has-image', Boolean(heroImage));
     });
     shell.querySelectorAll('[data-friendly-preview-landing-image]').forEach(node => {
-        const image = node.querySelector('img');
-        node.classList.toggle('has-image', Boolean(heroImage));
-        if (!image) return;
-        image.hidden = !heroImage;
-        if (heroImage) image.src = heroImage;
-        else image.removeAttribute('src');
+        const signature = `${heroMediaType}|${heroMediaUrl}|${heroImage}`;
+        if (node.dataset.mediaSignature === signature) return;
+        node.dataset.mediaSignature = signature;
+        node.classList.toggle('has-image', Boolean(heroMediaUrl || heroImage));
+        node.innerHTML = friendlyProgramMediaMarkup(heroMediaType, heroMediaUrl, heroImage, previewTitle);
     });
     shell.querySelectorAll('[data-friendly-preview-progress]').forEach(node => { node.style.width = `${percentage}%`; });
     shell.querySelectorAll('[data-friendly-preview-percent]').forEach(node => { node.textContent = `${percentage}%`; });
@@ -760,6 +803,25 @@ function updateFriendlyProgramPreview() {
     }
     const heading = shell.querySelector('[data-program-editor-heading]');
     if (heading) heading.textContent = document.getElementById('prog-id')?.value ? 'Edit Program Donasi' : 'Tambah Program Donasi';
+}
+
+function friendlyProgramMediaMarkup(type, url, fallbackImage, title) {
+    const safeTitle = escapeHtml(title || 'Media utama program');
+    if (type === 'video' && url) {
+        return `<video src="${escapeHtml(url)}"${fallbackImage ? ` poster="${escapeHtml(fallbackImage)}"` : ''} controls playsinline preload="metadata" aria-label="${safeTitle}"></video>`;
+    }
+    if (type === 'youtube' && url) {
+        const id = homepagePromoYoutubeId(url);
+        if (id) return `<iframe src="https://www.youtube-nocookie.com/embed/${escapeHtml(id)}?rel=0&playsinline=1" title="${safeTitle}" loading="lazy" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
+    }
+    if (type === 'drive' && url) {
+        const id = homepagePromoDriveId(url);
+        if (id) return `<iframe src="https://drive.google.com/file/d/${escapeHtml(id)}/preview" title="${safeTitle}" loading="lazy" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+    }
+    const image = url || fallbackImage;
+    return image
+        ? `<img src="${escapeHtml(image)}" alt="${safeTitle}">`
+        : '<span>Media utama</span>';
 }
 
 function openFriendlyProgramPreview() {
@@ -1607,8 +1669,9 @@ function homepagePromoYoutubeId(value) {
 function homepagePromoDriveId(value) {
     try {
         const url = new URL(String(value || '').trim());
-        if (!['drive.google.com', 'www.drive.google.com'].includes(url.hostname.toLowerCase())) return '';
-        return url.pathname.match(/\/file\/d\/([A-Za-z0-9_-]{10,})/)?.[1] || url.searchParams.get('id') || '';
+        const host = url.hostname.toLowerCase().replace(/^www\./, '');
+        if (!['drive.google.com', 'drive.usercontent.google.com'].includes(host)) return '';
+        return url.pathname.match(/\/file\/(?:u\/\d+\/)?d\/([A-Za-z0-9_-]{10,})/)?.[1] || url.searchParams.get('id') || '';
     } catch {
         return '';
     }
@@ -1706,10 +1769,6 @@ function setupHomepagePromoDropZone(kind) {
                 alert('Pilih video MP4 atau WebM.');
                 return;
             }
-            if (file.size > 50 * 1024 * 1024) {
-                alert('Ukuran video maksimal 50 MB.');
-                return;
-            }
         }
         zone.classList.add('is-uploading');
         input.disabled = true;
@@ -1719,9 +1778,9 @@ function setupHomepagePromoDropZone(kind) {
             if (kind === 'image') {
                 url = await uploadImageFileWithRetry(file, 3, 'hero');
             } else {
-                const form = new FormData();
-                form.append('video', file);
-                const result = await api('video_upload', { method: 'POST', body: form });
+                const result = await uploadVideoFile(file, progress => {
+                    if (status) status.textContent = `Mengunggah video ${progress}% · jangan tutup halaman...`;
+                });
                 url = result.url;
             }
             homepagePromoUrls[kind] = url;
@@ -2433,9 +2492,15 @@ function sectionMediaField(section, field, label, options = {}) {
     const value = section.data[field] || '';
     const isVideo = /\.(mp4|webm)(?:\?|$)/i.test(value);
     const isExternalPlayer = field === 'media_url' && ['youtube', 'drive'].includes(section.data.media_type);
+    const youtubeId = section.data.media_type === 'youtube' ? homepagePromoYoutubeId(value) : '';
+    const driveId = section.data.media_type === 'drive' ? homepagePromoDriveId(value) : '';
     const preview = value
         ? (isExternalPlayer
-            ? `<a class="program-section-media-link" href="${escapeHtml(value)}" target="_blank" rel="noopener noreferrer">Buka tautan media ↗</a>`
+            ? (youtubeId
+                ? `<iframe class="program-section-media-preview" src="https://www.youtube-nocookie.com/embed/${escapeHtml(youtubeId)}?rel=0&playsinline=1" title="Preview video YouTube" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe>`
+                : driveId
+                    ? `<iframe class="program-section-media-preview" src="https://drive.google.com/file/d/${escapeHtml(driveId)}/preview" title="Preview video Google Drive" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>`
+                    : `<a class="program-section-media-link" href="${escapeHtml(value)}" target="_blank" rel="noopener noreferrer">Periksa tautan media ↗</a>`)
             : (isVideo ? `<video class="program-section-media-preview" src="${escapeHtml(value)}" controls playsinline></video>` : `<img class="program-section-media-preview" src="${escapeHtml(value)}" alt="">`))
         : '';
     return `<div class="form-group is-wide"><label>${escapeHtml(label)}</label><div class="program-section-media-control"><input type="text" value="${escapeHtml(value)}" data-section-field="${field}" placeholder="${isExternalPlayer ? 'Tempel tautan HTTPS media' : 'Terisi otomatis setelah upload'}">${isExternalPlayer ? '' : `<button type="button" data-section-action="upload" data-upload-field="${field}" data-upload-kind="${options.kind || 'image'}">Pilih File</button>`}</div><small class="program-field-help">${isExternalPlayer ? 'Salin tautan YouTube atau Google Drive, lalu tempel di kolom ini.' : 'Klik Pilih File. Kolom alamat akan terisi otomatis setelah upload berhasil.'}</small>${preview}</div>`;
@@ -2489,7 +2554,16 @@ function programCanvasBlockPreview(block, sectionKey) {
     if (block.type === 'quote') preview = `<blockquote class="program-canvas-quote">${content || 'Tuliskan kutipan penting di sini.'}</blockquote>`;
     if (block.type === 'list') preview = `<ul class="program-canvas-list">${String(block.content || '').split(/\r?\n/).filter(Boolean).map(item => `<li>${escapeHtml(item)}</li>`).join('') || '<li>Poin daftar</li>'}</ul>`;
     if (block.type === 'image') preview = url ? `<img src="${url}" alt="${escapeHtml(block.alt || '')}">` : '<span class="program-canvas-placeholder">Pilih gambar</span>';
-    if (block.type === 'video') preview = url ? `<video src="${url}" playsinline controls></video>` : '<span class="program-canvas-placeholder">Pilih video atau tempel tautan</span>';
+    if (block.type === 'video') {
+        const rawUrl = String(block.url || '').trim();
+        const youtubeId = homepagePromoYoutubeId(rawUrl);
+        const driveId = homepagePromoDriveId(rawUrl);
+        preview = driveId
+            ? `<iframe src="https://drive.google.com/file/d/${escapeHtml(driveId)}/preview" title="Preview video Google Drive" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>`
+            : youtubeId
+                ? `<iframe src="https://www.youtube-nocookie.com/embed/${escapeHtml(youtubeId)}?rel=0&playsinline=1" title="Preview video YouTube" allow="encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe>`
+                : (url ? `<video src="${url}" playsinline controls></video>` : '<span class="program-canvas-placeholder">Pilih video atau tempel tautan</span>');
+    }
     if (block.type === 'button') preview = `<span class="program-canvas-button">${escapeHtml(block.label || 'Tombol')}</span>`;
     if (block.type === 'columns') preview = `<span class="program-canvas-columns">${Array.from({ length: Math.max(2, Math.min(4, Number(block.content) || 2)) }, () => '<i></i>').join('')}</span>`;
     if (block.type === 'spacer') preview = '<span class="program-canvas-spacer">Jarak kosong</span>';
@@ -2756,9 +2830,7 @@ async function uploadProgramSectionFiles(files) {
     } else {
         for (const file of files) {
             if (file.type.startsWith('video/') || /\.(mp4|webm)$/i.test(file.name)) {
-                const form = new FormData();
-                form.append('video', file);
-                const result = await api('video_upload', { method: 'POST', body: form });
+                const result = await uploadVideoFile(file);
                 uploaded.push({ type: 'video', url: result.url });
             } else {
                 uploaded.push({ type: 'image', url: await uploadImageFileWithRetry(file, 3, 'content') });

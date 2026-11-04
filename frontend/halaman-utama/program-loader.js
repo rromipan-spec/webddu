@@ -67,7 +67,8 @@ function campaignCoverHtml(program, heroData = {}, sliderImages = []) {
         return sectionMediaHtml(heroData.media_type, heroData.media_url, heroData.media_alt || program.title, {
             mobileUrl: heroData.mobile_media_url,
             poster: heroData.poster_url,
-            background: true
+            background: true,
+            controls: true
         });
     }
     if (sliderImages.length === 1) {
@@ -377,10 +378,12 @@ function renderProgramCanvasBlock(block, program) {
     if (type === 'video') {
         const mediaUrl = safeMediaHref(block.url);
         const youtubeId = youtubeVideoId(mediaUrl);
-        const driveSource = driveDirectUrl(mediaUrl);
-        html = youtubeId
+        const driveSource = drivePreviewUrl(mediaUrl);
+        html = driveSource
+            ? `<iframe src="${escapeHtml(driveSource)}" title="${escapeHtml(block.alt || 'Video program dari Google Drive')}" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>`
+            : youtubeId
             ? `<iframe src="https://www.youtube-nocookie.com/embed/${youtubeId}?rel=0&playsinline=1" title="${escapeHtml(block.alt || 'Video program')}" allow="encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe>`
-            : (mediaUrl ? `<video src="${escapeHtml(driveSource || mediaUrl)}" controls playsinline preload="metadata"></video>` : '');
+            : (mediaUrl ? `<video src="${escapeHtml(mediaUrl)}" controls playsinline preload="metadata"></video>` : '');
     }
     if (type === 'button') html = href ? `<a class="program-visual-block__button" href="${escapeHtml(href)}"${externalLinkAttrs(href)}>${escapeHtml(block.label || 'Selengkapnya')} <span aria-hidden="true">→</span></a>` : '';
     if (type === 'columns') html = `<div class="program-visual-block__columns">${Array.from({ length: Math.max(2, Math.min(4, Number(content) || 2)) }, () => '<span></span>').join('')}</div>`;
@@ -410,18 +413,24 @@ function sectionMediaHtml(type, url, alt = '', options = {}) {
     const safeUrl = safeMediaHref(url);
     if (!safeUrl) return '';
     const mediaType = safeChoice(type, ['image', 'video', 'youtube', 'drive'], 'image');
-    if (mediaType === 'video' || mediaType === 'drive') {
-        const source = mediaType === 'drive' ? driveDirectUrl(safeUrl) : safeUrl;
-        if (!source) return '';
+    if (mediaType === 'drive') {
+        const source = drivePreviewUrl(safeUrl);
+        return source
+            ? `<iframe src="${escapeHtml(source)}" title="${escapeHtml(alt || 'Video program dari Google Drive')}" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>`
+            : '';
+    }
+    if (mediaType === 'video') {
         const shouldAutoplay = options.background && !matchMedia('(prefers-reduced-motion: reduce)').matches;
-        const backgroundAttrs = options.background ? ` ${shouldAutoplay ? 'autoplay ' : ''}muted loop playsinline data-managed-background-video` : ' controls playsinline';
-        return `<video src="${escapeHtml(source)}"${options.poster ? ` poster="${escapeHtml(safeMediaHref(options.poster))}"` : ''}${backgroundAttrs} preload="metadata"></video>`;
+        const backgroundAttrs = options.background
+            ? ` ${shouldAutoplay ? 'autoplay ' : ''}muted loop playsinline${options.controls ? ' controls' : ''} data-managed-background-video`
+            : ' controls playsinline';
+        return `<video src="${escapeHtml(safeUrl)}"${options.poster ? ` poster="${escapeHtml(safeMediaHref(options.poster))}"` : ''}${backgroundAttrs} preload="metadata"></video>`;
     }
     if (mediaType === 'youtube') {
         const id = youtubeVideoId(safeUrl);
         if (!id) return '';
         const autoplay = options.background && !matchMedia('(prefers-reduced-motion: reduce)').matches ? 1 : 0;
-        const query = options.background ? `autoplay=${autoplay}&mute=1&loop=1&playlist=${id}&controls=0&rel=0&playsinline=1&enablejsapi=1` : 'rel=0&playsinline=1';
+        const query = options.background ? `autoplay=${autoplay}&mute=1&loop=1&playlist=${id}&controls=${options.controls ? 1 : 0}&rel=0&playsinline=1&enablejsapi=1` : 'rel=0&playsinline=1';
         return `<iframe src="https://www.youtube-nocookie.com/embed/${id}?${query}" title="${escapeHtml(alt || 'Video program')}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"${options.background ? ' data-managed-background-video' : ''}></iframe>`;
     }
     const mobile = safeMediaHref(options.mobileUrl);
@@ -460,9 +469,9 @@ function whatsappLink(number, message) {
     return `https://wa.me/${encodeURIComponent(digits)}?text=${encodeURIComponent(message || '')}`;
 }
 
-function driveDirectUrl(url) {
+function drivePreviewUrl(url) {
     const id = driveVideoId(url);
-    return id ? `https://drive.google.com/uc?export=download&id=${encodeURIComponent(id)}` : '';
+    return id ? `https://drive.google.com/file/d/${encodeURIComponent(id)}/preview` : '';
 }
 
 function formatCurrency(value) {
@@ -507,19 +516,19 @@ function programHeroMediaHtml(program, sliderImages) {
     if (type === 'video') {
         const source = localVideoUrl(program.hero_video_url);
         if (!source) return fallback;
-        return `${fallback}<video class="program-hero-video" src="${escapeHtml(source)}" ${reducedMotion ? '' : 'autoplay'} muted loop playsinline preload="metadata" poster="${escapeHtml(fallbackUrl)}" data-managed-background-video></video>`;
+        return `${fallback}<video class="program-hero-video" src="${escapeHtml(source)}" ${reducedMotion ? '' : 'autoplay'} muted loop controls playsinline preload="metadata" poster="${escapeHtml(fallbackUrl)}" data-managed-background-video></video>`;
     }
     if (type === 'youtube') {
         const id = youtubeVideoId(program.hero_video_url);
         if (!id) return fallback;
         const autoplay = reducedMotion ? '0' : '1';
-        const source = `https://www.youtube-nocookie.com/embed/${id}?autoplay=${autoplay}&mute=1&loop=1&playlist=${id}&controls=0&rel=0&playsinline=1&enablejsapi=1`;
+        const source = `https://www.youtube-nocookie.com/embed/${id}?autoplay=${autoplay}&mute=1&loop=1&playlist=${id}&controls=1&rel=0&playsinline=1&enablejsapi=1`;
         return `${fallback}<iframe class="program-hero-video program-hero-video-embed" src="${source}" title="Video latar ${escapeHtml(program.title)}" allow="autoplay; encrypted-media; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" data-managed-background-video></iframe>`;
     }
     const driveId = driveVideoId(program.hero_video_url);
     if (!driveId) return fallback;
-    const source = `https://drive.google.com/uc?export=download&id=${encodeURIComponent(driveId)}`;
-    return `${fallback}<video class="program-hero-video program-hero-drive-video" src="${source}" ${reducedMotion ? '' : 'autoplay'} muted loop playsinline preload="metadata" poster="${escapeHtml(fallbackUrl)}" data-managed-background-video></video>`;
+    const source = `https://drive.google.com/file/d/${encodeURIComponent(driveId)}/preview`;
+    return `${fallback}<iframe class="program-hero-video program-hero-drive-video" src="${source}" title="Video ${escapeHtml(program.title)} dari Google Drive" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>`;
 }
 
 function localVideoUrl(url) {
@@ -547,8 +556,9 @@ function youtubeVideoId(url) {
 function driveVideoId(url) {
     try {
         const parsed = new URL(url);
-        if (parsed.hostname.toLowerCase().replace(/^www\./, '') !== 'drive.google.com') return '';
-        const id = parsed.pathname.match(/\/file\/d\/([A-Za-z0-9_-]{10,})/)?.[1]
+        const host = parsed.hostname.toLowerCase().replace(/^www\./, '');
+        if (!['drive.google.com', 'drive.usercontent.google.com'].includes(host)) return '';
+        const id = parsed.pathname.match(/\/file\/(?:u\/\d+\/)?d\/([A-Za-z0-9_-]{10,})/)?.[1]
             || parsed.searchParams.get('id')
             || '';
         return /^[A-Za-z0-9_-]{10,}$/.test(id) ? id : '';

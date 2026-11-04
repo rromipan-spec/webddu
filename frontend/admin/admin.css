@@ -3436,9 +3436,11 @@ body.admin-page {
 .admin-page .program-section-media-preview {
     display: block;
     width: min(100%, 280px);
+    aspect-ratio: 16 / 9;
     max-height: 170px;
     margin-top: 10px;
     object-fit: cover;
+    border: 0;
     border-radius: 10px;
 }
 
@@ -3693,7 +3695,8 @@ body.admin-page {
 .admin-page .program-canvas-list { margin: 0; padding-left: 1.35em; color: inherit; line-height: inherit; }
 .admin-page .program-canvas-list li + li { margin-top: .45em; }
 .admin-page .program-canvas-block img,
-.admin-page .program-canvas-block video { display: block; width: 100%; height: var(--block-media-height, 360px); max-height: none; object-fit: var(--block-object-fit, cover); object-position: var(--block-object-position, center); border-radius: inherit; }
+.admin-page .program-canvas-block video,
+.admin-page .program-canvas-block iframe { display: block; width: 100%; height: var(--block-media-height, 360px); max-height: none; border: 0; object-fit: var(--block-object-fit, cover); object-position: var(--block-object-position, center); border-radius: inherit; }
 .admin-page .program-canvas-placeholder { display: grid; min-height: 120px; place-items: center; color: #657187; border: 2px dashed #BFD4F8; border-radius: 10px; background: #F7FAFF; font-size: .75rem; }
 .admin-page .program-canvas-button { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; padding: max(10px, var(--block-padding)) max(20px, var(--block-padding)); color: var(--block-color); border-radius: var(--block-radius); background: var(--block-bg); font-size: inherit; }
 .admin-page .program-canvas-button--wa { background: var(--block-bg, #20C96B); }
@@ -4679,6 +4682,16 @@ body.admin-page {
     object-fit: contain;
 }
 .admin-page .friendly-program-landing__media > img[hidden] { display: none; }
+.admin-page .friendly-program-landing__media > video,
+.admin-page .friendly-program-landing__media > iframe {
+    display: block;
+    width: 100%;
+    min-height: 174px;
+    align-self: stretch;
+    border: 0;
+    background: #000;
+    object-fit: contain;
+}
 
 .admin-page .friendly-program-landing__donation {
     display: flex;
